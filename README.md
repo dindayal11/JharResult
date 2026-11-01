@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # JharResult — Hostinger MySQL edition
 
 A Jharkhand-focused jobs, results, admit cards, admissions and scholarship portal.
@@ -46,3 +47,6 @@ Admin can create posts in Manual mode or paste a notice into AI mode. AI output 
 - The initial AI mode accepts pasted notice text. PDF extraction API is included for text PDFs, but a PDF upload control is not included in this first admin UI.
 - This is a functional starter, not a completed security audit. Before public launch add rate limiting, email/password reset, audit logs, backups, monitoring, and test the deployment.
 - Never publish unverified AI output. Missing facts are returned as blank/unknown, not guessed.
+=======
+# JharResult
+>>>>>>> be8409c3592c27c78083c9377ae4e177f1e155dc
