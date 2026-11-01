@@ -1,0 +1,1524 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+type Cat = {
+  id: number;
+  name: string;
+};
+
+type CustomTable = {
+  id: string;
+  title: string;
+  columns: string[];
+  rows: string[][];
+  layout_direction: "row" | "column";
+  layout_columns: number;
+  theme_primary: string;
+  theme_accent: string;
+  theme_background: string;
+  theme_text: string;
+};
+
+const DEFAULT_TABLE_STYLE = {
+  layout_direction: "row" as const,
+  layout_columns: 2,
+  theme_primary: "#173f70",
+  theme_accent: "#e87920",
+  theme_background: "#ffffff",
+  theme_text: "#182638",
+};
+
+const legacyDefinitions = [
+  { key: "important_dates", title: "Important Dates", columns: ["Event", "Date"] },
+  { key: "application_fee", title: "Application Fee", columns: ["Category", "Fee"] },
+  { key: "age_limit", title: "Age Limit", columns: ["Age Criteria", "Limit / Details"] },
+  { key: "vacancy_details", title: "Vacancy Details", columns: ["Post Name", "Vacancies"] },
+  { key: "important_links", title: "Important Links", columns: ["Link Title", "URL"] },
+  { key: "faqs", title: "Frequently Asked Questions", columns: ["Question", "Answer"] },
+];
+
+function parseCustomTables(value: unknown): CustomTable[] {
+  if (!value) return [];
+
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((table: any, index: number) => {
+      const columns = Array.isArray(table.columns)
+        ? table.columns.map((c: any) => String(c ?? ""))
+        : [];
+
+      const safeColumns = columns.length
+        ? columns
+        : ["Column 1", "Column 2"];
+
+      const rows = Array.isArray(table.rows)
+        ? table.rows.map((row: any) =>
+            safeColumns.map((_, i) =>
+              String(Array.isArray(row) ? row[i] ?? "" : row?.[i] ?? "")
+            )
+          )
+        : [];
+
+      return {
+        ...DEFAULT_TABLE_STYLE,
+        ...table,
+        id: String(table.id || `table-${index}`),
+        title: String(table.title || `Table ${index + 1}`),
+        columns: safeColumns,
+        rows,
+        layout_direction:
+          table.layout_direction === "column" ? "column" : "row",
+        layout_columns: Math.min(
+          3,
+          Math.max(1, Number(table.layout_columns) || 2)
+        ),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+function legacyToCustomTables(post: any): CustomTable[] {
+  if (!post) return [];
+
+  const result: CustomTable[] = [];
+
+  for (const def of legacyDefinitions) {
+    const raw = post[def.key];
+    if (!raw) continue;
+
+    let data: any = raw;
+
+    try {
+      if (typeof raw === "string") data = JSON.parse(raw);
+    } catch {
+      data = [{ [def.columns[0]]: raw }];
+    }
+
+    const entries: any[] = Array.isArray(data)
+      ? data
+      : data && typeof data === "object"
+        ? Object.entries(data).map(([k, v]) => ({
+            [def.columns[0]]: k,
+            [def.columns[1]]: v,
+          }))
+        : [];
+
+    const rows = entries.map((item) =>
+      def.columns.map((column, i) =>
+        String(
+          item?.[column] ??
+            item?.[column.toLowerCase().replace(/ /g, "_")] ??
+            (i === 0
+              ? item?.label ??
+                item?.event ??
+                item?.category ??
+                item?.post ??
+                item?.question
+              : item?.value ??
+                item?.date ??
+                item?.amount ??
+                item?.age ??
+                item?.vacancies ??
+                item?.url ??
+                item?.answer) ??
+            ""
+        )
+      )
+    );
+
+    if (rows.some((row) => row.some((cell) => cell.trim()))) {
+      result.push({
+        ...DEFAULT_TABLE_STYLE,
+        id: `legacy-${def.key}`,
+        title: def.title,
+        columns: [...def.columns],
+        rows,
+      });
+    }
+  }
+
+  return result;
+}
+
+export default function PostEditor({
+  categories,
+  post,
+}: {
+  categories: Cat[];
+  post?: any;
+}) {
+  const [mode, setMode] = useState<"manual" | "ai">("manual");
+
+  const [form, setForm] = useState<any>({
+    title: post?.title || "",
+    category_id: String(
+      post?.category_id || categories[0]?.id || ""
+    ),
+    short_description: post?.short_description || "",
+    organization: post?.organization || "",
+    source_url: post?.source_url || "",
+    application_url: post?.application_url || "",
+    qualification: post?.qualification || "",
+    selection_process: post?.selection_process || "",
+    how_to_apply: post?.how_to_apply || "",
+    seo_title: post?.seo_title || "",
+    seo_description: post?.seo_description || "",
+    status: post?.status || "draft",
+    verification_status: post?.verification_status || "unverified",
+    notice_text: post?.notice_text || "",
+    layout_direction: post?.layout_direction || "row",
+    layout_columns: String(post?.layout_columns || 2),
+    theme_primary: post?.theme_primary || "#173f70",
+    theme_accent: post?.theme_accent || "#e87920",
+    theme_background: post?.theme_background || "#ffffff",
+    theme_text: post?.theme_text || "#182638",
+    image_url: post?.image_url || "",
+    image_title: post?.image_title || "",
+  });
+
+  const [customTables, setCustomTables] = useState<CustomTable[]>(() => {
+    const saved = parseCustomTables(post?.custom_tables);
+    return saved.length ? saved : legacyToCustomTables(post);
+  });
+
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [expandedTables, setExpandedTables] = useState<string[]>([]);
+
+  const descriptionEditor = useRef<HTMLDivElement>(null);
+  const descriptionInitialized = useRef(false);
+
+  const change = (key: string, value: string) => {
+    setForm((old: any) => ({
+      ...old,
+      [key]: value,
+    }));
+  };
+
+  useEffect(() => {
+    if (descriptionEditor.current && !descriptionInitialized.current) {
+      descriptionEditor.current.innerHTML = form.short_description || "";
+      descriptionInitialized.current = true;
+    }
+  }, [form.short_description]);
+
+  const formatDescription = (command: string, value?: string) => {
+    descriptionEditor.current?.focus();
+
+    document.execCommand(command, false, value);
+
+    if (descriptionEditor.current) {
+      change(
+        "short_description",
+        descriptionEditor.current.innerHTML
+      );
+    }
+  };
+
+  const addTable = () => {
+    const id = `table-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 7)}`;
+
+    setCustomTables((old) => [
+      ...old,
+      {
+        ...DEFAULT_TABLE_STYLE,
+        id,
+        title: "New Table",
+        columns: ["Column 1", "Column 2"],
+        rows: [["", ""]],
+      },
+    ]);
+
+    setExpandedTables((old) => [...old, id]);
+  };
+
+  const updateTable = (
+    id: string,
+    patch: Partial<CustomTable>
+  ) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id ? { ...table, ...patch } : table
+      )
+    );
+  };
+
+  const updateColumn = (
+    id: string,
+    index: number,
+    value: string
+  ) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              columns: table.columns.map((column, i) =>
+                i === index ? value : column
+              ),
+            }
+          : table
+      )
+    );
+  };
+
+  const addColumn = (id: string) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              columns: [
+                ...table.columns,
+                `Column ${table.columns.length + 1}`,
+              ],
+              rows: table.rows.map((row) => [...row, ""]),
+            }
+          : table
+      )
+    );
+  };
+
+  const removeColumn = (id: string, index: number) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              columns:
+                table.columns.length > 1
+                  ? table.columns.filter((_, i) => i !== index)
+                  : table.columns,
+              rows:
+                table.columns.length > 1
+                  ? table.rows.map((row) =>
+                      row.filter((_, i) => i !== index)
+                    )
+                  : table.rows,
+            }
+          : table
+      )
+    );
+  };
+
+  const addRow = (id: string) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              rows: [
+                ...table.rows,
+                table.columns.map(() => ""),
+              ],
+            }
+          : table
+      )
+    );
+  };
+
+  const updateCell = (
+    id: string,
+    rowIndex: number,
+    columnIndex: number,
+    value: string
+  ) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              rows: table.rows.map((row, ri) =>
+                ri === rowIndex
+                  ? row.map((cell, ci) =>
+                      ci === columnIndex ? value : cell
+                    )
+                  : row
+              ),
+            }
+          : table
+      )
+    );
+  };
+
+  const removeRow = (id: string, index: number) => {
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? {
+              ...table,
+              rows: table.rows.filter((_, i) => i !== index),
+            }
+          : table
+      )
+    );
+  };
+
+  const removeTable = (id: string) => {
+    setCustomTables((old) =>
+      old.filter((table) => table.id !== id)
+    );
+
+    setExpandedTables((old) => old.filter((x) => x !== id));
+  };
+
+  const toggleTable = (id: string) => {
+    setExpandedTables((old) =>
+      old.includes(id)
+        ? old.filter((x) => x !== id)
+        : [...old, id]
+    );
+  };
+
+  async function uploadImage(file?: File) {
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setNotice("Only JPG, PNG, WEBP and GIF images are allowed.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setNotice("Image size must be 5 MB or less.");
+      return;
+    }
+
+    setImageBusy(true);
+    setNotice("");
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+
+      const response = await fetch(
+        "/api/admin/upload-image",
+        {
+          method: "POST",
+          body,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Image upload failed.");
+      }
+
+      change("image_url", data.url);
+      setNotice("Image uploaded successfully. Add its title and save the post.");
+    } catch (error: any) {
+      setNotice(error.message || "Image upload failed.");
+    } finally {
+      setImageBusy(false);
+    }
+  }
+
+  async function parseAI() {
+    setBusy(true);
+    setNotice("");
+
+    try {
+      const response = await fetch("/api/ai/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: form.notice_text,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "AI parsing failed");
+      }
+
+      const extracted = data.data || {};
+
+      setForm((old: any) => ({
+        ...old,
+        ...extracted,
+        category_id: old.category_id,
+        status: "draft",
+        verification_status: "unverified",
+      }));
+
+      if (Array.isArray(extracted.custom_tables)) {
+        setCustomTables(
+          parseCustomTables(extracted.custom_tables)
+        );
+      }
+
+      setMode("manual");
+
+      setNotice(
+        "AI draft fill ho gaya. Har detail official notification se verify karke hi publish karein."
+      );
+    } catch (error: any) {
+      setNotice(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+
+    setBusy(true);
+    setNotice("");
+
+    try {
+      const cleanedTables = customTables
+        .map((table) => ({
+          ...table,
+          title: table.title.trim(),
+          columns: table.columns.map((c) => c.trim()),
+          rows: table.rows.filter((row) =>
+            row.some((cell) => cell.trim())
+          ),
+        }))
+        .filter(
+          (table) => table.title && table.columns.length
+        );
+
+      const payload = {
+        ...form,
+        custom_tables: JSON.stringify(cleanedTables),
+      };
+
+      const response = await fetch(
+        post
+          ? `/api/admin/posts/${post.id}`
+          : "/api/admin/posts",
+        {
+          method: post ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Save failed");
+      }
+
+      window.location.href = "/admin";
+    } catch (error: any) {
+      setNotice(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    minWidth: 0,
+    padding: "11px 12px",
+    border: "1px solid #d7dee8",
+    borderRadius: 7,
+    background: "#fff",
+    color: "#172033",
+    fontSize: 14,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontWeight: 650,
+    fontSize: 13,
+    margin: "13px 0 6px",
+    color: "#253247",
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    border: "1px solid #dce3ec",
+    borderRadius: 10,
+    marginTop: 16,
+    overflow: "hidden",
+    background: "#fff",
+  };
+
+  const tableButton: React.CSSProperties = {
+    border: 0,
+    borderRadius: 7,
+    padding: "9px 13px",
+    background: "#173f70",
+    color: "white",
+    fontWeight: 650,
+    cursor: "pointer",
+  };
+
+  return (
+    <div
+      className="panel"
+      style={{
+        marginTop: 18,
+        padding: 22,
+        background: "#f8fafc",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          marginBottom: 18,
+        }}
+      >
+        <button
+          type="button"
+          style={{
+            ...tableButton,
+            background: mode === "manual" ? "#e87920" : "#34465d",
+          }}
+          onClick={() => setMode("manual")}
+        >
+          Manual Entry
+        </button>
+
+        <button
+          type="button"
+          style={{
+            ...tableButton,
+            background: mode === "ai" ? "#e87920" : "#34465d",
+          }}
+          onClick={() => setMode("ai")}
+        >
+          AI Notice Extractor
+        </button>
+      </div>
+
+      {mode === "ai" && (
+        <section style={sectionStyle}>
+          <div style={{ padding: 18 }}>
+            <h2 style={{ marginTop: 0 }}>Official Notice Text</h2>
+
+            <p style={{ color: "#64748b", fontSize: 13 }}>
+              Notice ka text paste karein. AI details ko draft mein
+              convert karega; publish se pehle verify zaroor karein.
+            </p>
+
+            <textarea
+              style={{ ...inputStyle, minHeight: 220 }}
+              value={form.notice_text}
+              onChange={(e) =>
+                change("notice_text", e.target.value)
+              }
+              placeholder="Official Jharkhand recruitment / education notice yahan paste karein..."
+            />
+
+            <button
+              type="button"
+              style={{ ...tableButton, marginTop: 12 }}
+              disabled={busy || !form.notice_text.trim()}
+              onClick={parseAI}
+            >
+              {busy ? "Processing..." : "Extract Details with AI"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {mode === "manual" && (
+        <form onSubmit={save}>
+          <section style={sectionStyle}>
+            <div style={{ padding: 18 }}>
+              <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>
+                Basic Post Information
+              </h2>
+
+              <label style={labelStyle}>Post Title *</label>
+
+              <input
+                style={inputStyle}
+                required
+                value={form.title}
+                onChange={(e) => change("title", e.target.value)}
+                placeholder="e.g. JSSC CGL Recruitment 2026"
+              />
+
+              <label style={labelStyle}>Category</label>
+
+              <select
+                style={inputStyle}
+                value={form.category_id}
+                onChange={(e) =>
+                  change("category_id", e.target.value)
+                }
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* POST DESCRIPTION EDITOR */}
+
+              <label style={labelStyle}>Post Description</label>
+
+              <div
+                style={{
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  background: "#fff",
+                }}
+              >
+                <div
+                  role="toolbar"
+                  aria-label="Description formatting"
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    flexWrap: "wrap",
+                    padding: 8,
+                    background: "#edf3fa",
+                    borderBottom: "1px solid #cbd5e1",
+                  }}
+                >
+                  <button
+                    type="button"
+                    title="Bold"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => formatDescription("bold")}
+                    style={{
+                      ...tableButton,
+                      minWidth: 38,
+                      padding: "7px 11px",
+                      fontWeight: 900,
+                    }}
+                  >
+                    B
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Highlight"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      formatDescription("hiliteColor", "#fff29a")
+                    }
+                    style={{
+                      ...tableButton,
+                      padding: "7px 11px",
+                      background: "#f2d94e",
+                      color: "#263238",
+                    }}
+                  >
+                    Highlight
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Bullet list"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      formatDescription("insertUnorderedList")
+                    }
+                    style={{
+                      ...tableButton,
+                      padding: "7px 11px",
+                    }}
+                  >
+                    • Bullet List
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Numbered list"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      formatDescription("insertOrderedList")
+                    }
+                    style={{
+                      ...tableButton,
+                      padding: "7px 11px",
+                    }}
+                  >
+                    1. Numbered List
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Remove formatting"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      formatDescription("removeFormat")
+                    }
+                    style={{
+                      ...tableButton,
+                      padding: "7px 11px",
+                      background: "#64748b",
+                    }}
+                  >
+                    Clear Format
+                  </button>
+                </div>
+
+                <div
+                  ref={descriptionEditor}
+                  contentEditable
+                  suppressContentEditableWarning
+                  role="textbox"
+                  aria-multiline="true"
+                  onInput={(e) =>
+                    change(
+                      "short_description",
+                      e.currentTarget.innerHTML
+                    )
+                  }
+                  style={{
+                    minHeight: 130,
+                    padding: 12,
+                    outline: "none",
+                    lineHeight: 1.65,
+                    color: "#182638",
+                  }}
+                  data-placeholder="Post ka description yahan likhein..."
+                />
+              </div>
+
+              <p
+                style={{
+                  margin: "5px 0 0",
+                  fontSize: 12,
+                  color: "#64748b",
+                }}
+              >
+                Text select karke Bold, Highlight ya Bullet List
+                button use karein.
+              </p>
+
+              {/* IMAGE UPLOAD */}
+
+              <div
+                style={{
+                  marginTop: 18,
+                  padding: 14,
+                  border: "1px dashed #b8c5d6",
+                  borderRadius: 9,
+                  background: "#f8fbff",
+                }}
+              >
+                <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>
+                  Post Image
+                </h3>
+
+                <label style={labelStyle}>
+                  Choose Image (JPG, PNG, WEBP, GIF · max 5 MB)
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  disabled={imageBusy}
+                  onChange={(e) => {
+                    void uploadImage(e.target.files?.[0]);
+                    e.currentTarget.value = "";
+                  }}
+                  style={{ ...inputStyle, padding: 8 }}
+                />
+
+                {imageBusy && (
+                  <p style={{ color: "#475569", fontSize: 13 }}>
+                    Uploading image...
+                  </p>
+                )}
+
+                <label style={labelStyle}>Image Title / Caption</label>
+
+                <input
+                  style={inputStyle}
+                  value={form.image_title}
+                  onChange={(e) =>
+                    change("image_title", e.target.value)
+                  }
+                  placeholder="e.g. JAC Class 12 Exam 2026"
+                />
+
+                <label style={labelStyle}>Image URL</label>
+
+                <input
+                  style={inputStyle}
+                  value={form.image_url}
+                  onChange={(e) =>
+                    change("image_url", e.target.value)
+                  }
+                  placeholder="/uploads/your-image.webp or https://..."
+                />
+
+                {form.image_url && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 10,
+                      background: "white",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <img
+                      src={form.image_url}
+                      alt={form.image_title || "Post image preview"}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        maxWidth: 460,
+                        maxHeight: 260,
+                        objectFit: "contain",
+                        borderRadius: 6,
+                      }}
+                    />
+
+                    {form.image_title && (
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontSize: 13,
+                          color: "#475569",
+                        }}
+                      >
+                        {form.image_title}
+                      </p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        change("image_url", "");
+                        change("image_title", "");
+                      }}
+                      style={{
+                        ...tableButton,
+                        marginTop: 8,
+                        background: "#a12b2b",
+                      }}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <label style={labelStyle}>
+                Organization / Department
+              </label>
+
+              <input
+                style={inputStyle}
+                value={form.organization}
+                onChange={(e) =>
+                  change("organization", e.target.value)
+                }
+                placeholder="JSSC / JAC / JRHMS"
+              />
+
+              <label style={labelStyle}>
+                Official Notification URL
+              </label>
+
+              <input
+                style={inputStyle}
+                value={form.source_url}
+                onChange={(e) =>
+                  change("source_url", e.target.value)
+                }
+                placeholder="https://..."
+              />
+
+              <label style={labelStyle}>Apply Online URL</label>
+
+              <input
+                style={inputStyle}
+                value={form.application_url}
+                onChange={(e) =>
+                  change("application_url", e.target.value)
+                }
+                placeholder="https://..."
+              />
+            </div>
+          </section>
+
+          {/* CUSTOM TABLE BUILDER */}
+
+          <div style={{ marginTop: 22 }}>
+            <h2 style={{ fontSize: 20, marginBottom: 4 }}>
+              Post Details – Custom Table Builder
+            </h2>
+
+            <p style={{ color: "#64748b", fontSize: 13, marginTop: 0 }}>
+              Apne hisaab se table ka title, columns aur rows banayein.
+              Har cell mein directly content type kar sakte hain.
+            </p>
+          </div>
+
+          {customTables.map((table, tableIndex) => (
+            <section key={table.id} style={sectionStyle}>
+              <button
+                type="button"
+                onClick={() => toggleTable(table.id)}
+                style={{
+                  width: "100%",
+                  border: 0,
+                  background: "#edf3fa",
+                  padding: "14px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  color: "#173f70",
+                  textAlign: "left",
+                }}
+              >
+                <span>
+                  <strong>
+                    {table.title || `Table ${tableIndex + 1}`}
+                  </strong>
+
+                  <small
+                    style={{
+                      display: "block",
+                      color: "#64748b",
+                      marginTop: 3,
+                    }}
+                  >
+                    {table.columns.length} columns · {table.rows.length} rows
+                  </small>
+                </span>
+
+                <strong>
+                  {expandedTables.includes(table.id) ? "−" : "+"}
+                </strong>
+              </button>
+
+              {expandedTables.includes(table.id) && (
+                <div style={{ padding: 14 }}>
+                  <label style={labelStyle}>Table Title</label>
+
+                  <input
+                    style={inputStyle}
+                    value={table.title}
+                    onChange={(e) =>
+                      updateTable(table.id, {
+                        title: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Important Dates"
+                  />
+
+                  <h4 style={{ margin: "18px 0 8px", color: "#253247" }}>
+                    Table Layout &amp; Colors
+                  </h4>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit,minmax(180px,1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    <div>
+                      <label style={labelStyle}>
+                        Section Arrangement
+                      </label>
+
+                      <select
+                        style={inputStyle}
+                        value={table.layout_direction}
+                        onChange={(e) =>
+                          updateTable(table.id, {
+                            layout_direction: e.target.value as
+                              | "row"
+                              | "column",
+                          })
+                        }
+                      >
+                        <option value="row">Row – side by side</option>
+                        <option value="column">Column – full width</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={labelStyle}>
+                        Number of Columns
+                      </label>
+
+                      <select
+                        style={inputStyle}
+                        value={String(table.layout_columns)}
+                        disabled={table.layout_direction === "column"}
+                        onChange={(e) =>
+                          updateTable(table.id, {
+                            layout_columns: Number(e.target.value),
+                          })
+                        }
+                      >
+                        <option value="1">1 Column</option>
+                        <option value="2">2 Columns</option>
+                        <option value="3">3 Columns</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit,minmax(190px,1fr))",
+                      gap: 10,
+                      marginTop: 12,
+                    }}
+                  >
+                    {(
+                      [
+                        ["theme_primary", "Heading / Header Color"],
+                        ["theme_accent", "Highlight / Button Color"],
+                        ["theme_background", "Table Background Color"],
+                        ["theme_text", "Text Color"],
+                      ] as const
+                    ).map(([key, title]) => (
+                      <label
+                        key={key}
+                        style={{
+                          ...labelStyle,
+                          marginTop: 4,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          border: "1px solid #e2e8f0",
+                          borderRadius: 8,
+                          padding: 9,
+                          background: "#fff",
+                        }}
+                      >
+                        {title}
+
+                        <input
+                          type="color"
+                          aria-label={title}
+                          value={table[key]}
+                          onChange={(e) =>
+                            updateTable(table.id, {
+                              [key]: e.target.value,
+                            } as Partial<CustomTable>)
+                          }
+                          style={{
+                            width: 42,
+                            height: 34,
+                            padding: 2,
+                            border: "1px solid #cbd5e1",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        />
+                      </label>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      borderRadius: 7,
+                      background: table.theme_background,
+                      color: table.theme_text,
+                      border: `1px solid ${table.theme_primary}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: 8,
+                        borderRadius: 5,
+                        background: table.theme_primary,
+                        color: "#fff",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {table.title || "Table Heading Preview"}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 6,
+                        padding: 6,
+                        background: table.theme_accent,
+                        color: "#fff",
+                        display: "inline-block",
+                        borderRadius: 4,
+                        fontSize: 12,
+                      }}
+                    >
+                      Highlight Preview
+                    </div>
+                  </div>
+
+                  <h4 style={{ margin: "16px 0 8px", color: "#253247" }}>
+                    Columns – edit column headings
+                  </h4>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit,minmax(170px,1fr))",
+                      gap: 9,
+                    }}
+                  >
+                    {table.columns.map((column, columnIndex) => (
+                      <div
+                        key={columnIndex}
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          alignItems: "center",
+                        }}
+                      >
+                        <input
+                          style={inputStyle}
+                          value={column}
+                          onChange={(e) =>
+                            updateColumn(
+                              table.id,
+                              columnIndex,
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Column ${columnIndex + 1}`}
+                        />
+
+                        <button
+                          type="button"
+                          title="Remove column"
+                          disabled={table.columns.length <= 1}
+                          onClick={() =>
+                            removeColumn(table.id, columnIndex)
+                          }
+                          style={{
+                            border: "1px solid #fecaca",
+                            color: "#b42318",
+                            background: "#fff5f5",
+                            borderRadius: 7,
+                            padding: "9px 10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    style={{
+                      ...tableButton,
+                      marginTop: 10,
+                      background: "#475569",
+                    }}
+                    onClick={() => addColumn(table.id)}
+                  >
+                    + Add Column
+                  </button>
+
+                  <h4 style={{ margin: "20px 0 8px", color: "#253247" }}>
+                    Table Rows – type your content
+                  </h4>
+
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        minWidth: Math.max(
+                          500,
+                          table.columns.length * 180
+                        ),
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          {table.columns.map((column, i) => (
+                            <th
+                              key={i}
+                              style={{
+                                textAlign: "left",
+                                padding: 8,
+                                background: "#f1f5f9",
+                                border: "1px solid #dce3ec",
+                                fontSize: 12,
+                              }}
+                            >
+                              {column || `Column ${i + 1}`}
+                            </th>
+                          ))}
+
+                          <th
+                            style={{
+                              border: "1px solid #dce3ec",
+                              background: "#f1f5f9",
+                            }}
+                          >
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {table.rows.map((row, rowIndex) => (
+                          <tr key={rowIndex}>
+                            {table.columns.map((_, columnIndex) => (
+                              <td
+                                key={columnIndex}
+                                style={{
+                                  padding: 5,
+                                  border: "1px solid #e2e8f0",
+                                }}
+                              >
+                                <input
+                                  style={{
+                                    ...inputStyle,
+                                    padding: "9px 8px",
+                                  }}
+                                  value={row[columnIndex] || ""}
+                                  onChange={(e) =>
+                                    updateCell(
+                                      table.id,
+                                      rowIndex,
+                                      columnIndex,
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="Enter content..."
+                                />
+                              </td>
+                            ))}
+
+                            <td
+                              style={{
+                                border: "1px solid #e2e8f0",
+                                textAlign: "center",
+                                padding: 5,
+                              }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeRow(table.id, rowIndex)
+                                }
+                                style={{
+                                  border: "1px solid #fecaca",
+                                  color: "#b42318",
+                                  background: "#fff5f5",
+                                  borderRadius: 6,
+                                  padding: "8px 10px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 9,
+                      flexWrap: "wrap",
+                      marginTop: 12,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      style={tableButton}
+                      onClick={() => addRow(table.id)}
+                    >
+                      + Add Row
+                    </button>
+
+                    <button
+                      type="button"
+                      style={{
+                        ...tableButton,
+                        background: "#a12b2b",
+                      }}
+                      onClick={() => removeTable(table.id)}
+                    >
+                      Delete Table
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          ))}
+
+          <button
+            type="button"
+            style={{
+              ...tableButton,
+              marginTop: 14,
+              padding: "12px 18px",
+              background: "#16804a",
+            }}
+            onClick={addTable}
+          >
+            + Add New Table
+          </button>
+
+          {/* OTHER INFORMATION */}
+
+          <section style={sectionStyle}>
+            <div style={{ padding: 18 }}>
+              <h2 style={{ margin: "0 0 10px", fontSize: 18 }}>
+                Other Information
+              </h2>
+
+              {(
+                [
+                  ["qualification", "Educational Qualification"],
+                  ["selection_process", "Selection Process"],
+                  ["how_to_apply", "How to Apply"],
+                ] as const
+              ).map(([key, title]) => (
+                <div key={key}>
+                  <label style={labelStyle}>{title}</label>
+
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90 }}
+                    value={form[key]}
+                    onChange={(e) =>
+                      change(key, e.target.value)
+                    }
+                    placeholder={`${title} details...`}
+                  />
+                </div>
+              ))}
+
+              <label style={labelStyle}>SEO Title</label>
+
+              <input
+                style={inputStyle}
+                value={form.seo_title}
+                onChange={(e) =>
+                  change("seo_title", e.target.value)
+                }
+              />
+
+              <label style={labelStyle}>SEO Description</label>
+
+              <textarea
+                style={{ ...inputStyle, minHeight: 65 }}
+                value={form.seo_description}
+                onChange={(e) =>
+                  change("seo_description", e.target.value)
+                }
+              />
+
+              <label style={labelStyle}>Publication Status</label>
+
+              <select
+                style={inputStyle}
+                value={form.status}
+                onChange={(e) =>
+                  change("status", e.target.value)
+                }
+              >
+                <option value="draft">Save as Draft</option>
+                <option value="published">Publish</option>
+              </select>
+
+              <label style={labelStyle}>Verification Status</label>
+
+              <select
+                style={inputStyle}
+                value={form.verification_status}
+                onChange={(e) =>
+                  change("verification_status", e.target.value)
+                }
+              >
+                <option value="unverified">Unverified</option>
+                <option value="verified">
+                  Verified – checked against official source
+                </option>
+              </select>
+            </div>
+          </section>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              flexWrap: "wrap",
+              marginTop: 18,
+            }}
+          >
+            <button
+              type="submit"
+              style={{
+                ...tableButton,
+                background: "#16804a",
+                padding: "12px 22px",
+              }}
+              disabled={busy || imageBusy}
+            >
+              {busy
+                ? "Saving..."
+                : post
+                  ? "Update Post"
+                  : "Save Post"}
+            </button>
+
+            <span style={{ color: "#64748b", fontSize: 12 }}>
+              Draft save karne se public nahi hoga.
+            </span>
+          </div>
+        </form>
+      )}
+
+      {notice && (
+        <p
+          role="status"
+          style={{
+            marginTop: 14,
+            padding: 12,
+            borderRadius: 8,
+            background: notice.startsWith("AI draft")
+              ? "#ecfdf3"
+              : "#fff1f0",
+            color: notice.startsWith("AI draft")
+              ? "#12633a"
+              : "#b42318",
+          }}
+        >
+          {notice}
+        </p>
+      )}
+    </div>
+  );
+}
