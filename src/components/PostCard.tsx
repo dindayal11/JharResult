@@ -1,3 +1,4 @@
+
 import type { PostRow } from "@/lib/posts";
 
 function isRecentlyPublished(value: string | Date | null | undefined): boolean {
@@ -13,19 +14,15 @@ export default function PostCard({ post }: { post: PostRow }) {
   return (
     <article className="update-row">
       <span className="update-bullet">›</span>
+
       <div className="update-copy">
         <div className="update-title-line">
-          <a href={`/post/${post.slug}`} className="update-title">{post.title}</a>
+          <a href={`/post/${post.slug}`} className="update-title">
+            {post.title}
+          </a>
           {isNew && <span className="new-badge">NEW</span>}
         </div>
-        <div className="update-meta">
-          {post.category_name}
-          {post.published_at
-            ? ` • ${new Date(post.published_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
-            : ""}
-        </div>
       </div>
-      {post.verification_status === "verified" && <span className="verified">Verified</span>}
     </article>
   );
 }

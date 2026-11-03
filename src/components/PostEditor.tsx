@@ -57,9 +57,9 @@ function parseCustomTables(value: unknown): CustomTable[] {
 
       const rows = Array.isArray(table.rows)
         ? table.rows.map((row: any) =>
-            safeColumns.map((_, i) =>
-              String(Array.isArray(row) ? row[i] ?? "" : row?.[i] ?? "")
-            )
+            safeColumns.map((_: string, i: number) =>
+  String(Array.isArray(row) ? row[i] ?? "" : row?.[i] ?? "")
+)
           )
         : [];
 

@@ -2,6 +2,12 @@ import SiteHeader from "@/components/SiteHeader";
 import PostCard from "@/components/PostCard";
 import { getPublishedPosts } from "@/lib/posts";
 import { getPool } from "@/lib/db";
+import type { Viewport } from "next";
+
+// export const viewport: Viewport = {
+//   width: 1200,
+//   initialScale: 1,
+// };
 
 export const dynamic = "force-dynamic";
 
@@ -61,11 +67,11 @@ export default async function Home() {
 
   const quickLinks = [
     { label: "Jharkhand Latest Jobs", href: "/category/latest-jobs" },
-    { label: "JAC Board Updates", href: "/category/results" },
+    { label: "JAC Board Updates", href: "/category/board" },
     { label: "Admit Cards", href: "/category/admit-card" },
     { label: "Answer Keys", href: "/category/answer-key" },
     { label: "Scholarships", href: "/category/scholarships" },
-    { label: "Previous Papers", href: "/category/previous-papers" },
+    { label: "Previous Papers", href: "/previous-year-papers" },
   ];
 
   return (
@@ -102,6 +108,63 @@ export default async function Home() {
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
           </form>
         </section>
+
+        
+<section
+  style={{
+    marginBottom: 18,
+    padding: "13px 16px",
+    background: "#eaf5ff",
+    border: "1px solid #c8e4fa",
+    borderRadius: 5,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    flexWrap: "wrap",
+  }}
+>
+  <div>
+    <strong style={{ color: "#174b80", fontSize: 16 }}>
+      Join Our Telegram Channel
+    </strong>
+  
+  </div>
+
+  
+<a
+  href="YOUR_TELEGRAM_CHANNEL_LINK"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Join JharResult Telegram Channel"
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 9,
+    padding: "10px 18px",
+    background: "#229ED9",
+    color: "#fff",
+    borderRadius: 5,
+    fontWeight: 700,
+    fontSize: 14,
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+  }}
+>
+  <svg
+    width="23"
+    height="23"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M22 2 2.8 9.5c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 6c.2.7.1 1 .8 1 .5 0 .8-.2 1.1-.5l2.8-2.7 5.8 4.3c1.1.6 1.9.3 2.2-1L24 3.5C24.3 2 23.4 1.3 22 2ZM9.2 12.2 20 5.4c.5-.3 1-.1.6.3l-8.9 8-.4 4.1-2.1-5.6Z" />
+  </svg>
+  Join Telegram
+</a>
+
+</section>
+
 
         {dbError && (
           <div className="panel" style={{ marginBottom: 18, color: "#9b2c2c" }}>
