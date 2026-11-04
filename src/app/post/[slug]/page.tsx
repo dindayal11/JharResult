@@ -1,6 +1,6 @@
 
 import SiteHeader from "@/components/SiteHeader";
-import { getPostBySlug, parseJson } from "@/lib/posts";
+import { getPostBySlug, getPublishedPosts, parseJson } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
@@ -230,6 +230,10 @@ export default async function PostPage({
   const p = await getPostBySlug(slug);
 
   if (!p) notFound();
+
+  const latestPosts = (await getPublishedPosts(9))
+    .filter((post) => post.slug !== slug)
+    .slice(0, 8);
 
   // Sanitize description HTML before rendering it.
   const safeDescription = p.short_description
@@ -601,6 +605,23 @@ export default async function PostPage({
               Admissions
             </a>
           </div>
+
+          {latestPosts.length > 0 && (
+            <div className="listing-box">
+              <div className="section-heading">
+                <h2>Latest Updates</h2>
+              </div>
+              {latestPosts.map((post) => (
+                <a
+                  key={post.id}
+                  className="side-link"
+                  href={`/post/${post.slug}`}
+                >
+                  {post.title}
+                </a>
+              ))}
+            </div>
+          )}
         </aside>
       </main>
 
