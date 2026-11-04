@@ -209,45 +209,6 @@ export default function PostEditor({
     }
   }, [form.short_description]);
 
-  async function translateDescription(direction: "hi-en" | "en-hi") {
-    const editor = descriptionEditor.current;
-    const sourceHtml = editor?.innerHTML || form.short_description || "";
-    const plainText = editor?.innerText?.trim() || "";
-
-    if (!plainText) {
-      setNotice("Please write the post description before translating.");
-      return;
-    }
-
-    setBusy(true);
-    setNotice("");
-
-    try {
-      const response = await fetch("/api/ai/translate-description", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ html: sourceHtml, direction }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Description translation failed.");
-      }
-
-      if (descriptionEditor.current) {
-        descriptionEditor.current.innerHTML = data.html || "";
-      }
-      change("short_description", data.html || "");
-      setNotice(direction === "hi-en"
-        ? "Description translated into English. Please review before saving."
-        : "Description translated into Hindi. Please review before saving.");
-    } catch (error: any) {
-      setNotice(error.message || "Description translation failed.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const formatDescription = (command: string, value?: string) => {
     descriptionEditor.current?.focus();
 
@@ -723,37 +684,6 @@ export default function PostEditor({
                   background: "#fff",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    padding: 8,
-                    background: "#f8fafc",
-                    borderBottom: "1px solid #cbd5e1",
-                  }}
-                >
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => translateDescription("hi-en")}
-                    style={{ ...tableButton, background: "#176b45", padding: "7px 11px" }}
-                  >
-                    {busy ? "Translating..." : "Hindi → English"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => translateDescription("en-hi")}
-                    style={{ ...tableButton, background: "#245b9a", padding: "7px 11px" }}
-                  >
-                    {busy ? "Translating..." : "English → Hindi"}
-                  </button>
-                  <span style={{ alignSelf: "center", color: "#64748b", fontSize: 12 }}>
-                    Translate the complete description
-                  </span>
-                </div>
-
                 <div
                   role="toolbar"
                   aria-label="Description formatting"
