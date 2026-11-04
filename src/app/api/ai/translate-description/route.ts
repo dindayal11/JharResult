@@ -36,8 +36,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const sourceLanguage = direction === "hi-en" ? "Hindi" : "English";
-    const targetLanguage = direction === "hi-en" ? "English" : "Hindi";
+    const sourceLanguage = direction === "hi-en" ? "Hindi/Hinglish" : "English";
+    const targetLanguage = direction === "hi-en" ? "natural English" : "natural Hindi";
+    const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\\/$/, "");
+    const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
+    const model = process.env.AI_TRANSLATE_MODEL || (isGemini ? "gemini-2.5-flash" : process.env.AI_MODEL || "gpt-4o-mini");
     const response = await fetch(
       `${(process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`,
       {
@@ -48,12 +51,12 @@ export async function POST(req: Request) {
         },
         signal: AbortSignal.timeout(60000),
         body: JSON.stringify({
-          model: process.env.AI_MODEL || "gpt-4o-mini",
+          model,
           temperature: 0.2,
           messages: [
             {
               role: "system",
-              content: `Translate the supplied post description from ${sourceLanguage} to natural, clear ${targetLanguage}. Preserve the exact meaning, facts, dates, names, numbers, URLs and formatting. Do not add or remove information. The input may contain HTML: preserve its structure and tags, but do not add attributes, scripts, styles or links. Return only the translated HTML/content, with no markdown fences or explanation.`,
+              content: `Translate the supplied post description from ${sourceLanguage} to ${targetLanguage}. The source may be Hinglish written in Roman letters, Hindi in Devanagari, or a mixture of Hindi and English. Understand the intended meaning and translate the Hindi/Hinglish portions into fluent, natural English; do not simply copy Roman Hindi words. For English-to-Hindi, use natural, readable Hindi in Devanagari. Preserve the exact meaning, facts, dates, names, numbers, URLs and formatting. Do not add or remove information. The input may contain HTML: preserve its structure and tags, but do not add attributes, scripts, styles or links. Return only the translated HTML/content, with no markdown fences or explanation.`,
             },
             { role: "user", content: html },
           ],
