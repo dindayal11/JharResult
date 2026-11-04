@@ -3,7 +3,7 @@ import InfoPage, { InfoSection } from "@/components/InfoPage";
 export const metadata = {
   title: "About Us",
   description:
-    "Learn about JharResult, an information portal for Jharkhand jobs, results, admit cards and education updates.",
+    "JharResult is an independent information portal providing information about Jharkhand government jobs, recruitment notifications, results and educational updates.",
 };
 
 export default function AboutPage() {
@@ -14,45 +14,45 @@ export default function AboutPage() {
     >
       <InfoSection title="Welcome to JharResult">
         <p>
-          JharResult is an independent information portal focused on
-          Jharkhand government jobs, recruitment notifications, examination
-          results, admit cards, answer keys, admissions and educational
-          updates.
+          <strong>JharResult</strong> is an independent information portal
+          providing information regarding government jobs in Jharkhand along
+          with recruitment notifications, results, admit cards, answer keys,
+          admissions and educational news.
         </p>
         <p>
-          Our aim is to make important education and career-related
-          information easier to find and understand, especially for students
-          and job seekers in Jharkhand.
+          We strive to simplify the search for important information related
+          to <strong>education and careers</strong>.
         </p>
       </InfoSection>
 
-      <InfoSection title="What We Publish">
+      <InfoSection title="Information we provide">
         <ul>
-          <li>Jharkhand government and other recruitment updates.</li>
-          <li>Admit card and examination-related announcements.</li>
-          <li>Board, university and recruitment examination results.</li>
-          <li>Answer keys, syllabuses and previous question papers.</li>
-          <li>Admission, scholarship and education-related information.</li>
+          <li><strong>Government / Other Recruitment Notifications</strong></li>
+          <li><strong>Admit Card Announcements.</strong></li>
+          <li><strong>Board / University / Recruitment Examination Results.</strong></li>
+          <li><strong>Answer Keys / Syllabus / Previous Papers.</strong></li>
+          <li><strong>Admissions / Scholarships / Educational News.</strong></li>
         </ul>
       </InfoSection>
 
-      <InfoSection title="Our Approach">
+      <InfoSection title="How we do it">
         <p>
-          We aim to present information in a clear and organised format.
-          Wherever possible, we provide links to official notifications and
-          websites so that readers can verify the original information.
+          We aim to deliver information in a <strong>clear and concise</strong>{" "}
+          manner. Where possible we provide direct links to official
+          notifications / sites.
         </p>
         <p>
-          Readers should always check the official notice before submitting
-          an application, paying a fee or making an important decision.
+          You should always refer to the <strong>official notice</strong>{" "}
+          before applying, paying fees or making any important decisions.
         </p>
       </InfoSection>
 
-      <InfoSection title="Independent Information Portal">
+      <InfoSection title="Independent Informational Website">
         <p>
-          JharResult is an independent informational website. It is not a
-          government website and is not affiliated with any government
-          department, recruitment board, university or examination authority.
+          This is an <strong>independent information source</strong>. We are
+          <strong> not a government site</strong> and have no affiliation with
+          any Government Departments, Recruitment Boards, Universities or
+          Examining Bodies.
         </p>
       </InfoSection>
     </InfoPage>
