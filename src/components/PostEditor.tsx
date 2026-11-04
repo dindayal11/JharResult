@@ -147,156 +147,67 @@ function legacyToCustomTables(post: any): CustomTable[] {
 }
 
 
-function RichTextField({
-  value,
-  onChange,
-  placeholder,
-  minHeight = 90,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  minHeight?: number;
-}) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const savedRange = useRef<Range | null>(null);
 
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (editor && editor.innerHTML !== (value || "")) {
-      editor.innerHTML = value || "";
-    }
-  }, [value]);
+let activeRichEditor: HTMLDivElement | null = null;
+let activeRichRange: Range | null = null;
+let activeRichOnChange: ((value: string) => void) | null = null;
 
-  const rememberSelection = () => {
-    const selection = window.getSelection();
-    if (selection?.rangeCount && editorRef.current?.contains(selection.anchorNode)) {
-      savedRange.current = selection.getRangeAt(0).cloneRange();
-    }
-  };
-
-  const run = (command: string, commandValue?: string) => {
-    const editor = editorRef.current;
+function RichTextToolbar() {
+  const buttonStyle: React.CSSProperties = { border: "1px solid #cbd5e1", borderRadius: 5, padding: "7px 10px", background: "#fff", color: "#243247", cursor: "pointer", fontSize: 12, fontWeight: 650, whiteSpace: "nowrap" };
+  const apply = (command: string, value?: string) => {
+    const editor = activeRichEditor;
     if (!editor) return;
     editor.focus();
     const selection = window.getSelection();
-    if (savedRange.current && selection) {
-      selection.removeAllRanges();
-      selection.addRange(savedRange.current);
-    }
-    document.execCommand(command, false, commandValue);
-    onChange(editor.innerHTML);
-    rememberSelection();
+    if (activeRichRange && selection) { selection.removeAllRanges(); selection.addRange(activeRichRange); }
+    document.execCommand(command, false, value);
+    activeRichOnChange?.(editor.innerHTML);
+    const current = window.getSelection();
+    if (current?.rangeCount) activeRichRange = current.getRangeAt(0).cloneRange();
   };
-
-  const toolStyle: React.CSSProperties = {
-    border: "1px solid #cbd5e1",
-    borderRadius: 5,
-    padding: "6px 9px",
-    background: "#fff",
-    color: "#243247",
-    cursor: "pointer",
-    fontSize: 12,
-    fontWeight: 650,
-  };
-
-  const tool = (label: string, command: string, commandValue?: string) => (
-    <button
-      key={label}
-      type="button"
-      title={label}
-      onMouseDown={(event) => {
-        rememberSelection();
-        event.preventDefault();
-      }}
-      onClick={() => run(command, commandValue)}
-      style={toolStyle}
-    >
-      {label}
-    </button>
+  const button = (label: string, command: string, value?: string) => <button key={label} type="button" title={label} onMouseDown={(e) => e.preventDefault()} onClick={() => apply(command, value)} style={buttonStyle}>{label}</button>;
+  return (
+    <div role="toolbar" aria-label="Post content formatting" style={{ position: "sticky", top: 8, zIndex: 50, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, padding: 10, margin: "0 0 14px", border: "1px solid #cbd5e1", borderRadius: 9, background: "#f1f5f9", boxShadow: "0 3px 12px rgba(15,23,42,.12)" }}>
+      <span style={{ fontSize: 12, fontWeight: 750, color: "#475569", marginRight: 4 }}>FORMAT</span>
+      {button("B", "bold")}{button("I", "italic")}{button("U", "underline")}
+      {button("• Bullets", "insertUnorderedList")}{button("1. Numbering", "insertOrderedList")}
+      {button("H2", "formatBlock", "h2")}{button("H3", "formatBlock", "h3")}{button("Quote", "formatBlock", "blockquote")}
+      {button("Left", "justifyLeft")}{button("Center", "justifyCenter")}{button("Right", "justifyRight")}
+      <button type="button" style={buttonStyle} onMouseDown={(e) => e.preventDefault()} onClick={() => { const url = window.prompt("Enter link URL (https://...)"); if (url) apply("createLink", url); }}>Link</button>
+      {button("Clear", "removeFormat")}
+      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Text colour
+        <select aria-label="Text colour" defaultValue="#182638" onMouseDown={(e) => e.preventDefault()} onChange={(e) => apply("foreColor", e.target.value)} style={{ border: 0, background: "transparent", fontSize: 12, maxWidth: 86 }}>
+          <option value="#182638">Black</option><option value="#d32f2f">Red</option><option value="#1565c0">Blue</option><option value="#16804a">Green</option><option value="#7b1fa2">Purple</option><option value="#e87920">Orange</option>
+        </select>
+      </label>
+      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
+        <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={(e) => e.preventDefault()} onChange={(e) => apply("hiliteColor", e.target.value)} style={{ border: 0, background: "transparent", fontSize: 12, maxWidth: 86 }}>
+          <option value="#fff29a">Yellow</option><option value="#b7e1cd">Green</option><option value="#cfe2f3">Blue</option><option value="#f4cccc">Pink</option><option value="#eadcf8">Purple</option>
+        </select>
+      </label>
+    </div>
   );
+}
 
+function RichTextField({ value, onChange, placeholder, minHeight = 90 }: { value: string; onChange: (value: string) => void; placeholder?: string; minHeight?: number }) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (editor && editor.innerHTML !== (value || "")) editor.innerHTML = value || "";
+  }, [value]);
+  const rememberEditor = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    activeRichEditor = editor;
+    activeRichOnChange = (html) => onChangeRef.current(html);
+    const selection = window.getSelection();
+    if (selection?.rangeCount && editor.contains(selection.anchorNode)) activeRichRange = selection.getRangeAt(0).cloneRange();
+  };
   return (
     <div style={{ border: "1px solid #cbd5e1", borderRadius: 7, overflow: "hidden", background: "#fff" }}>
-      <div
-        role="toolbar"
-        aria-label="Text formatting"
-        onMouseDown={rememberSelection}
-        style={{ display: "flex", flexWrap: "wrap", gap: 5, padding: 7, background: "#edf3fa", borderBottom: "1px solid #dce3ec" }}
-      >
-        {tool("B", "bold")}
-        {tool("I", "italic")}
-        {tool("U", "underline")}
-        {tool("• Bullets", "insertUnorderedList")}
-        {tool("1. Numbering", "insertOrderedList")}
-        {tool("H2", "formatBlock", "h2")}
-        {tool("H3", "formatBlock", "h3")}
-        {tool("Quote", "formatBlock", "blockquote")}
-        {tool("← Align", "justifyLeft")}
-        {tool("↔ Center", "justifyCenter")}
-        {tool("Align →", "justifyRight")}
-        <button
-          type="button"
-          title="Insert link"
-          onMouseDown={(event) => {
-            rememberSelection();
-            event.preventDefault();
-          }}
-          onClick={() => {
-            const url = window.prompt("Enter the link URL (https://...)");
-            if (url) run("createLink", url);
-          }}
-          style={toolStyle}
-        >
-          Link
-        </button>
-        {tool("Clear", "removeFormat")}
-        <label style={{ ...toolStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
-          Text
-          <select
-            aria-label="Text colour"
-            defaultValue="#182638"
-            onMouseDown={rememberSelection}
-            onChange={(event) => run("foreColor", event.target.value)}
-            style={{ border: 0, background: "transparent", color: "#243247", fontSize: 12, maxWidth: 92 }}
-          >
-            <option value="#182638">Black</option>
-            <option value="#d32f2f">Red</option>
-            <option value="#1565c0">Blue</option>
-            <option value="#16804a">Green</option>
-            <option value="#7b1fa2">Purple</option>
-            <option value="#e87920">Orange</option>
-          </select>
-        </label>
-        <label style={{ ...toolStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
-          Highlight
-          <select
-            aria-label="Highlight colour"
-            defaultValue="#fff29a"
-            onMouseDown={rememberSelection}
-            onChange={(event) => run("hiliteColor", event.target.value)}
-            style={{ border: 0, background: "transparent", color: "#243247", fontSize: 12, maxWidth: 92 }}
-          >
-            <option value="#fff29a">Yellow</option>
-            <option value="#b7e1cd">Green</option>
-            <option value="#cfe2f3">Blue</option>
-            <option value="#f4cccc">Pink</option>
-            <option value="#eadcf8">Purple</option>
-          </select>
-        </label>
-      </div>
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        data-placeholder={placeholder || "Write here..."}
-        onInput={(event) => onChange(event.currentTarget.innerHTML)}
-        onMouseUp={rememberSelection}
-        onKeyUp={rememberSelection}
-        style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }}
-      />
+      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder || "Write here..."} onFocus={rememberEditor} onClick={rememberEditor} onInput={(e) => { rememberEditor(); onChangeRef.current(e.currentTarget.innerHTML); }} onMouseUp={rememberEditor} onKeyUp={rememberEditor} style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }} />
     </div>
   );
 }
@@ -795,6 +706,7 @@ export default function PostEditor({
 
       {mode === "manual" && (
         <form onSubmit={save}>
+          <RichTextToolbar />
           <section style={sectionStyle}>
             <div style={{ padding: 18 }}>
               <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>
