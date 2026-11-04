@@ -138,10 +138,10 @@ function CustomTable({ table }: { table: any }) {
 
         // Detect a URL/email from the cell content, regardless of its heading.
         // Also support Markdown-style links pasted into a table cell.
-        const markdownLink = value.match(/^\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)$/i);
+        const markdownLink = value.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);
         const candidate = markdownLink ? markdownLink[2] : value;
-        const isEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(candidate);
-        const isWebsite = /^https?:\\/\\/\\S+$/i.test(candidate);
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate);
+        const isWebsite = /^https?:\/\/\S+$/i.test(candidate);
         const href = isEmail
           ? `mailto:${candidate}`
           : isWebsite
