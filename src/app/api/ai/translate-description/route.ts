@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
     const sourceLanguage = direction === "hi-en" ? "Hindi/Hinglish" : "English";
     const targetLanguage = direction === "hi-en" ? "natural English" : "natural Hindi";
-    const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\\/$/, "");
+    const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
     const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
     const model = process.env.AI_TRANSLATE_MODEL || (isGemini ? "gemini-2.5-flash" : process.env.AI_MODEL || "gpt-4o-mini");
     const response = await fetch(
