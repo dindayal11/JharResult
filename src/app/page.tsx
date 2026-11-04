@@ -164,7 +164,7 @@ export default async function Home() {
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(220px, 1fr)", gap: 18, alignItems: "start" }}>
+        <div className="home-main" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 18, alignItems: "start" }}>
           <div>
             {populatedGroups.length > 0 ? (
               <div className="home-category-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 16 }}>
