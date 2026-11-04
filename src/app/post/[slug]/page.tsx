@@ -207,7 +207,7 @@ function TextSection({
   return (
     <section
       className="detail-section"
-      style={{ borderColor: primary }}
+      style={{ borderColor: primary, gridColumn: "1 / -1" }}
     >
       <h2 style={{ background: primary, color: "#fff" }}>
         {title}
