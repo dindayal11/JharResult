@@ -203,7 +203,7 @@ export default async function Home() {
         .verified { color:#197348; font-size:10px; font-weight:700; }
         .ticker-track:hover { animation-play-state: paused !important; }
         @media(max-width:900px) { .home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
-        @media(max-width:600px) { .home-category-grid { grid-template-columns:1fr !important; } }
+        @media(max-width:600px) { .home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; } }
       `}</style>
     </>
   );
