@@ -11,8 +11,9 @@ a:hover{color:#c96b0c}
 .container{width:min(1120px,calc(100% - 32px));margin-inline:auto}
 .topbar{background:var(--navy);color:#eaf1fa;font-size:12px;padding:8px 0;letter-spacing:.15px}
 .header{background:#fff;border-bottom:3px solid var(--orange);box-shadow:0 2px 8px rgba(16,35,60,.06)}
-.brand{display:inline-block;font-size:30px;line-height:1.15;font-weight:900;letter-spacing:-1px;color:var(--navy)}
+.brand{display:inline-block;font-size:40px;line-height:1.1;font-weight:900;letter-spacing:-1.2px;color:var(--navy)}
 .brand span{color:var(--orange)}
+.header .muted{font-size:14px;font-weight:600;letter-spacing:.25px;color:#52657c}
 .nav{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:13px 0 2px;font-size:13px;font-weight:700}
 .nav>a,.nav-more summary{display:block;padding:9px 13px;border-radius:4px;color:#263b54;cursor:pointer;list-style:none}
 .nav>a:first-child{background:var(--orange);color:#fff}
@@ -103,7 +104,7 @@ a:hover{color:#c96b0c}
 }
 @media(max-width:640px){
  .container{width:calc(100% - 22px)}
- .brand{font-size:25px}
+ .brand{font-size:32px}
  .nav{gap:2px;font-size:12px;padding-top:10px}
  .nav>a,.nav-more summary{padding:8px 9px}
  .nav-more{position:static}
