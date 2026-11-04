@@ -65,15 +65,6 @@ export default async function Home() {
   const shouldAnimateTicker = latest.length > 0;
   const tickerItems = shouldAnimateTicker ? [...latest, ...latest] : [];
 
-  const quickLinks = [
-    { label: "Jharkhand Latest Jobs", href: "/category/latest-jobs" },
-    { label: "JAC Board Updates", href: "/category/board" },
-    { label: "Admit Cards", href: "/category/admit-card" },
-    { label: "Answer Keys", href: "/category/answer-key" },
-    { label: "Scholarships", href: "/category/scholarships" },
-    { label: "Previous Papers", href: "/previous-year-papers" },
-  ];
-
   return (
     <>
       <SiteHeader />
@@ -198,27 +189,6 @@ export default async function Home() {
             )}
           </div>
 
-          <aside style={{ display: "grid", gap: 16 }}>
-            <section className="panel" style={{ borderRadius: 4, padding: 0, overflow: "hidden" }}>
-              <h2 style={{ margin: 0, padding: "11px 14px", background: "#173f68", color: "#fff", fontSize: 18 }}>Important Links</h2>
-              <div style={{ padding: "8px 14px" }}>
-                {quickLinks.map((link) => (
-                  <div key={link.href} style={{ padding: "9px 0", borderBottom: "1px solid #edf0f4", color: "#174b80", fontWeight: 700, fontSize: 14 }}>
-                    <a href={link.href}>› {link.label}</a>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {latest.length > 0 && (
-              <section className="panel" style={{ borderRadius: 4, padding: 0, overflow: "hidden" }}>
-                <h2 style={{ margin: 0, padding: "11px 14px", background: "#173f68", color: "#fff", fontSize: 18 }}>Latest Updates</h2>
-                <div style={{ padding: "4px 14px" }}>
-                  {latest.slice(0, 8).map((post) => <PostCard key={post.id} post={post} />)}
-                </div>
-              </section>
-            )}
-          </aside>
         </div>
       </main>
 
