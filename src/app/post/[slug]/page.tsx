@@ -136,20 +136,18 @@ function CustomTable({ table }: { table: any }) {
       {columns.map((column: string, colIndex: number) => {
         const value = String(row[colIndex] ?? "").trim();
 
-        const isLinkColumn =
-          /url|link|website|email/i.test(column);
-
-        const isEmail =
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-        const isWebsite =
-          /^https?:\/\/\S+$/i.test(value);
-
+        // Detect a URL/email from the cell content, regardless of its heading.
+        // Also support Markdown-style links pasted into a table cell.
+        const markdownLink = value.match(/^\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)$/i);
+        const candidate = markdownLink ? markdownLink[2] : value;
+        const isEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(candidate);
+        const isWebsite = /^https?:\\/\\/\\S+$/i.test(candidate);
         const href = isEmail
-          ? `mailto:${value}`
+          ? `mailto:${candidate}`
           : isWebsite
-            ? value
+            ? candidate
             : "";
+        const linkLabel = markdownLink?.[1] || "Click Here ↗";
 
         return (
           <td
@@ -161,7 +159,7 @@ function CustomTable({ table }: { table: any }) {
               whiteSpace: "pre-wrap",
             }}
           >
-            {isLinkColumn && href ? (
+            {href ? (
               <a
                 href={href}
                 target={isEmail ? undefined : "_blank"}
@@ -172,7 +170,7 @@ function CustomTable({ table }: { table: any }) {
                   textDecoration: "underline",
                 }}
               >
-                Click Here ↗
+                {linkLabel}
               </a>
             ) : (
               value || "—"
