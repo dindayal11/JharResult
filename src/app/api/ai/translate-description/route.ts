@@ -41,34 +41,54 @@ export async function POST(req: Request) {
     const baseUrl = (process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "");
     const isGemini = baseUrl.includes("generativelanguage.googleapis.com");
     const model = process.env.AI_TRANSLATE_MODEL || (isGemini ? "gemini-3.8-flash" : process.env.AI_MODEL || "gpt-4o-mini");
-    const response = await fetch(
-      `${(process.env.AI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`,
-      {
+    const endpoint = `${baseUrl}/chat/completions`;
+    const requestBody = JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: `Translate the supplied post description from ${sourceLanguage} to ${targetLanguage}. The source may be Hinglish written in Roman letters, Hindi in Devanagari, or a mixture of Hindi and English. Understand the intended meaning and translate the Hindi/Hinglish portions into fluent, natural English; do not simply copy Roman Hindi words. For English-to-Hindi, use natural, readable Hindi in Devanagari. Preserve the exact meaning, facts, dates, names, numbers, URLs and formatting. Do not add or remove information. The input may contain HTML: preserve its structure and tags, but do not add attributes, scripts, styles or links. Return only the translated HTML/content, with no markdown fences or explanation.`,
+        },
+        { role: "user", content: html },
+      ],
+    });
+
+    // Retry temporary Gemini/provider overloads automatically.
+    let response: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.AI_API_KEY}`,
         },
         signal: AbortSignal.timeout(60000),
-        body: JSON.stringify({
-          model,
-          temperature: 0.2,
-          messages: [
-            {
-              role: "system",
-              content: `Translate the supplied post description from ${sourceLanguage} to ${targetLanguage}. The source may be Hinglish written in Roman letters, Hindi in Devanagari, or a mixture of Hindi and English. Understand the intended meaning and translate the Hindi/Hinglish portions into fluent, natural English; do not simply copy Roman Hindi words. For English-to-Hindi, use natural, readable Hindi in Devanagari. Preserve the exact meaning, facts, dates, names, numbers, URLs and formatting. Do not add or remove information. The input may contain HTML: preserve its structure and tags, but do not add attributes, scripts, styles or links. Return only the translated HTML/content, with no markdown fences or explanation.`,
-            },
-            { role: "user", content: html },
-          ],
-        }),
+        body: requestBody,
+      });
+
+      if (response.ok || ![429, 500, 502, 503, 504].includes(response.status) || attempt === 2) {
+        break;
       }
-    );
+
+      // Short backoff: 1.2s, then 2.4s.
+      await new Promise((resolve) => setTimeout(resolve, 1200 * (attempt + 1)));
+    }
+
+    if (!response) {
+      return NextResponse.json(
+        { error: "Translation provider did not respond. Please try again." },
+        { status: 502 }
+      );
+    }
 
     if (!response.ok) {
       const detail = (await response.text()).slice(0, 500);
       console.error("Description translation provider error:", response.status, detail);
       return NextResponse.json(
-        { error: `Translation provider error (${response.status}). Check AI provider key, model, quota and base URL.` },
+        { error: response.status === 503 || response.status === 429
+          ? "Gemini is temporarily busy or rate-limited. Please wait a moment and try translating again."
+          : `Translation provider error (${response.status}). Check AI provider key, model, quota and base URL.` },
         { status: 502 }
       );
     }
