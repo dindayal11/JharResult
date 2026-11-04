@@ -169,7 +169,7 @@ function RichTextToolbar() {
   return (
     <div role="toolbar" aria-label="Post content formatting" style={{ position: "sticky", top: 8, zIndex: 50, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, padding: 10, margin: "0 0 14px", border: "1px solid #cbd5e1", borderRadius: 9, background: "#f1f5f9", boxShadow: "0 3px 12px rgba(15,23,42,.12)" }}>
       <span style={{ fontSize: 12, fontWeight: 750, color: "#475569", marginRight: 4 }}>FORMAT</span>
-      {button("B", "bold")}{button("I", "italic")}{button("U", "underline")}
+      {button("B", "bold")}{button("I", "italic")}{button("U̲ Underline", "underline")}{button("S̶ Strikethrough", "strikeThrough")}
       {button("• Bullets", "insertUnorderedList")}{button("1. Numbering", "insertOrderedList")}
       {button("H2", "formatBlock", "h2")}{button("H3", "formatBlock", "h3")}{button("Quote", "formatBlock", "blockquote")}
       {button("Left", "justifyLeft")}{button("Center", "justifyCenter")}{button("Right", "justifyRight")}
