@@ -159,18 +159,24 @@ function CustomTable({ table }: { table: any }) {
               whiteSpace: "pre-wrap",
             }}
           >
-            {href ? (
+            {/<[a-z][\\s\\S]*>/i.test(value) ? (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(value, {
+                    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+                    ALLOWED_ATTR: ["style", "href", "target", "rel"],
+                    ALLOW_DATA_ATTR: false,
+                  }),
+                }}
+              />
+            ) : href ? (
               <a
                 href={href}
                 target={isEmail ? undefined : "_blank"}
                 rel={isEmail ? undefined : "noopener noreferrer"}
-                style={{
-                  color: "#145da0",
-                  fontWeight: 600,
-                  textDecoration: "underline",
-                }}
+                style={{ color: "#145da0", fontWeight: 600, textDecoration: "underline" }}
               >
-                {linkLabel}
+                Click Here ↗
               </a>
             ) : (
               value || "—"
@@ -207,14 +213,16 @@ function TextSection({
         {title}
       </h2>
 
-      <p
-        style={{
-          whiteSpace: "pre-wrap",
-          padding: "0 12px 12px",
+      <div
+        style={{ padding: "0 12px 12px", lineHeight: 1.7, overflowWrap: "anywhere" }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(String(value), {
+            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+            ALLOWED_ATTR: ["style", "href", "target", "rel"],
+            ALLOW_DATA_ATTR: false,
+          }),
         }}
-      >
-        {String(value)}
-      </p>
+      />
     </section>
   );
 }
