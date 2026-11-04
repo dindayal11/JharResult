@@ -56,9 +56,10 @@ export default async function Home() {
       ...category,
       items: posts
         .filter((post) => post.category_slug === category.slug)
-        .slice(0, 8),
+        .slice(0, 15),
     }))
-    .filter((group) => group.items.length > 0);
+    .filter((group) => group.items.length > 0)
+    .slice(0, 6);
 
   const latest = posts.slice(0, 10);
   // Always duplicate the ticker sequence so even one newly published post slides.
@@ -166,7 +167,7 @@ export default async function Home() {
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(220px, 1fr)", gap: 18, alignItems: "start" }}>
           <div>
             {populatedGroups.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 290px), 1fr))", gap: 16 }}>
+              <div className="home-category-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 16 }}>
                 {populatedGroups.map((group) => (
                   <section className="panel" key={group.slug} style={{ borderRadius: 4, padding: 0, overflow: "hidden" }}>
                     <h2 style={{ margin: 0, padding: "11px 14px", background: "#173f68", color: "#fff", fontSize: 18 }}>
@@ -201,7 +202,8 @@ export default async function Home() {
         .update-meta { color:#748093; font-size:11px; margin-top:4px; }
         .verified { color:#197348; font-size:10px; font-weight:700; }
         .ticker-track:hover { animation-play-state: paused !important; }
-        @media(max-width:720px) { .home-main > div { grid-template-columns:1fr !important; } }
+        @media(max-width:900px) { .home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
+        @media(max-width:600px) { .home-category-grid { grid-template-columns:1fr !important; } }
       `}</style>
     </>
   );
