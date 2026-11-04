@@ -45,7 +45,7 @@ export default async function SiteHeader() {
           </a>
 
           <div className="muted" style={{ marginTop: 4 }}>
-            Jharkhand Career & Education Update Portal
+            Connecting Jharkhand to Every Opportunity
           </div>
 
           <ResponsiveNav primary={primary} more={more} />
