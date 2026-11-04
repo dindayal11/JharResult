@@ -3,55 +3,52 @@ import InfoPage, { InfoSection } from "@/components/InfoPage";
 export const metadata = {
   title: "Contact Us",
   description:
-    "Contact JharResult for feedback, corrections, suggestions and website-related queries.",
+    "Contact JharResult for information queries, corrections, suggestions, copyright concerns and website-related inquiries.",
 };
 
 export default function ContactPage() {
   return (
     <InfoPage
       title="Contact Us"
-      description="We welcome your feedback, suggestions and correction requests."
+      description="We love hearing from you."
     >
-      <InfoSection title="Get in Touch">
+      <InfoSection title="Get in touch">
         <p>
-          If you have a question about the information published on
-          JharResult, notice a factual error, or want to share a suggestion
-          about the website, you can contact our team.
+          Please get in touch if you have any queries regarding information on
+          <strong> JharResult</strong>. If you notice any factual errors, or
+          have any suggestions regarding the site please get in touch.
         </p>
       </InfoSection>
 
-      <InfoSection title="For These Queries">
+      <InfoSection title="Queries">
         <ul>
-          <li>Report incorrect or outdated information.</li>
-          <li>Report a broken official notification link.</li>
-          <li>Share suggestions about website content or usability.</li>
-          <li>Ask questions about website-related matters.</li>
-          <li>Report a copyright or content concern.</li>
+          <li><strong>Incorrect or outdated information</strong></li>
+          <li><strong>A broken official notification link</strong></li>
+          <li><strong>Suggestions regarding content or usability of the site</strong></li>
+          <li><strong>Inquiries regarding the site</strong></li>
+          <li><strong>Copyright or content concerns</strong></li>
         </ul>
       </InfoSection>
 
       <InfoSection title="Email">
+        <p>Please contact us via email:</p>
         <p>
-          For contact, please email us at:
-        </p>
-
-        <p>
-          <strong style={{ color: "#173f70" }}>
-            dindayal8456@gmail.com
+          <strong>
+            <a href="mailto:dindayal8456@gmail.com">dindayal8456@gmail.com</a>
           </strong>
         </p>
-
-        <p style={{ color: "#64748b", fontSize: 13 }}>
-          Website owner: dindayal8456@gmail.com
+        <p>
+          <strong>Website owner:</strong>{" "}
+          <a href="mailto:dindayal8456@gmail.com">dindayal8456@gmail.com</a>
         </p>
       </InfoSection>
 
-      <InfoSection title="Important Note">
+      <InfoSection title="Important">
         <p>
-          JharResult is an independent information portal. For application
-          status, examination schedules, admit card issues, fee refunds or
-          recruitment-related grievances, please contact the concerned
-          official department or examination authority directly.
+          <strong>JharResult is an independent information site.</strong>{" "}
+          Please get in touch with the relevant official department/examination
+          body regarding any issues with your application, exam dates, admit
+          card, refund of fees and recruitment related concerns.
         </p>
       </InfoSection>
     </InfoPage>
