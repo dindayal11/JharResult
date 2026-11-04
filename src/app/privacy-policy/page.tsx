@@ -3,104 +3,109 @@ import InfoPage, { InfoSection } from "@/components/InfoPage";
 export const metadata = {
   title: "Privacy Policy",
   description:
-    "Read the JharResult Privacy Policy and understand how website information and user data are handled.",
+    "Read the JharResult Privacy Policy to understand what information may be collected and how it may be used.",
 };
 
 export default function PrivacyPolicyPage() {
   return (
     <InfoPage
       title="Privacy Policy"
-      description="This page explains our approach to privacy and information."
+      description=""
     >
-      <p>
-        Your privacy is important to us. This Privacy Policy explains what
-        information may be collected when you visit JharResult and how that
-        information may be used.
-      </p>
-
-      <InfoSection title="1. Information We Collect">
+      <InfoSection title="Introduction">
         <p>
-          When you visit the website, certain technical information may be
-          collected automatically by the hosting server or service providers.
-          This may include browser type, device information, IP address,
-          pages visited and access time.
-        </p>
-        <p>
-          If you contact us by email, we may receive your email address and
-          the information you choose to include in your message.
+          We value your <strong>privacy</strong>. This Privacy Policy describes
+          what information we may collect about you when you visit the
+          <strong> JharResult website</strong>.
         </p>
       </InfoSection>
 
-      <InfoSection title="2. How We Use Information">
-        <p>Information may be used to:</p>
+      <InfoSection title="Information Collected">
+        <p>
+          When visiting the site some technical information may be
+          automatically recorded by our hosting server and/or service
+          providers. This information may include your <strong>web browser
+          type, device information, IP Address, Web Pages viewed and time of
+          access</strong>.
+        </p>
+        <p>
+          If you contact us via email, we may collect your <strong>email
+          address</strong> and any information you wish to include in your
+          message.
+        </p>
+      </InfoSection>
+
+      <InfoSection title="Use of Information">
+        <p>The information may be used to:</p>
         <ul>
-          <li>Maintain and operate the website.</li>
-          <li>Improve website performance and user experience.</li>
-          <li>Respond to questions and correction requests.</li>
-          <li>Protect the website against spam, misuse and security threats.</li>
-          <li>Understand general website traffic and usage.</li>
+          <li>Ensure the proper functioning of the website</li>
+          <li>Improve our website</li>
+          <li>Answer your questions and make corrections.</li>
+          <li>Prevent spam, abuse and potential security issues with the website.</li>
+          <li>Gain a general understanding of how our website is being used.</li>
         </ul>
       </InfoSection>
 
-      <InfoSection title="3. Cookies">
+      <InfoSection title="Cookies">
         <p>
-          JharResult or its service providers may use cookies or similar
-          technologies for website functionality, preferences, analytics or
-          advertising, where enabled.
+          JharResult or our service providers may use <strong>cookies or
+          similar technology</strong> to ensure our website functions
+          correctly, to understand your preferences, to analyse our website
+          or for advertising purposes.
         </p>
         <p>
-          You can manage or disable cookies through your browser settings.
-          Some website features may not work as expected if cookies are
-          disabled.
-        </p>
-      </InfoSection>
-
-      <InfoSection title="4. Third-Party Services and Links">
-        <p>
-          Our website may contain links to official government websites,
-          examination portals, advertisers and other third-party services.
-          Those websites have their own privacy policies and practices.
-          We are not responsible for their content or privacy practices.
+          You can adjust or turn off cookies through your browser settings.
+          If you choose to turn cookies off some features may not function
+          as expected.
         </p>
       </InfoSection>
 
-      <InfoSection title="5. Advertising">
+      <InfoSection title="Links to other websites">
         <p>
-          If advertising services such as Google AdSense are used, those
-          services may use cookies or similar technologies to display,
-          measure or personalise advertisements, subject to their own
-          policies and applicable settings.
+          Our website may contain links to official government sites,
+          examination sites, advertisers and other third party services.
+          These websites will have their own privacy policies in place.
+          We cannot be held responsible for the content or privacy of these
+          sites.
         </p>
       </InfoSection>
 
-      <InfoSection title="6. Data Security">
+      <InfoSection title="Advertising">
         <p>
-          We take reasonable steps to protect information handled through
-          the website. However, no method of transmission or electronic
-          storage can be guaranteed to be completely secure.
+          If we are using advertising services such as <strong>Google
+          AdSense</strong>, they may use cookies or similar technology to
+          show adverts, analyse them or personalise them.
         </p>
       </InfoSection>
 
-      <InfoSection title="7. Children's Privacy">
+      <InfoSection title="Data Protection">
         <p>
-          JharResult is an informational website and is not intended to
+          We make every effort to ensure your information is safe however
+          there is no guarantee that information transmitted or stored
+          electronically can be <strong>100% secure</strong>.
+        </p>
+      </InfoSection>
+
+      <InfoSection title="Children's Privacy">
+        <p>
+          JharResult is an information website and is not intended to
           knowingly collect personal information from children through
-          dedicated child accounts.
+          specific child accounts.
         </p>
       </InfoSection>
 
-      <InfoSection title="8. Changes to This Policy">
+      <InfoSection title="Policy Updates">
         <p>
-          We may update this Privacy Policy when website features, services
-          or legal requirements change. Updated information will be
-          published on this page.
+          We reserve the right to update this Privacy Policy. We will
+          publish any new information on this page.
         </p>
       </InfoSection>
 
-      <InfoSection title="9. Contact">
+      <InfoSection title="Contact Us">
         <p>
-          For privacy-related questions, contact us using the details on
-          our Contact Us page.
+          If you have any questions regarding our privacy policy please
+          contact us using the details on our <strong>Contact Us</strong>{" "}
+          page.
         </p>
       </InfoSection>
     </InfoPage>
