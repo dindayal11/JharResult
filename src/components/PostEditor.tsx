@@ -152,36 +152,74 @@ let activeRichEditor: HTMLDivElement | null = null;
 let activeRichRange: Range | null = null;
 let activeRichOnChange: ((value: string) => void) | null = null;
 
+
 function RichTextToolbar() {
   const buttonStyle: React.CSSProperties = { border: "1px solid #cbd5e1", borderRadius: 5, padding: "7px 10px", background: "#fff", color: "#243247", cursor: "pointer", fontSize: 12, fontWeight: 650, whiteSpace: "nowrap" };
+
+  const saveSelection = () => {
+    const editor = activeRichEditor;
+    const selection = window.getSelection();
+    if (editor && selection?.rangeCount) {
+      const range = selection.getRangeAt(0);
+      if (editor.contains(range.commonAncestorContainer)) {
+        activeRichRange = range.cloneRange();
+      }
+    }
+  };
+
   const apply = (command: string, value?: string) => {
     const editor = activeRichEditor;
     if (!editor) return;
     editor.focus();
     const selection = window.getSelection();
-    if (activeRichRange && selection) { selection.removeAllRanges(); selection.addRange(activeRichRange); }
-    document.execCommand(command, false, value);
+    if (selection && activeRichRange) {
+      selection.removeAllRanges();
+      selection.addRange(activeRichRange);
+    }
+    // Chrome-based browsers support hiliteColor; backColor is a fallback.
+    let applied = document.execCommand(command, false, value);
+    if (!applied && command === "hiliteColor") {
+      applied = document.execCommand("backColor", false, value);
+    }
     activeRichOnChange?.(editor.innerHTML);
-    const current = window.getSelection();
-    if (current?.rangeCount) activeRichRange = current.getRangeAt(0).cloneRange();
+    saveSelection();
   };
-  const button = (label: string, command: string, value?: string) => <button key={label} type="button" title={label} onMouseDown={(e) => e.preventDefault()} onClick={() => apply(command, value)} style={buttonStyle}>{label}</button>;
+
+  const button = (label: string, command: string, value?: string) => (
+    <button key={label} type="button" title={label}
+      onMouseDown={(event) => { event.preventDefault(); saveSelection(); }}
+      onClick={() => apply(command, value)} style={buttonStyle}>
+      {label}
+    </button>
+  );
+
+  const selectStyle: React.CSSProperties = { border: 0, background: "transparent", fontSize: 12, maxWidth: 86, color: "#243247" };
+  const saveBeforePicker = () => saveSelection();
+
   return (
     <div role="toolbar" aria-label="Post content formatting" style={{ position: "sticky", top: 8, zIndex: 50, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, padding: 10, margin: "0 0 14px", border: "1px solid #cbd5e1", borderRadius: 9, background: "#f1f5f9", boxShadow: "0 3px 12px rgba(15,23,42,.12)" }}>
       <span style={{ fontSize: 12, fontWeight: 750, color: "#475569", marginRight: 4 }}>FORMAT</span>
-      {button("B", "bold")}{button("I", "italic")}{button("U̲ Underline", "underline")}{button("S̶ Strikethrough", "strikeThrough")}
-      {button("• Bullets", "insertUnorderedList")}{button("1. Numbering", "insertOrderedList")}
-      {button("H2", "formatBlock", "h2")}{button("H3", "formatBlock", "h3")}{button("Quote", "formatBlock", "blockquote")}
-      {button("Left", "justifyLeft")}{button("Center", "justifyCenter")}{button("Right", "justifyRight")}
-      <button type="button" style={buttonStyle} onMouseDown={(e) => e.preventDefault()} onClick={() => { const url = window.prompt("Enter link URL (https://...)"); if (url) apply("createLink", url); }}>Link</button>
+      {button("B", "bold")}
+      {button("I", "italic")}
+      {button("U̲ Underline", "underline")}
+      {button("S̶ Strikethrough", "strikeThrough")}
+      {button("• Bullets", "insertUnorderedList")}
+      {button("1. Numbering", "insertOrderedList")}
+      {button("H2", "formatBlock", "<h2>")}
+      {button("H3", "formatBlock", "<h3>")}
+      {button("Quote", "formatBlock", "<blockquote>")}
+      {button("Left", "justifyLeft")}
+      {button("Center", "justifyCenter")}
+      {button("Right", "justifyRight")}
+      <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => { const url = window.prompt("Enter link URL (https://...)"); if (url) apply("createLink", url); }}>Link</button>
       {button("Clear", "removeFormat")}
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Text colour
-        <select aria-label="Text colour" defaultValue="#182638" onMouseDown={(e) => e.preventDefault()} onChange={(e) => apply("foreColor", e.target.value)} style={{ border: 0, background: "transparent", fontSize: 12, maxWidth: 86 }}>
+        <select aria-label="Text colour" defaultValue="#182638" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("foreColor", event.target.value)} style={selectStyle}>
           <option value="#182638">Black</option><option value="#d32f2f">Red</option><option value="#1565c0">Blue</option><option value="#16804a">Green</option><option value="#7b1fa2">Purple</option><option value="#e87920">Orange</option>
         </select>
       </label>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
-        <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={(e) => e.preventDefault()} onChange={(e) => apply("hiliteColor", e.target.value)} style={{ border: 0, background: "transparent", fontSize: 12, maxWidth: 86 }}>
+        <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("hiliteColor", event.target.value)} style={selectStyle}>
           <option value="#fff29a">Yellow</option><option value="#b7e1cd">Green</option><option value="#cfe2f3">Blue</option><option value="#f4cccc">Pink</option><option value="#eadcf8">Purple</option>
         </select>
       </label>
