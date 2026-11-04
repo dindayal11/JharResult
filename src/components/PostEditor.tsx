@@ -146,6 +146,147 @@ function legacyToCustomTables(post: any): CustomTable[] {
   return result;
 }
 
+
+function RichTextField({
+  value,
+  onChange,
+  placeholder,
+  minHeight = 90,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  minHeight?: number;
+}) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const savedRange = useRef<Range | null>(null);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (editor && editor.innerHTML !== (value || "")) {
+      editor.innerHTML = value || "";
+    }
+  }, [value]);
+
+  const rememberSelection = () => {
+    const selection = window.getSelection();
+    if (selection?.rangeCount && editorRef.current?.contains(selection.anchorNode)) {
+      savedRange.current = selection.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const run = (command: string, commandValue?: string) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+    const selection = window.getSelection();
+    if (savedRange.current && selection) {
+      selection.removeAllRanges();
+      selection.addRange(savedRange.current);
+    }
+    document.execCommand(command, false, commandValue);
+    onChange(editor.innerHTML);
+    rememberSelection();
+  };
+
+  const toolStyle: React.CSSProperties = {
+    border: "1px solid #cbd5e1",
+    borderRadius: 5,
+    padding: "6px 9px",
+    background: "#fff",
+    color: "#243247",
+    cursor: "pointer",
+    fontSize: 12,
+    fontWeight: 650,
+  };
+
+  const tool = (label: string, command: string, commandValue?: string) => (
+    <button
+      key={label}
+      type="button"
+      title={label}
+      onMouseDown={(event) => {
+        rememberSelection();
+        event.preventDefault();
+      }}
+      onClick={() => run(command, commandValue)}
+      style={toolStyle}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <div style={{ border: "1px solid #cbd5e1", borderRadius: 7, overflow: "hidden", background: "#fff" }}>
+      <div
+        role="toolbar"
+        aria-label="Text formatting"
+        onMouseDown={rememberSelection}
+        style={{ display: "flex", flexWrap: "wrap", gap: 5, padding: 7, background: "#edf3fa", borderBottom: "1px solid #dce3ec" }}
+      >
+        {tool("B", "bold")}
+        {tool("I", "italic")}
+        {tool("U", "underline")}
+        {tool("• Bullets", "insertUnorderedList")}
+        {tool("1. Numbering", "insertOrderedList")}
+        {tool("H2", "formatBlock", "h2")}
+        {tool("H3", "formatBlock", "h3")}
+        {tool("Quote", "formatBlock", "blockquote")}
+        {tool("← Align", "justifyLeft")}
+        {tool("↔ Center", "justifyCenter")}
+        {tool("Align →", "justifyRight")}
+        {tool("Link", "createLink", window.prompt ? "https://" : undefined)}
+        {tool("Clear", "removeFormat")}
+        <label style={{ ...toolStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          Text
+          <select
+            aria-label="Text colour"
+            defaultValue="#182638"
+            onMouseDown={rememberSelection}
+            onChange={(event) => run("foreColor", event.target.value)}
+            style={{ border: 0, background: "transparent", color: "#243247", fontSize: 12, maxWidth: 92 }}
+          >
+            <option value="#182638">Black</option>
+            <option value="#d32f2f">Red</option>
+            <option value="#1565c0">Blue</option>
+            <option value="#16804a">Green</option>
+            <option value="#7b1fa2">Purple</option>
+            <option value="#e87920">Orange</option>
+          </select>
+        </label>
+        <label style={{ ...toolStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          Highlight
+          <select
+            aria-label="Highlight colour"
+            defaultValue="#fff29a"
+            onMouseDown={rememberSelection}
+            onChange={(event) => run("hiliteColor", event.target.value)}
+            style={{ border: 0, background: "transparent", color: "#243247", fontSize: 12, maxWidth: 92 }}
+          >
+            <option value="#fff29a">Yellow</option>
+            <option value="#b7e1cd">Green</option>
+            <option value="#cfe2f3">Blue</option>
+            <option value="#f4cccc">Pink</option>
+            <option value="#eadcf8">Purple</option>
+          </select>
+        </label>
+      </div>
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        data-placeholder={placeholder || "Write here..."}
+        onInput={(event) => onChange(event.currentTarget.innerHTML)}
+        onMouseUp={rememberSelection}
+        onKeyUp={rememberSelection}
+        style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }}
+      />
+    </div>
+  );
+}
+
 export default function PostEditor({
   categories,
   post,
@@ -673,141 +814,13 @@ export default function PostEditor({
               </select>
 
               {/* POST DESCRIPTION EDITOR */}
-
               <label style={labelStyle}>Post Description</label>
-
-              <div
-                style={{
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  background: "#fff",
-                }}
-              >
-                <div
-                  role="toolbar"
-                  aria-label="Description formatting"
-                  style={{
-                    display: "flex",
-                    gap: 6,
-                    flexWrap: "wrap",
-                    padding: 8,
-                    background: "#edf3fa",
-                    borderBottom: "1px solid #cbd5e1",
-                  }}
-                >
-                  <button
-                    type="button"
-                    title="Bold"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => formatDescription("bold")}
-                    style={{
-                      ...tableButton,
-                      minWidth: 38,
-                      padding: "7px 11px",
-                      fontWeight: 900,
-                    }}
-                  >
-                    B
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Highlight"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                      formatDescription("hiliteColor", "#fff29a")
-                    }
-                    style={{
-                      ...tableButton,
-                      padding: "7px 11px",
-                      background: "#f2d94e",
-                      color: "#263238",
-                    }}
-                  >
-                    Highlight
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Bullet list"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                      formatDescription("insertUnorderedList")
-                    }
-                    style={{
-                      ...tableButton,
-                      padding: "7px 11px",
-                    }}
-                  >
-                    • Bullet List
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Numbered list"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                      formatDescription("insertOrderedList")
-                    }
-                    style={{
-                      ...tableButton,
-                      padding: "7px 11px",
-                    }}
-                  >
-                    1. Numbered List
-                  </button>
-
-                  <button
-                    type="button"
-                    title="Remove formatting"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() =>
-                      formatDescription("removeFormat")
-                    }
-                    style={{
-                      ...tableButton,
-                      padding: "7px 11px",
-                      background: "#64748b",
-                    }}
-                  >
-                    Clear Format
-                  </button>
-                </div>
-
-                <div
-                  ref={descriptionEditor}
-                  contentEditable
-                  suppressContentEditableWarning
-                  role="textbox"
-                  aria-multiline="true"
-                  onInput={(e) =>
-                    change(
-                      "short_description",
-                      e.currentTarget.innerHTML
-                    )
-                  }
-                  style={{
-                    minHeight: 130,
-                    padding: 12,
-                    outline: "none",
-                    lineHeight: 1.65,
-                    color: "#182638",
-                  }}
-                  data-placeholder="Post ka description yahan likhein..."
-                />
-              </div>
-
-              <p
-                style={{
-                  margin: "5px 0 0",
-                  fontSize: 12,
-                  color: "#64748b",
-                }}
-              >
-                Text select karke Bold, Highlight ya Bullet List
-                button use karein.
-              </p>
+              <RichTextField
+                value={form.short_description}
+                onChange={(value) => change("short_description", value)}
+                placeholder="Post ka description yahan likhein..."
+                minHeight={150}
+              />
 
               {/* IMAGE UPLOAD */}
 
@@ -1296,21 +1309,13 @@ export default function PostEditor({
                                   border: "1px solid #e2e8f0",
                                 }}
                               >
-                                <input
-                                  style={{
-                                    ...inputStyle,
-                                    padding: "9px 8px",
-                                  }}
+                                <RichTextField
                                   value={row[columnIndex] || ""}
-                                  onChange={(e) =>
-                                    updateCell(
-                                      table.id,
-                                      rowIndex,
-                                      columnIndex,
-                                      e.target.value
-                                    )
+                                  onChange={(value) =>
+                                    updateCell(table.id, rowIndex, columnIndex, value)
                                   }
                                   placeholder="Enter content..."
+                                  minHeight={58}
                                 />
                               </td>
                             ))}
@@ -1408,13 +1413,11 @@ export default function PostEditor({
                 <div key={key}>
                   <label style={labelStyle}>{title}</label>
 
-                  <textarea
-                    style={{ ...inputStyle, minHeight: 90 }}
-                    value={form[key]}
-                    onChange={(e) =>
-                      change(key, e.target.value)
-                    }
+                  <RichTextField
+                    value={form[key] || ""}
+                    onChange={(value) => change(key, value)}
                     placeholder={`${title} details...`}
+                    minHeight={100}
                   />
                 </div>
               ))}
