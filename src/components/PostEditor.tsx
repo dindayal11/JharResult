@@ -235,7 +235,21 @@ function RichTextField({
         {tool("← Align", "justifyLeft")}
         {tool("↔ Center", "justifyCenter")}
         {tool("Align →", "justifyRight")}
-        {tool("Link", "createLink", window.prompt ? "https://" : undefined)}
+        <button
+          type="button"
+          title="Insert link"
+          onMouseDown={(event) => {
+            rememberSelection();
+            event.preventDefault();
+          }}
+          onClick={() => {
+            const url = window.prompt("Enter the link URL (https://...)");
+            if (url) run("createLink", url);
+          }}
+          style={toolStyle}
+        >
+          Link
+        </button>
         {tool("Clear", "removeFormat")}
         <label style={{ ...toolStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
           Text
