@@ -160,7 +160,7 @@ function CustomTable({ table }: { table: any }) {
     <tr key={rowIndex}>
       {columns.map((column: string, colIndex: number) => {
         const value = decodeHtmlEntities(String(row[colIndex] ?? ""))
-          .replace(/\\([<>])/g, "$1")
+          .replace(/\\+(?=[<>])/g, "")
           .trim();
 
         // Detect a URL/email from the cell content, regardless of its heading.
