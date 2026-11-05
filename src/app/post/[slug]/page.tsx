@@ -622,6 +622,55 @@ export default async function PostPage({
             )}
           </div>
 
+          <section
+            aria-label="Join JharResult Telegram Channel"
+            style={{
+              margin: "22px 0",
+              padding: "16px 18px",
+              background: "#eaf5ff",
+              border: "1px solid #c8e4fa",
+              borderRadius: 6,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <strong style={{ display: "block", color: "#174b80", fontSize: 16 }}>
+                Join Our Telegram Channel
+              </strong>
+              <span style={{ display: "block", color: "#52657c", fontSize: 13, marginTop: 3 }}>
+                Get the latest Jharkhand job, result and education updates directly on Telegram.
+              </span>
+            </div>
+            <a
+              href="https://t.me/+_hj11IZ9nktjOWM1"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Join JharResult Telegram Channel"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 16px",
+                background: "#229ED9",
+                color: "#fff",
+                borderRadius: 5,
+                fontWeight: 700,
+                fontSize: 14,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M22 2 2.8 9.5c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 6c.2.7.1 1 .8 1 .5 0 .8-.2 1.1-.5l2.8-2.7 5.8 4.3c1.1.6 1.9.3 2.2-1L24 3.5C24.3 2 23.4 1.3 22 2ZM9.2 12.2 20 5.4c.5-.3 1-.1.6.3l-8.9 8-.4 4.1-2.1-5.6Z" />
+              </svg>
+              Join Telegram
+            </a>
+          </section>
+
           <div className="disclaimer-box">
             <b>Note:</b> Candidates are advised to read the
             official notification carefully before applying.
