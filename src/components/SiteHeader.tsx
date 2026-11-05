@@ -4,7 +4,6 @@ import ResponsiveNav from "@/components/ResponsiveNav";
 
 const fallback = [
   { name: "Latest Jobs", slug: "latest-jobs" },
-  { name: "Admit Card", slug: "admit-card" },
   { name: "Results", slug: "results" },
   { name: "Answer Key", slug: "answer-key" },
   { name: "Admissions", slug: "admissions" },
@@ -16,7 +15,7 @@ export default async function SiteHeader() {
 
   try {
     const [rows] = await getPool().query(
-      "SELECT name,slug FROM categories WHERE is_active=1 ORDER BY id ASC"
+      "SELECT name,slug FROM categories WHERE is_active=1 AND slug <> 'admit-card' ORDER BY id ASC"
     );
 
     if ((rows as any[]).length) {
@@ -31,7 +30,7 @@ export default async function SiteHeader() {
     <>
       <div className="topbar">
         <div className="container">
-          Jharkhand Government Jobs • Results • Admit Cards • Education Updates
+          Jharkhand Government Jobs • Results • Education Updates
         </div>
       </div>
 
