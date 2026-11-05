@@ -228,6 +228,65 @@ function RichTextToolbar() {
     saveSelection();
   };
 
+  const applyHeading = (tagName: "h2" | "h3") => {
+    const editor = activeRichEditor;
+    const savedRange = activeRichRange?.cloneRange();
+    if (!editor || !savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
+
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+
+    const node = savedRange.startContainer;
+    const element = node.nodeType === Node.ELEMENT_NODE
+      ? node as HTMLElement
+      : node.parentElement;
+    const block = element?.closest("p, div, h2, h3, h4, blockquote, li");
+
+    if (block && editor.contains(block) && block !== editor) {
+      const heading = document.createElement(tagName);
+      heading.innerHTML = block.innerHTML;
+      block.replaceWith(heading);
+      const nextRange = document.createRange();
+      nextRange.selectNodeContents(heading);
+      selection.removeAllRanges();
+      selection.addRange(nextRange);
+      activeRichRange = nextRange.cloneRange();
+    } else {
+      const heading = document.createElement(tagName);
+      try {
+        const contents = savedRange.extractContents();
+        heading.appendChild(contents);
+        savedRange.insertNode(heading);
+        const nextRange = document.createRange();
+        nextRange.selectNodeContents(heading);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+        activeRichRange = nextRange.cloneRange();
+      } catch {
+        document.execCommand("formatBlock", false, tagName);
+      }
+    }
+
+    activeRichOnChange?.(editor.innerHTML);
+    saveSelection();
+  };
+
+  const headingButton = (label: string, tagName: "h2" | "h3") => (
+    <button
+      key={label}
+      type="button"
+      title={label}
+      onMouseDown={(event) => { event.preventDefault(); saveSelection(); }}
+      onClick={() => applyHeading(tagName)}
+      style={buttonStyle}
+    >
+      {label}
+    </button>
+  );
+
   const button = (label: string, command: string, value?: string) => (
     <button key={label} type="button" title={label}
       onMouseDown={(event) => { event.preventDefault(); saveSelection(); }}
@@ -248,8 +307,8 @@ function RichTextToolbar() {
       {button("S̶ Strikethrough", "strikeThrough")}
       {button("• Bullets", "insertUnorderedList")}
       {button("1. Numbering", "insertOrderedList")}
-      {button("H2", "formatBlock", "<h2>")}
-      {button("H3", "formatBlock", "<h3>")}
+      {headingButton("H2", "h2")}
+      {headingButton("H3", "h3")}
       {button("Quote", "formatBlock", "<blockquote>")}
       {button("Left", "justifyLeft")}
       {button("Center", "justifyCenter")}
