@@ -315,24 +315,37 @@ function RichTextToolbar() {
       {button("Right", "justifyRight")}
       <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => { const url = window.prompt("Enter link URL (https://...)"); if (url) apply("createLink", url); }}>Link</button>
       {button("Clear", "removeFormat")}
-      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 7 }}>
-        Text colour
-        <select
-          aria-label="Text colour"
-          defaultValue="#ce1212"
-          onMouseDown={saveBeforePicker}
-          onFocus={saveBeforePicker}
-          onChange={(event) => applyTextColor(event.target.value)}
-          style={selectStyle}
-        >
-          <option value="#182638">Black</option>
-          <option value="#ce1212">Red</option>
-          <option value="#e67e22">Orange</option>
-          <option value="#16804a">Green</option>
-          <option value="#1769aa">Blue</option>
-          <option value="#7e22ce">Purple</option>
-        </select>
-      </label>
+      <div aria-label="Text colour" style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 7 }}>
+        <span>Text colour</span>
+        {[
+          ["Black", "#182638"],
+          ["Red", "#ce1212"],
+          ["Orange", "#e67e22"],
+          ["Green", "#16804a"],
+          ["Blue", "#1769aa"],
+          ["Purple", "#7e22ce"],
+        ].map(([name, color]) => (
+          <button
+            key={color}
+            type="button"
+            title={`Apply ${name} text colour`}
+            aria-label={`Apply ${name} text colour`}
+            onMouseDown={(event) => { event.preventDefault(); saveSelection(); }}
+            onClick={() => applyTextColor(color)}
+            style={{
+              width: 19,
+              height: 19,
+              minWidth: 19,
+              padding: 0,
+              borderRadius: "50%",
+              border: "2px solid #fff",
+              outline: "1px solid #94a3b8",
+              background: color,
+              cursor: "pointer",
+            }}
+          />
+        ))}
+      </div>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
         <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("hiliteColor", event.target.value)} style={selectStyle}>
           <option value="#fff29a">Yellow</option><option value="#b7e1cd">Green</option><option value="#cfe2f3">Blue</option><option value="#f4cccc">Pink</option><option value="#eadcf8">Purple</option>
