@@ -170,17 +170,25 @@ function RichTextToolbar() {
   const apply = (command: string, value?: string) => {
     const editor = activeRichEditor;
     if (!editor) return;
+
     editor.focus();
     const selection = window.getSelection();
-    if (selection && activeRichRange) {
+
+    // Restore the exact text range after the toolbar control takes focus.
+    if (selection && activeRichRange && editor.contains(activeRichRange.commonAncestorContainer)) {
       selection.removeAllRanges();
       selection.addRange(activeRichRange);
     }
-    // Chrome-based browsers support hiliteColor; backColor is a fallback.
+
+    // Force inline CSS spans so selected text colours are preserved in saved HTML.
+    document.execCommand("styleWithCSS", false, "true");
+
     let applied = document.execCommand(command, false, value);
     if (!applied && command === "hiliteColor") {
       applied = document.execCommand("backColor", false, value);
     }
+
+    // Keep React state in sync even when the browser reports execCommand as unsupported.
     activeRichOnChange?.(editor.innerHTML);
     saveSelection();
   };
