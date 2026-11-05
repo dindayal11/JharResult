@@ -193,6 +193,41 @@ function RichTextToolbar() {
     saveSelection();
   };
 
+  const applyTextColor = (color: string) => {
+    const editor = activeRichEditor;
+    const savedRange = activeRichRange?.cloneRange();
+    if (!editor || !savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
+
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+
+    if (savedRange.collapsed) {
+      document.execCommand("foreColor", false, color);
+    } else {
+      const span = document.createElement("span");
+      span.style.color = color;
+      try {
+        const contents = savedRange.extractContents();
+        span.appendChild(contents);
+        savedRange.insertNode(span);
+        const nextRange = document.createRange();
+        nextRange.selectNodeContents(span);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+        activeRichRange = nextRange.cloneRange();
+      } catch {
+        document.execCommand("styleWithCSS", false, "true");
+        document.execCommand("foreColor", false, color);
+      }
+    }
+
+    activeRichOnChange?.(editor.innerHTML);
+    saveSelection();
+  };
+
   const button = (label: string, command: string, value?: string) => (
     <button key={label} type="button" title={label}
       onMouseDown={(event) => { event.preventDefault(); saveSelection(); }}
@@ -221,10 +256,17 @@ function RichTextToolbar() {
       {button("Right", "justifyRight")}
       <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => { const url = window.prompt("Enter link URL (https://...)"); if (url) apply("createLink", url); }}>Link</button>
       {button("Clear", "removeFormat")}
-      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Text colour
-        <select aria-label="Text colour" defaultValue="#182638" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("foreColor", event.target.value)} style={selectStyle}>
-          <option value="#182638">Black</option><option value="#d32f2f">Red</option><option value="#1565c0">Blue</option><option value="#16804a">Green</option><option value="#7b1fa2">Purple</option><option value="#e87920">Orange</option>
-        </select>
+      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 7 }}>
+        Text colour
+        <input
+          aria-label="Text colour"
+          type="color"
+          defaultValue="#182638"
+          onMouseDown={saveBeforePicker}
+          onFocus={saveBeforePicker}
+          onChange={(event) => applyTextColor(event.target.value)}
+          style={{ width: 28, height: 24, padding: 0, border: 0, background: "transparent", cursor: "pointer" }}
+        />
       </label>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
         <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("hiliteColor", event.target.value)} style={selectStyle}>
