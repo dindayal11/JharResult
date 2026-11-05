@@ -24,17 +24,26 @@ function isRecentlyPublished(value: string | Date | null | undefined): boolean {
 export default async function Home() {
   let posts: any[] = [];
   let categories: CategoryLink[] = [];
+  let previousPapers: any[] = [];
   let dbError = false;
 
   try {
-    const [published, categoryRows] = await Promise.all([
+    const [published, categoryRows, paperRows] = await Promise.all([
       getPublishedPosts(100),
       getPool().query(
         "SELECT name, slug FROM categories WHERE is_active = 1 ORDER BY id ASC"
       ),
+      getPool().query(
+        `SELECT id, title, exam_name, course, stream, subject, year, semester, pdf_url
+         FROM previous_year_papers
+         WHERE status = 'published'
+         ORDER BY year DESC, created_at DESC
+         LIMIT 6`
+      ),
     ]);
     posts = published;
     categories = (categoryRows[0] as CategoryLink[]) || [];
+    previousPapers = paperRows[0] as any[];
   } catch {
     dbError = true;
   }
@@ -163,6 +172,29 @@ export default async function Home() {
 
 </section>
 
+
+        {previousPapers.length > 0 && (
+          <section className="panel" style={{ marginBottom: 18, padding: 0, overflow: "hidden", borderRadius: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", padding: "11px 14px", background: "#173f68", color: "#fff" }}>
+              <h2 style={{ margin: 0, fontSize: 18 }}>Previous Year Question Papers</h2>
+              <a href="/previous-year-papers" style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>View All »</a>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 0 }}>
+              {previousPapers.map((paper) => (
+                <div key={paper.id} style={{ padding: 14, borderBottom: "1px solid #e6eaf0", borderRight: "1px solid #e6eaf0" }}>
+                  <strong style={{ display: "block", color: "#174b80", lineHeight: 1.4 }}>{paper.title}</strong>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 5 }}>
+                    {[paper.exam_name, paper.course, paper.stream, paper.semester].filter(Boolean).join(" • ")}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 10 }}>
+                    <span style={{ fontSize: 13, color: "#526174" }}>{paper.subject} • {paper.year}</span>
+                    <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: "#0756a5", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}>Download PDF ↗</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {dbError && (
           <div className="panel" style={{ marginBottom: 18, color: "#9b2c2c" }}>
