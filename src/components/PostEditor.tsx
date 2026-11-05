@@ -274,6 +274,42 @@ function RichTextToolbar() {
     saveSelection();
   };
 
+  const applyLineSpacing = (spacing: string) => {
+    const editor = activeRichEditor;
+    const savedRange = activeRichRange?.cloneRange();
+    if (!editor || !savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
+
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+
+    const node = savedRange.startContainer;
+    const element = node.nodeType === Node.ELEMENT_NODE ? node as HTMLElement : node.parentElement;
+    let block = element?.closest("p, div, h2, h3, h4, blockquote, li") as HTMLElement | null;
+
+    if (!block || block === editor || !editor.contains(block)) {
+      block = document.createElement("p");
+      try {
+        const contents = savedRange.extractContents();
+        block.appendChild(contents);
+        savedRange.insertNode(block);
+      } catch {
+        block.textContent = savedRange.toString();
+      }
+    }
+
+    block.style.lineHeight = spacing;
+    const nextRange = document.createRange();
+    nextRange.selectNodeContents(block);
+    selection.removeAllRanges();
+    selection.addRange(nextRange);
+    activeRichRange = nextRange.cloneRange();
+    activeRichOnChange?.(editor.innerHTML);
+    saveSelection();
+  };
+
   const headingButton = (label: string, tagName: "h2" | "h3") => (
     <button
       key={label}
@@ -309,6 +345,23 @@ function RichTextToolbar() {
       {button("1. Numbering", "insertOrderedList")}
       {headingButton("H2", "h2")}
       {headingButton("H3", "h3")}
+      <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
+        Line spacing
+        <select
+          aria-label="Line spacing"
+          defaultValue="1.6"
+          onMouseDown={saveBeforePicker}
+          onFocus={saveBeforePicker}
+          onChange={(event) => applyLineSpacing(event.target.value)}
+          style={selectStyle}
+        >
+          <option value="1.2">Compact</option>
+          <option value="1.4">1.4</option>
+          <option value="1.6">Normal</option>
+          <option value="1.8">1.8</option>
+          <option value="2">Double</option>
+        </select>
+      </label>
       {button("Quote", "formatBlock", "<blockquote>")}
       {button("Left", "justifyLeft")}
       {button("Center", "justifyCenter")}
