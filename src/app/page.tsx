@@ -53,10 +53,15 @@ export default async function Home() {
 
   // Hide category sections that do not contain published posts.
   const populatedGroups = categories
+    // Admit Card updates are grouped under Latest Jobs on the homepage.
+    .filter((category) => category.slug !== "admit-card")
     .map((category) => ({
       ...category,
       items: posts
-        .filter((post) => post.category_slug === category.slug)
+        .filter((post) =>
+          post.category_slug === category.slug ||
+          (category.slug === "latest-jobs" && post.category_slug === "admit-card")
+        )
         .slice(0, 15),
     }))
     .filter((group) => group.items.length > 0)
@@ -94,10 +99,10 @@ export default async function Home() {
             Jharkhand Latest Jobs, Results &amp; Education Updates
           </h1>
           <p style={{ margin: "0 auto 16px", maxWidth: 760, lineHeight: 1.6 }}>
-            JAC, JSSC, JPSC, JTET, Jharkhand Police, Scholarships, Admit Cards aur sabhi important updates ek hi jagah.
+            JAC, JSSC, JPSC, JTET, Jharkhand Police, Scholarships aur sabhi important updates ek hi jagah.
           </p>
           <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 650, margin: "0 auto" }}>
-            <input className="search" type="search" name="q" placeholder="Search jobs, results, admit cards..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
+            <input className="search" type="search" name="q" placeholder="Search jobs, results, updates..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
           </form>
         </section>
