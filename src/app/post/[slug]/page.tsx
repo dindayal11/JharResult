@@ -159,7 +159,9 @@ function CustomTable({ table }: { table: any }) {
   {visibleRows.map((row: string[], rowIndex: number) => (
     <tr key={rowIndex}>
       {columns.map((column: string, colIndex: number) => {
-        const value = decodeHtmlEntities(String(row[colIndex] ?? "")).trim();
+        const value = decodeHtmlEntities(String(row[colIndex] ?? ""))
+          .replace(/\\([<>])/g, "$1")
+          .trim();
 
         // Detect a URL/email from the cell content, regardless of its heading.
         // Also support Markdown-style links pasted into a table cell.
