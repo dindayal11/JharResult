@@ -141,7 +141,7 @@ export default async function Home() {
 
   
 <a
-  href="YOUR_TELEGRAM_CHANNEL_LINK"
+  href="https://t.me/+_hj11IZ9nktjOWM1"
   target="_blank"
   rel="noopener noreferrer"
   aria-label="Join JharResult Telegram Channel"
