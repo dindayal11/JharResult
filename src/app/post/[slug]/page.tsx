@@ -28,6 +28,31 @@ function safeColor(value: any, fallback: string) {
     : fallback;
 }
 
+function decodeHtmlEntities(value: string) {
+  const named: Record<string, string> = {
+    nbsp: " ",
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    ensp: " ",
+    emsp: " ",
+  };
+
+  return value.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, code: string) => {
+    if (code[0] === "#") {
+      const isHex = code[1]?.toLowerCase() === "x";
+      const number = Number.parseInt(code.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+      return Number.isFinite(number) && number >= 0 && number <= 0x10ffff
+        ? String.fromCodePoint(number)
+        : entity;
+    }
+
+    return named[code.toLowerCase()] ?? entity;
+  });
+}
+
 function isEmpty(value: any) {
   return (
     value === null ||
@@ -134,7 +159,7 @@ function CustomTable({ table }: { table: any }) {
   {visibleRows.map((row: string[], rowIndex: number) => (
     <tr key={rowIndex}>
       {columns.map((column: string, colIndex: number) => {
-        const value = String(row[colIndex] ?? "").trim();
+        const value = decodeHtmlEntities(String(row[colIndex] ?? "")).trim();
 
         // Detect a URL/email from the cell content, regardless of its heading.
         // Also support Markdown-style links pasted into a table cell.
