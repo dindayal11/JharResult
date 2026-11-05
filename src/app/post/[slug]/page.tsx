@@ -186,7 +186,7 @@ function CustomTable({ table }: { table: any }) {
               whiteSpace: "pre-wrap",
             }}
           >
-            {/<[a-z][\\s\\S]*>/i.test(value) ? (
+            {/<[a-z][\s\S]*>/i.test(value) ? (
               <div
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(value, {
