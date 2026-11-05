@@ -190,7 +190,7 @@ function CustomTable({ table }: { table: any }) {
               <div
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(value, {
-                    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+                    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
                     ALLOWED_ATTR: ["style", "href", "target", "rel"],
                     ALLOW_DATA_ATTR: false,
                   }),
@@ -244,7 +244,7 @@ function TextSection({
         style={{ padding: "0 12px 12px", lineHeight: 1.7, overflowWrap: "anywhere" }}
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(String(value), {
-            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
             ALLOWED_ATTR: ["style", "href", "target", "rel"],
             ALLOW_DATA_ATTR: false,
           }),
@@ -278,6 +278,7 @@ export default async function PostPage({
           "em",
           "u",
           "p",
+          "div",
           "br",
           "ul",
           "ol",
@@ -395,6 +396,38 @@ export default async function PostPage({
 
         .article-summary p:last-child {
           margin-bottom: 0;
+        }
+
+        .detail-section td p,
+        .detail-section td div {
+          display: block;
+          margin: 0 0 7px;
+          line-height: 1.65;
+        }
+
+        .detail-section td p:last-child,
+        .detail-section td div:last-child {
+          margin-bottom: 0;
+        }
+
+        .detail-section td br {
+          display: block;
+          content: "";
+          margin-top: 4px;
+        }
+
+        .detail-section td ul,
+        .detail-section td ol {
+          margin: 6px 0;
+          padding-left: 22px;
+        }
+
+        .detail-section td li {
+          margin: 4px 0;
+        }
+
+        .detail-section td span {
+          white-space: normal;
         }
 
         .article-summary b,
