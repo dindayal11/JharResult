@@ -120,7 +120,7 @@ export default function PreviousPapersList({ papers }: { papers: Paper[] }) {
           >
             <thead>
               <tr style={{ background: "#173f68", color: "#fff" }}>
-                {["Paper Details", "Subject", "Year", "Solution"].map(
+                {["Paper Details", "Subject", "Year", "Question Paper", "Solution"].map(
                   (heading) => (
                     <th
                       key={heading}
@@ -155,6 +155,11 @@ export default function PreviousPapersList({ papers }: { papers: Paper[] }) {
                   <td style={{ padding: "13px 12px" }}>{paper.subject}</td>
                   <td style={{ padding: "13px 12px" }}>{paper.year}</td>
 
+                  <td style={{ padding: "13px 12px" }}>
+                    <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: "#0756a5", fontWeight: 700 }}>
+                      Download PDF
+                    </a>
+                  </td>
 
                   <td style={{ padding: "13px 12px" }}>
                     {paper.solution_pdf_url ? (
