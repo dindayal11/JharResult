@@ -50,6 +50,10 @@ export default async function AdminPage() {
             + Previous Year Papers
           </Link>
 
+          <Link className="btn" href="/admin/previous-papers">
+            Manage Papers
+          </Link>
+
           <form
             action="/api/admin/logout"
             method="post"
