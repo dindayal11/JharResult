@@ -199,7 +199,6 @@ export default async function Home() {
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 6, fontSize: 12 }}>
                             <span>{paper.subject} • {paper.year}</span>
-                            <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: "#0756a5", fontWeight: 700 }}>Download PDF ↗</a>
                           </div>
                         </div>
                       ))}
