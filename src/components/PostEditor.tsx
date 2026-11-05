@@ -317,15 +317,21 @@ function RichTextToolbar() {
       {button("Clear", "removeFormat")}
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 7 }}>
         Text colour
-        <input
+        <select
           aria-label="Text colour"
-          type="color"
-          defaultValue="#182638"
+          defaultValue="#ce1212"
           onMouseDown={saveBeforePicker}
           onFocus={saveBeforePicker}
           onChange={(event) => applyTextColor(event.target.value)}
-          style={{ width: 28, height: 24, padding: 0, border: 0, background: "transparent", cursor: "pointer" }}
-        />
+          style={selectStyle}
+        >
+          <option value="#182638">Black</option>
+          <option value="#ce1212">Red</option>
+          <option value="#e67e22">Orange</option>
+          <option value="#16804a">Green</option>
+          <option value="#1769aa">Blue</option>
+          <option value="#7e22ce">Purple</option>
+        </select>
       </label>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
         <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("hiliteColor", event.target.value)} style={selectStyle}>
