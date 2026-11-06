@@ -6,13 +6,27 @@ import { getPool } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await getSession();
   if (!session) redirect("/admin/login");
 
-  const [rows] = await getPool().query(
-    "SELECT id,title,slug,status,verification_status,created_at FROM posts ORDER BY created_at DESC LIMIT 100"
-  );
+  const { q = "" } = await searchParams;
+  const search = q.trim();
+  const [rows] = search
+    ? await getPool().execute(
+        `SELECT id,title,slug,status,verification_status,created_at
+         FROM posts
+         WHERE title LIKE ? OR slug LIKE ? OR organization LIKE ?
+         ORDER BY created_at DESC LIMIT 300`,
+        [`%${search}%`, `%${search}%`, `%${search}%`]
+      )
+    : await getPool().query(
+        "SELECT id,title,slug,status,verification_status,created_at FROM posts ORDER BY created_at DESC LIMIT 100"
+      );
 
   return (
     <main className="container" style={{ padding: "30px 0" }}>
@@ -70,7 +84,42 @@ export default async function AdminPage() {
         className="panel"
         style={{ marginTop: 22, overflowX: "auto" }}
       >
-        <h2>Recent Posts</h2>
+        <h2>Manage Posts</h2>
+        <form
+          action="/admin"
+          method="GET"
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            margin: "12px 0 18px",
+          }}
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={search}
+            placeholder="Search posts by title, slug or organization..."
+            aria-label="Search posts"
+            style={{
+              flex: "1 1 280px",
+              minWidth: 0,
+              padding: "11px 12px",
+              border: "1px solid #b9c5d3",
+              borderRadius: 5,
+              fontSize: 14,
+            }}
+          />
+          <button className="btn" type="submit">Search Posts</button>
+          {search && (
+            <Link className="btn" href="/admin" style={{ background: "#64748b" }}>
+              Clear
+            </Link>
+          )}
+        </form>
+        <p className="muted" style={{ margin: "0 0 10px" }}>
+          {search ? `Search results for "${search}" — ${(rows as any[]).length} posts found (up to 300).` : "Showing the 100 most recently created posts. Search to find older posts."}
+        </p>
 
         <table
           style={{
