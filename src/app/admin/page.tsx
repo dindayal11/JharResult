@@ -13,10 +13,19 @@ export default async function AdminPage({
   const session = await getSession();
   if (!session) redirect("/admin/login");
 
-  const { q = "", from = "", to = "" } = await searchParams;
+  const { q = "", from = "", to = "", category = "" } = await searchParams;
   const search = q.trim();
   const conditions: string[] = [];
-  const values: string[] = [];
+  const values: (string | number)[] = [];
+
+  const [categoryRows] = await getPool().query(
+    "SELECT id, name FROM categories WHERE is_active = 1 ORDER BY name ASC"
+  );
+  const categories = categoryRows as { id: number; name: string }[];
+  const selectedCategoryId = /^\\d+$/.test(category) &&
+    categories.some((item) => item.id === Number(category))
+      ? Number(category)
+      : null;
 
   if (search) {
     conditions.push("(title LIKE ? OR slug LIKE ? OR organization LIKE ?)");
@@ -36,7 +45,7 @@ export default async function AdminPage({
     `SELECT id,title,slug,status,verification_status,created_at,published_at
      FROM posts ${where}
      ORDER BY COALESCE(published_at, created_at) DESC LIMIT ?`,
-    [...values, search || from || to ? 500 : 100]
+    [...values, search || from || to || selectedCategoryId !== null ? 500 : 100]
   );
 
   return (
@@ -112,6 +121,15 @@ export default async function AdminPage({
             }}
           />
           <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 700, color: "#34445a" }}>
+            Category
+            <select name="category" defaultValue={selectedCategoryId === null ? "" : String(selectedCategoryId)} style={{ minWidth: 165, padding: "10px", border: "1px solid #b9c5d3", borderRadius: 5, background: "#fff" }}>
+              <option value="">All Categories</option>
+              {categories.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+          </label>
+          <label style={{ display: "grid", gap: 4, fontSize: 12, fontWeight: 700, color: "#34445a" }}>
             From date
             <input type="date" name="from" defaultValue={from} style={{ padding: "9px", border: "1px solid #b9c5d3", borderRadius: 5 }} />
           </label>
@@ -120,7 +138,7 @@ export default async function AdminPage({
             <input type="date" name="to" defaultValue={to} style={{ padding: "9px", border: "1px solid #b9c5d3", borderRadius: 5 }} />
           </label>
           <button className="btn" type="submit">Apply Filters</button>
-          {(search || from || to) && (
+          {(search || from || to || selectedCategoryId !== null) && (
             <Link className="btn" href="/admin" style={{ background: "#64748b" }}>
               Clear
             </Link>
@@ -128,7 +146,7 @@ export default async function AdminPage({
         </form>
 
         <p className="muted" style={{ margin: "0 0 10px" }}>
-          {(search || from || to)
+          {(search || from || to || selectedCategoryId !== null)
             ? `Filtered posts: ${(rows as any[]).length} result(s). Date filter uses publish date, or creation date for drafts.`
             : "Showing the 100 most recent posts. Use search or date filters to find older posts."}
         </p>
