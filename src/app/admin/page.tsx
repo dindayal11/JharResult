@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ q?: string; from?: string; to?: string; category?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/admin/login");
@@ -22,7 +22,7 @@ export default async function AdminPage({
     "SELECT id, name FROM categories WHERE is_active = 1 ORDER BY name ASC"
   );
   const categories = categoryRows as { id: number; name: string }[];
-  const selectedCategoryId = /^\\d+$/.test(category) &&
+  const selectedCategoryId = /^\d+$/.test(category) &&
     categories.some((item) => item.id === Number(category))
       ? Number(category)
       : null;
@@ -30,6 +30,10 @@ export default async function AdminPage({
   if (search) {
     conditions.push("(title LIKE ? OR slug LIKE ? OR organization LIKE ?)");
     values.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+  if (selectedCategoryId !== null) {
+    conditions.push("category_id = ?");
+    values.push(selectedCategoryId);
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(from)) {
     conditions.push("DATE(COALESCE(published_at, created_at)) >= ?");
