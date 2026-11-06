@@ -96,8 +96,26 @@ export default async function AdminPage({
         </div>
       </div>
 
-      <div className="panel" style={{ marginTop: 22, overflowX: "auto" }}>
-        <h2>Manage Posts</h2>
+      <section
+        className="panel"
+        style={{
+          marginTop: 22,
+          padding: 20,
+          border: "1px solid #dce4ee",
+          borderRadius: 12,
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+          background: "#fff",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ margin: 0, color: "#172b4d" }}>Manage Posts</h2>
+            <p style={{ margin: "5px 0 0", color: "#64748b", fontSize: 13 }}>Search, filter and manage your published and draft posts.</p>
+          </div>
+          <span style={{ padding: "6px 11px", borderRadius: 20, background: "#eff6ff", color: "#1d4ed8", fontSize: 12, fontWeight: 700 }}>
+            {(rows as any[]).length} posts loaded
+          </span>
+        </div>
         <form
           action="/admin"
           method="GET"
@@ -149,48 +167,63 @@ export default async function AdminPage({
           )}
         </form>
 
-        <p className="muted" style={{ margin: "0 0 10px" }}>
+        <p className="muted" style={{ margin: "0 0 10px", fontSize: 12 }}>
           {(search || from || to || selectedCategoryId !== null)
             ? `Filtered posts: ${(rows as any[]).length} result(s). Date filter uses publish date, or creation date for drafts.`
             : "Showing the 100 most recent posts. Use search or date filters to find older posts."}
         </p>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-          <thead>
+        <div
+          style={{
+            maxHeight: 560,
+            overflowY: "auto",
+            overflowX: "auto",
+            border: "1px solid #e2e8f0",
+            borderRadius: 9,
+            background: "#fff",
+          }}
+        >
+        <table style={{ width: "100%", minWidth: 720, borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
+          <thead style={{ position: "sticky", top: 0, zIndex: 2, background: "#f1f5f9" }}>
             <tr>
-              <th align="left">Title</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Verification</th>
-              <th>Open</th>
+              <th align="left" style={{ padding: "12px 14px", background: "#f1f5f9", color: "#334155" }}>Post Title</th>
+              <th style={{ padding: "12px 10px", background: "#f1f5f9", color: "#334155" }}>Date</th>
+              <th style={{ padding: "12px 10px", background: "#f1f5f9", color: "#334155" }}>Status</th>
+              <th style={{ padding: "12px 10px", background: "#f1f5f9", color: "#334155" }}>Verification</th>
+              <th style={{ padding: "12px 14px", background: "#f1f5f9", color: "#334155" }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {(rows as any[]).map((p) => (
               <tr key={p.id} style={{ borderTop: "1px solid #e6eaf0" }}>
-                <td style={{ padding: "12px 6px" }}>{p.title}</td>
-                <td style={{ whiteSpace: "nowrap", padding: "8px 6px" }}>
+                <td style={{ padding: "12px 14px", maxWidth: 420, color: "#172b4d", fontWeight: 600, lineHeight: 1.45 }}>{p.title}</td>
+                <td style={{ whiteSpace: "nowrap", padding: "10px", color: "#64748b" }}>
                   {p.published_at || p.created_at
                     ? new Date(p.published_at || p.created_at).toLocaleDateString("en-IN")
                     : "—"}
                 </td>
-                <td>{p.status}</td>
-                <td>{p.verification_status}</td>
-                <td>
-                  <Link href={`/admin/posts/${p.id}`}>Edit</Link>
+                <td style={{ padding: "10px" }}>
+                  <span style={{ display: "inline-block", padding: "4px 9px", borderRadius: 20, background: p.status === "published" ? "#dcfce7" : "#fef3c7", color: p.status === "published" ? "#166534" : "#92400e", fontSize: 11, fontWeight: 700 }}>
+                    {p.status}
+                  </span>
+                </td>
+                <td style={{ padding: "10px", color: "#475569" }}>{p.verification_status || "—"}</td>
+                <td style={{ padding: "10px 14px" }}>
+                  <Link href={`/admin/posts/${p.id}`} style={{ display: "inline-block", padding: "6px 12px", borderRadius: 6, background: "#eaf2ff", color: "#1d4ed8", fontWeight: 700, textDecoration: "none" }}>Edit</Link>
                 </td>
               </tr>
             ))}
             {(rows as any[]).length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 18, textAlign: "center" }}>
+                <td colSpan={5} style={{ padding: 28, textAlign: "center", color: "#64748b" }}>
                   No posts found for the selected filters.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }
