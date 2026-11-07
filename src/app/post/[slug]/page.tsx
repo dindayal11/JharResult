@@ -7,6 +7,13 @@ import DOMPurify from "isomorphic-dompurify";
 
 export const dynamic = "force-dynamic";
 
+function isRecentlyPublished(value: string | Date | null | undefined): boolean {
+  if (!value) return false;
+  const publishedAt = new Date(value).getTime();
+  const age = Date.now() - publishedAt;
+  return Number.isFinite(publishedAt) && age >= -12 * 60 * 60 * 1000 && age <= 7 * 24 * 60 * 60 * 1000;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -264,7 +271,9 @@ export default async function PostPage({
 
   if (!p) notFound();
 
-  const latestPosts = (await getPublishedPosts(9))
+  const tickerPosts = await getPublishedPosts(10);
+  const tickerItems = tickerPosts.length ? [...tickerPosts, ...tickerPosts] : [];
+  const latestPosts = tickerPosts
     .filter((post) => post.slug !== slug)
     .slice(0, 8);
 
@@ -371,7 +380,27 @@ export default async function PostPage({
     <>
       <SiteHeader />
 
+      {tickerItems.length > 0 && (
+        <div className="container">
+          <div className="ticker" style={{ display: "flex", alignItems: "center", gap: 12, margin: "14px 0", background: "#fff", border: "1px solid #e6eaf0", overflow: "hidden" }}>
+            <b style={{ background: "#c62828", color: "#fff", padding: "11px 14px", whiteSpace: "nowrap" }}>BREAKING</b>
+            <div className="ticker-window" style={{ overflowX: "hidden", flex: 1, minWidth: 0 }}>
+              <div className="ticker-track" style={{ display: "flex", gap: 22, width: "max-content", whiteSpace: "nowrap", animation: "ticker-scroll 28s linear infinite" }}>
+                {tickerItems.map((post, index) => (
+                  <a key={`${post.id}-${index}`} href={`/post/${post.slug}`} style={{ padding: "10px 0", color: "#174b80", fontWeight: 700 }}>
+                    {post.title}{isRecentlyPublished(post.published_at) && <span className="new-badge new-badge-ticker">NEW</span>}<span style={{ color: "#e07b22", margin: "0 10px" }}>◆</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .ticker-track:hover { animation-play-state: paused !important; }
+        @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none !important; } }
         @media (max-width: 760px) {
           .post-detail-grid {
             grid-template-columns: 1fr !important;
