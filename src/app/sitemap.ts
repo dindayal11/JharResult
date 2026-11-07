@@ -30,10 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [categoryRows] = await getPool().query(
       "SELECT slug FROM categories WHERE is_active = 1 AND slug IS NOT NULL"
     );
-    const [paperRows] = await getPool().query(
-      "SELECT created_at FROM previous_year_papers WHERE status = 'published'"
-    );
-
     const posts = (postRows as any[]).map((post) => ({
       url: `${SITE_URL}/post/${encodeURIComponent(post.slug)}`,
       lastModified: post.updated_at || post.published_at || undefined,
