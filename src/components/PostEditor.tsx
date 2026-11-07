@@ -458,6 +458,7 @@ export default function PostEditor({
     seo_title: post?.seo_title || "",
     seo_description: post?.seo_description || "",
     status: post?.status || "draft",
+    scheduled_at: post?.scheduled_at ? new Date(post.scheduled_at).toISOString().slice(0, 16) : "",
     verification_status: post?.verification_status || "unverified",
     notice_text: post?.notice_text || "",
     layout_direction: post?.layout_direction || "row",
@@ -476,6 +477,7 @@ export default function PostEditor({
   });
 
   const [notice, setNotice] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [expandedTables, setExpandedTables] = useState<string[]>([]);
@@ -691,8 +693,30 @@ export default function PostEditor({
     setNotice("");
 
     try {
+      let uploadFile = file;
+      // Resize raster images and convert to WebP; preserve animated GIFs.
+      if (file.type !== "image/gif" && typeof createImageBitmap === "function") {
+        try {
+          const bitmap = await createImageBitmap(file);
+          const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+          canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+          const context = canvas.getContext("2d");
+          if (context) {
+            context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+            const optimized = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+            if (optimized && optimized.size < file.size) {
+              uploadFile = new File([optimized], file.name.replace(/\.[^.]+$/, ".webp"), { type: "image/webp" });
+            }
+          }
+          bitmap.close();
+        } catch {
+          // Fall back to the original if browser optimization is unavailable.
+        }
+      }
       const body = new FormData();
-      body.append("file", file);
+      body.append("file", uploadFile);
 
       const response = await fetch(
         "/api/admin/upload-image",
@@ -739,6 +763,16 @@ export default function PostEditor({
 
       if (!selectedCategoryIds.length) {
         setNotice("Please select at least one category.");
+        setBusy(false);
+        return;
+      }
+      if (form.status === "scheduled" && !form.scheduled_at) {
+        setNotice("Please choose a date and time for scheduled publishing.");
+        setBusy(false);
+        return;
+      }
+      if (form.status === "scheduled" && new Date(form.scheduled_at).getTime() <= Date.now()) {
+        setNotice("Scheduled publishing time must be in the future.");
         setBusy(false);
         return;
       }
@@ -1498,8 +1532,21 @@ export default function PostEditor({
                 }
               >
                 <option value="draft">Save as Draft</option>
-                <option value="published">Publish</option>
+                <option value="published">Publish Now</option>
+                <option value="scheduled">Schedule for Later</option>
               </select>
+
+              {form.status === "scheduled" && (
+                <>
+                  <label style={labelStyle}>Scheduled Publish Date &amp; Time</label>
+                  <input type="datetime-local" style={inputStyle} value={form.scheduled_at}
+                    min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                    onChange={(e) => change("scheduled_at", e.target.value)} required />
+                  <p style={{ margin: "-7px 0 12px", color: "#64748b", fontSize: 12 }}>
+                    Scheduled posts publish automatically when the site cron endpoint runs.
+                  </p>
+                </>
+              )}
 
               <label style={labelStyle}>Verification Status</label>
 
@@ -1518,6 +1565,38 @@ export default function PostEditor({
             </div>
           </section>
 
+          {previewOpen && (
+            <section aria-label="Post preview" style={{ marginTop: 18, padding: 18, border: "2px solid #93c5fd", borderRadius: 10, background: "#fff" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                <h2 style={{ margin: 0, fontSize: 20 }}>Post Preview</h2>
+                <button type="button" onClick={() => setPreviewOpen(false)} style={{ ...tableButton, background: "#475569" }}>Close Preview</button>
+              </div>
+              <h1 style={{ margin: "14px 0 8px", fontSize: 25 }}>{form.title || "Post title preview"}</h1>
+              <p style={{ color: "#64748b", fontSize: 13 }}>Categories: {categories.filter((item) => selectedCategoryIds.includes(String(item.id))).map((item) => item.name).join(", ") || "None selected"}</p>
+              {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
+              {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
+              <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{String(form.short_description || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim()}</p>
+              {(["organization", "qualification", "selection_process", "how_to_apply"] as const).map((key) => form[key] ? (
+                <div key={key} style={{ marginTop: 12 }}>
+                  <h3 style={{ marginBottom: 5 }}>{key.replace(/_/g, " ")}</h3>
+                  <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{String(form[key]).replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim()}</p>
+                </div>
+              ) : null)}
+              {customTables.filter((table) => table.title.trim()).map((table) => (
+                <div key={table.id} style={{ marginTop: 14 }}>
+                  <h3>{table.title}</h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead><tr>{table.columns.map((column, i) => <th key={i} style={{ border: "1px solid #cbd5e1", padding: 8, textAlign: "left" }}>{column}</th>)}</tr></thead>
+                      <tbody>{table.rows.filter((row) => row.some((cell) => cell.trim())).map((row, i) => <tr key={i}>{table.columns.map((_, j) => <td key={j} style={{ border: "1px solid #cbd5e1", padding: 8 }}>{String(row[j] || "").replace(/<[^>]*>/g, " ").trim()}</td>)}</tr>)}</tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+              <p style={{ marginTop: 14, color: "#64748b", fontSize: 12 }}>Preview is for content review; final public layout may differ slightly.</p>
+            </section>
+          )}
+
           <div
             style={{
               display: "flex",
@@ -1527,6 +1606,9 @@ export default function PostEditor({
               marginTop: 18,
             }}
           >
+            <button type="button" onClick={() => setPreviewOpen((value) => !value)} style={{ ...tableButton, background: "#1d4ed8" }}>
+              {previewOpen ? "Hide Preview" : "Preview Before Publishing"}
+            </button>
             <button
               type="submit"
               style={{
