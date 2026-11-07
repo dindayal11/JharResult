@@ -22,7 +22,7 @@ export async function POST(req:Request){
   (title,slug,category_id,short_description,organization,source_url,application_url,status,verification_status,important_dates,application_fee,age_limit,vacancy_details,qualification,selection_process,how_to_apply,important_links,faqs,notice_text,seo_title,seo_description,layout_direction,layout_columns,theme_primary,theme_accent,theme_background,theme_text,image_url,image_title,custom_tables,published_at)
   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,IF(?='published',NOW(),NULL))`,
   [b.title,slug,categoryIds[0],b.short_description||null,b.organization||null,b.source_url||null,b.application_url||null,b.status||"draft",b.verification_status||"unverified",json(b.important_dates),json(b.application_fee),json(b.age_limit),json(b.vacancy_details),b.qualification||null,b.selection_process||null,b.how_to_apply||null,json(b.important_links),json(b.faqs),b.notice_text||null,b.seo_title||null,b.seo_description||null,b.layout_direction||"row",Number(b.layout_columns)||2,b.theme_primary||"#173f70",b.theme_accent||"#e87920",b.theme_background||"#ffffff",b.theme_text||"#182638",b.image_url||null,b.image_title||null,json(b.custom_tables),b.status||"draft"]);
-  await connection.execute("INSERT INTO post_categories (post_id,category_id) VALUES ?",[categoryIds.map((categoryId:number)=>[result.insertId,categoryId])]);
+  await connection.query("INSERT INTO post_categories (post_id,category_id) VALUES ?",[categoryIds.map((categoryId:number)=>[result.insertId,categoryId])]);
   await connection.commit();
   return NextResponse.json({ok:true,id:result.insertId});
   } catch(error) { await connection.rollback(); throw error; } finally { connection.release(); }
