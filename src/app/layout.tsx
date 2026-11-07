@@ -1,17 +1,61 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SiteFooter from "@/components/SiteFooter";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jharresult.in";
+const siteName = "JharResult";
+const siteDescription =
+  "Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions and scholarships in one place.";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#173f68",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "JharResult – Jharkhand Jobs, Results & Admit Cards",
     template: "%s | JharResult",
   },
-  description:
-    "Jharkhand government job notifications, admit cards, results, answer keys, admissions and scholarships in one place.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  ),
+  description: siteDescription,
+  applicationName: siteName,
+  keywords: [
+    "Jharkhand government jobs",
+    "Jharkhand latest jobs",
+    "JAC result",
+    "JSSC recruitment",
+    "JPSC vacancy",
+    "Jharkhand admit card",
+    "Jharkhand answer key",
+    "Jharkhand scholarship",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: siteUrl,
+    siteName,
+    title: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary",
+    title: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -20,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <body>
         {children}
         <SiteFooter />
