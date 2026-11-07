@@ -26,6 +26,13 @@ export async function generateMetadata({
     title: p?.seo_title || p?.title || "Update",
     description:
       p?.seo_description || p?.short_description || "",
+    alternates: { canonical: `/post/${encodeURIComponent(slug)}` },
+    openGraph: {
+      type: "article",
+      title: p?.seo_title || p?.title || "Update",
+      description: p?.seo_description || p?.short_description || "",
+      publishedTime: p?.published_at ? new Date(p.published_at).toISOString() : undefined,
+    },
   };
 }
 
@@ -379,6 +386,26 @@ export default async function PostPage({
   return (
     <>
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: p.title,
+            description: p.seo_description || p.short_description || undefined,
+            datePublished: p.published_at ? new Date(p.published_at).toISOString() : undefined,
+            dateModified: (p as any).updated_at ? new Date((p as any).updated_at).toISOString() : undefined,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/post/${encodeURIComponent(p.slug)}`,
+            },
+            author: { "@type": "Organization", name: "JharResult" },
+            publisher: { "@type": "Organization", name: "JharResult" },
+            image: (p as any).image_url || undefined,
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
 
       {tickerItems.length > 0 && (
         <div className="container">
