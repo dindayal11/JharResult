@@ -723,30 +723,23 @@ export default async function PostPage({
 
             <a
               className="side-link"
-              href="/category/admit-card"
+              href="/category/previous-papers"
             >
-              Admit Cards
+              Previous Year Papers
             </a>
 
             <a
               className="side-link"
-              href="/category/results"
+              href="/category/board-updates"
             >
-              Results
+              Board Updates
             </a>
 
             <a
               className="side-link"
-              href="/category/answer-key"
+              href="/category/scholarships"
             >
-              Answer Keys
-            </a>
-
-            <a
-              className="side-link"
-              href="/category/admissions"
-            >
-              Admissions
+              Scholarship
             </a>
           </div>
 
