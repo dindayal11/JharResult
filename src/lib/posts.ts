@@ -1,7 +1,7 @@
 import { getPool } from "@/lib/db";
 
 export type PostRow = {
-  id: number; title: string; slug: string; category_name: string; category_slug: string;
+  id: number; title: string; slug: string; category_name: string; category_slug: string; category_slugs?: string;
   short_description: string | null; organization: string | null; published_at: string | null;
   seo_title: string | null; seo_description: string | null; important_dates: unknown;
   application_fee: unknown; age_limit: unknown; vacancy_details: unknown; qualification: string | null;
