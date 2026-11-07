@@ -458,7 +458,7 @@ export default function PostEditor({
     seo_title: post?.seo_title || "",
     seo_description: post?.seo_description || "",
     status: post?.status || "draft",
-    scheduled_at: post?.scheduled_at ? new Date(post.scheduled_at).toISOString().slice(0, 16) : "",
+    scheduled_at: post?.scheduled_at ? (() => { const date = new Date(post.scheduled_at); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })() : "",
     verification_status: post?.verification_status || "unverified",
     notice_text: post?.notice_text || "",
     layout_direction: post?.layout_direction || "row",
@@ -1540,7 +1540,7 @@ export default function PostEditor({
                 <>
                   <label style={labelStyle}>Scheduled Publish Date &amp; Time</label>
                   <input type="datetime-local" style={inputStyle} value={form.scheduled_at}
-                    min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                    min={(() => { const date = new Date(Date.now() + 60000); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
                     onChange={(e) => change("scheduled_at", e.target.value)} required />
                   <p style={{ margin: "-7px 0 12px", color: "#64748b", fontSize: 12 }}>
                     Scheduled posts publish automatically when the site cron endpoint runs.
