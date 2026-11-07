@@ -11,6 +11,12 @@ export async function PUT(req:Request,{params}:{params:Promise<{id:string}>}){
   const [validCategories]:any=await pool.query("SELECT id FROM categories WHERE id IN (?) AND is_active=1",[categoryIds]);
   if(validCategories.length!==categoryIds.length) return NextResponse.json({error:"One or more selected categories are invalid."},{status:400});
   const connection=await pool.getConnection();
+  const categoryIds=[...new Set((Array.isArray(b.category_ids)?b.category_ids:[b.category_id]).map((value:any)=>Number(value)).filter((value:number)=>Number.isInteger(value)&&value>0))];
+  if(!categoryIds.length) return NextResponse.json({error:"Select at least one category."},{status:400});
+  const pool=getPool();
+  const [validCategories]:any=await pool.query("SELECT id FROM categories WHERE id IN (?) AND is_active=1",[categoryIds]);
+  if(validCategories.length!==categoryIds.length) return NextResponse.json({error:"One or more selected categories are invalid."},{status:400});
+  const connection=await pool.getConnection();
   const json=(v:any)=>{if(!v)return null;try{return JSON.stringify(JSON.parse(v))}catch{return JSON.stringify({details:String(v)})}};
   try {
   await connection.beginTransaction();
