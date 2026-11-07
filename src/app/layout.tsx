@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SiteFooter from "@/components/SiteFooter";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jharresult.in";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const siteName = "JharResult";
 const siteDescription =
   "Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions and scholarships in one place.";
