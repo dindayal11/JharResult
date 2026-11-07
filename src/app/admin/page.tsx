@@ -32,8 +32,8 @@ export default async function AdminPage({
     values.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
   if (selectedCategoryId !== null) {
-    conditions.push("category_id = ?");
-    values.push(selectedCategoryId);
+    conditions.push("(category_id = ? OR id IN (SELECT post_id FROM post_categories WHERE category_id = ?))");
+    values.push(selectedCategoryId, selectedCategoryId);
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(from)) {
     conditions.push("DATE(COALESCE(published_at, created_at)) >= ?");
