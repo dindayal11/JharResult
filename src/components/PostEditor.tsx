@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
+
+const PREVIEW_SANITIZE_OPTIONS = {
+  ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+  ALLOWED_ATTR: ["style", "href", "target", "rel"],
+  ALLOW_DATA_ATTR: false,
+};
 
 type Cat = {
   id: number;
@@ -1575,23 +1582,44 @@ export default function PostEditor({
               <p style={{ color: "#64748b", fontSize: 13 }}>Categories: {categories.filter((item) => selectedCategoryIds.includes(String(item.id))).map((item) => item.name).join(", ") || "None selected"}</p>
               {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
               {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
-              <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{String(form.short_description || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim()}</p>
+              {form.short_description && (
+                <div
+                  className="article-summary"
+                  style={{ margin: "18px 0", padding: "15px 17px", border: "1px solid #dce3ec", borderLeft: "4px solid #e87920", borderRadius: 7, background: "#f8fafc", color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.short_description), PREVIEW_SANITIZE_OPTIONS) }}
+                />
+              )}
               {(["organization", "qualification", "selection_process", "how_to_apply"] as const).map((key) => form[key] ? (
-                <div key={key} style={{ marginTop: 12 }}>
-                  <h3 style={{ marginBottom: 5 }}>{key.replace(/_/g, " ")}</h3>
-                  <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{String(form[key]).replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").trim()}</p>
-                </div>
+                <section key={key} className="detail-section" style={{ margin: "20px 0 24px", border: "1px solid #dce3ec", borderRadius: 4, overflow: "hidden" }}>
+                  <h2 style={{ margin: 0, padding: "9px 12px", background: "#173f70", color: "#fff", fontSize: 17, lineHeight: 1.35 }}>
+                    {key === "organization" ? "Organization" : key === "qualification" ? "Educational Qualification" : key === "selection_process" ? "Selection Process" : "How to Apply"}
+                  </h2>
+                  <div
+                    style={{ padding: "12px", lineHeight: 1.7, overflowWrap: "anywhere" }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form[key]), PREVIEW_SANITIZE_OPTIONS) }}
+                  />
+                </section>
               ) : null)}
-              {customTables.filter((table) => table.title.trim()).map((table) => (
-                <div key={table.id} style={{ marginTop: 14 }}>
-                  <h3>{table.title}</h3>
+              {customTables.filter((table) => table.title.trim() && table.rows.some((row) => row.some((cell) => cell.trim()))).map((table) => (
+                <section key={table.id} className="detail-section" style={{ margin: "20px 0 24px", border: `1px solid ${table.theme_primary}`, background: table.theme_background, color: table.theme_text, minWidth: 0 }}>
+                  <h2 style={{ margin: 0, padding: "9px 12px", background: table.theme_primary, color: "#fff", fontSize: 17 }}>{table.title}</h2>
                   <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead><tr>{table.columns.map((column, i) => <th key={i} style={{ border: "1px solid #cbd5e1", padding: 8, textAlign: "left" }}>{column}</th>)}</tr></thead>
-                      <tbody>{table.rows.filter((row) => row.some((cell) => cell.trim())).map((row, i) => <tr key={i}>{table.columns.map((_, j) => <td key={j} style={{ border: "1px solid #cbd5e1", padding: 8 }}>{String(row[j] || "").replace(/<[^>]*>/g, " ").trim()}</td>)}</tr>)}</tbody>
+                    <table style={{ width: "100%", borderCollapse: "collapse", color: table.theme_text, fontSize: 14, background: table.theme_background }}>
+                      <thead>
+                        <tr>{table.columns.map((column, i) => <th key={i} style={{ border: "1px solid #dce3ec", padding: "10px 9px", textAlign: "left", background: table.theme_accent, color: "#fff" }}>{column}</th>)}</tr>
+                      </thead>
+                      <tbody>
+                        {table.rows.filter((row) => row.some((cell) => cell.trim())).map((row, i) => (
+                          <tr key={i}>{table.columns.map((_, j) => (
+                            <td key={j} style={{ border: "1px solid #dce3ec", padding: "10px 9px", verticalAlign: "top", overflowWrap: "anywhere" }}>
+                              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(row[j] || ""), PREVIEW_SANITIZE_OPTIONS) }} />
+                            </td>
+                          ))}</tr>
+                        ))}
+                      </tbody>
                     </table>
                   </div>
-                </div>
+                </section>
               ))}
               <p style={{ marginTop: 14, color: "#64748b", fontSize: 12 }}>Preview is for content review; final public layout may differ slightly.</p>
             </section>
