@@ -531,3 +531,15 @@ a:hover{color:#c96b0c}
 @media (prefers-reduced-motion: reduce) {
   .new-badge { animation: none; }
 }
+
+
+/* JharResult orange-gold starburst NEW badge */
+.new-badge {
+  background: radial-gradient(circle at 45% 38%, #ffe27a 0%, #ffad32 38%, #f47716 70%, #c94b08 100%);
+  color: #713006;
+  text-shadow: 0 1px 0 rgba(255,255,255,.45);
+  filter: drop-shadow(0 1px 2px rgba(185,83,10,.32));
+}
+@media (prefers-reduced-motion: reduce) {
+  .new-badge { background: radial-gradient(circle at 45% 38%, #ffe27a, #f47716); }
+}
