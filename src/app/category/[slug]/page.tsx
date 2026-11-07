@@ -3,7 +3,21 @@ import PostCard from "@/components/PostCard";
 import { getPool } from "@/lib/db";
 import type { PostRow } from "@/lib/posts";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+ const { slug } = await params;
+ const [rows] = await getPool().execute("SELECT name FROM categories WHERE slug=? AND is_active=1 LIMIT 1", [slug]);
+ const category = (rows as { name: string }[])[0];
+ if (!category) return { title: "Category not found", robots: { index: false, follow: false } };
+ const title = `${category.name} Updates`;
+ return {
+  title,
+  description: `Latest Jharkhand ${category.name.toLowerCase()} notifications, important dates, results and official updates on JharResult.`,
+  alternates: { canonical: `/category/${encodeURIComponent(slug)}` },
+  openGraph: { title: `${title} | JharResult`, description: `Latest Jharkhand ${category.name.toLowerCase()} updates.`, type: "website" },
+ };
+}
 export default async function CategoryPage({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params;
  const [cats]=await getPool().execute("SELECT id,name FROM categories WHERE slug=? LIMIT 1",[slug]);
