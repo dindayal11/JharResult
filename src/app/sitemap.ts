@@ -15,7 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/terms",
     "/disclaimer",
     "/previous-year-papers",
-    "/category/previous-papers",
   ];
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
@@ -49,16 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    const hasPublishedPapers = (paperRows as any[]).length > 0;
-    const paperEntry: MetadataRoute.Sitemap = hasPublishedPapers
-      ? [{
-          url: `${SITE_URL}/category/previous-papers`,
-          changeFrequency: "weekly",
-          priority: 0.65,
-        }]
-      : [];
-
-    return [...staticEntries, ...categories, ...posts, ...paperEntry];
+    return [...staticEntries, ...categories, ...posts];
   } catch {
     // Keep static URLs available if the database is temporarily unreachable.
     return staticEntries;
