@@ -68,8 +68,8 @@ export default async function Home() {
       ...category,
       items: posts
         .filter((post) =>
-          post.category_slug === category.slug ||
-          (category.slug === "latest-jobs" && post.category_slug === "admit-card")
+          String(post.category_slugs || post.category_slug).split(",").includes(category.slug) ||
+          (category.slug === "latest-jobs" && String(post.category_slugs || post.category_slug).split(",").includes("admit-card"))
         )
         .slice(0, 15),
       paperItems: category.slug === "previous-papers" ? previousPapers : [],
