@@ -49,8 +49,9 @@ export default function ResponsiveNav({
           aria-expanded={open}
           aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         >
-          <span>{open ? "✕" : "☰"}</span>
-          <span>{open ? "Close" : "Menu"}</span>
+          <span aria-hidden="true" style={{ fontSize: 22, lineHeight: 1 }}>
+            {open ? "✕" : "☰"}
+          </span>
         </button>
 
         {open && (
@@ -166,8 +167,10 @@ export default function ResponsiveNav({
           .mobile-menu-button {
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding: 11px 16px;
+            justify-content: center;
+            width: 44px;
+            height: 42px;
+            padding: 0;
             border: 0;
             border-radius: 4px;
             background: #173f68;
