@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS posts (
   notification_number VARCHAR(120) NULL,
   source_url VARCHAR(1000) NULL,
   application_url VARCHAR(1000) NULL,
-  status ENUM('draft','published') NOT NULL DEFAULT 'draft',
+  status ENUM('draft','published','scheduled') NOT NULL DEFAULT 'draft',
   verification_status ENUM('unverified','verified') NOT NULL DEFAULT 'unverified',
   important_dates JSON NULL,
   application_fee JSON NULL,
@@ -39,10 +39,12 @@ CREATE TABLE IF NOT EXISTS posts (
   seo_title VARCHAR(255) NULL,
   seo_description VARCHAR(320) NULL,
   published_at DATETIME NULL,
+  scheduled_at DATETIME NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_category FOREIGN KEY (category_id) REFERENCES categories(id),
   INDEX idx_posts_status_date (status, published_at),
+  INDEX idx_posts_scheduled (status, scheduled_at),
   INDEX idx_posts_category (category_id),
   FULLTEXT INDEX ft_posts_search (title, short_description, organization)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
