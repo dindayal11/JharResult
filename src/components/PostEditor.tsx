@@ -438,7 +438,6 @@ export default function PostEditor({
   categories: Cat[];
   post?: any;
 }) {
-  const [mode, setMode] = useState<"manual" | "ai">("manual");
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(() => {
     const saved = Array.isArray(post?.category_ids) ? post.category_ids.map((id: any) => String(id)) : [];
     return saved.length ? saved : [String(post?.category_id || categories[0]?.id || "")].filter(Boolean);
@@ -718,55 +717,6 @@ export default function PostEditor({
     }
   }
 
-  async function parseAI() {
-    setBusy(true);
-    setNotice("");
-
-    try {
-      const response = await fetch("/api/ai/parse", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: form.notice_text,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "AI parsing failed");
-      }
-
-      const extracted = data.data || {};
-
-      setForm((old: any) => ({
-        ...old,
-        ...extracted,
-        category_id: old.category_id,
-        status: "draft",
-        verification_status: "unverified",
-      }));
-
-      if (Array.isArray(extracted.custom_tables)) {
-        setCustomTables(
-          parseCustomTables(extracted.custom_tables)
-        );
-      }
-
-      setMode("manual");
-
-      setNotice(
-        "AI draft fill ho gaya. Har detail official notification se verify karke hi publish karein."
-      );
-    } catch (error: any) {
-      setNotice(error.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function save(event: React.FormEvent) {
     event.preventDefault();
 
@@ -873,70 +823,7 @@ export default function PostEditor({
         background: "#f8fafc",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 18,
-        }}
-      >
-        <button
-          type="button"
-          style={{
-            ...tableButton,
-            background: mode === "manual" ? "#e87920" : "#34465d",
-          }}
-          onClick={() => setMode("manual")}
-        >
-          Manual Entry
-        </button>
-
-        <button
-          type="button"
-          style={{
-            ...tableButton,
-            background: mode === "ai" ? "#e87920" : "#34465d",
-          }}
-          onClick={() => setMode("ai")}
-        >
-          AI Notice Extractor
-        </button>
-      </div>
-
-      {mode === "ai" && (
-        <section style={sectionStyle}>
-          <div style={{ padding: 18 }}>
-            <h2 style={{ marginTop: 0 }}>Official Notice Text</h2>
-
-            <p style={{ color: "#64748b", fontSize: 13 }}>
-              Notice ka text paste karein. AI details ko draft mein
-              convert karega; publish se pehle verify zaroor karein.
-            </p>
-
-            <textarea
-              style={{ ...inputStyle, minHeight: 220 }}
-              value={form.notice_text}
-              onChange={(e) =>
-                change("notice_text", e.target.value)
-              }
-              placeholder="Official Jharkhand recruitment / education notice yahan paste karein..."
-            />
-
-            <button
-              type="button"
-              style={{ ...tableButton, marginTop: 12 }}
-              disabled={busy || !form.notice_text.trim()}
-              onClick={parseAI}
-            >
-              {busy ? "Processing..." : "Extract Details with AI"}
-            </button>
-          </div>
-        </section>
-      )}
-
-      {mode === "manual" && (
-        <form onSubmit={save}>
+      <form onSubmit={save}>
           <RichTextToolbar />
           <section style={sectionStyle}>
             <div style={{ padding: 18 }}>
@@ -1660,8 +1547,7 @@ export default function PostEditor({
               Draft save karne se public nahi hoga.
             </span>
           </div>
-        </form>
-      )}
+      </form>
 
       {notice && (
         <p
