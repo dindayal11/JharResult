@@ -10,9 +10,12 @@ export type PostRow = {
 };
 export async function getPublishedPosts(limit = 30): Promise<PostRow[]> {
   const [rows] = await getPool().query(
-    `SELECT p.*, c.name AS category_name, c.slug AS category_slug
+    `SELECT p.*, c.name AS category_name, c.slug AS category_slug,
+       COALESCE(GROUP_CONCAT(DISTINCT mapped.slug ORDER BY mapped.name SEPARATOR ','), c.slug) AS category_slugs
      FROM posts p JOIN categories c ON c.id=p.category_id
-     WHERE p.status='published' ORDER BY p.published_at DESC LIMIT ?`, [limit]
+     LEFT JOIN post_categories pc ON pc.post_id=p.id
+     LEFT JOIN categories mapped ON mapped.id=pc.category_id
+     WHERE p.status='published' GROUP BY p.id ORDER BY p.published_at DESC LIMIT ?`, [limit]
   );
   return rows as PostRow[];
 }
