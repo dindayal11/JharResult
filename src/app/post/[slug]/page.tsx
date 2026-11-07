@@ -730,7 +730,7 @@ export default async function PostPage({
 
             <a
               className="side-link"
-              href="/category/board-updates"
+              href="/category/board"
             >
               Board Updates
             </a>
