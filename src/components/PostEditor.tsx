@@ -439,6 +439,10 @@ export default function PostEditor({
   post?: any;
 }) {
   const [mode, setMode] = useState<"manual" | "ai">("manual");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(() => {
+    const saved = Array.isArray(post?.category_ids) ? post.category_ids.map((id: any) => String(id)) : [];
+    return saved.length ? saved : [String(post?.category_id || categories[0]?.id || "")].filter(Boolean);
+  });
 
   const [form, setForm] = useState<any>({
     title: post?.title || "",
@@ -783,8 +787,16 @@ export default function PostEditor({
           (table) => table.title && table.columns.length
         );
 
+      if (!selectedCategoryIds.length) {
+        setNotice("Please select at least one category.");
+        setBusy(false);
+        return;
+      }
+
       const payload = {
         ...form,
+        category_id: selectedCategoryIds[0],
+        category_ids: selectedCategoryIds,
         custom_tables: JSON.stringify(cleanedTables),
       };
 
@@ -942,21 +954,23 @@ export default function PostEditor({
                 placeholder="e.g. JSSC CGL Recruitment 2026"
               />
 
-              <label style={labelStyle}>Category</label>
-
-              <select
-                style={inputStyle}
-                value={form.category_id}
-                onChange={(e) =>
-                  change("category_id", e.target.value)
-                }
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+              <label style={labelStyle}>Categories (select one or more)</label>
+              <div style={{ ...inputStyle, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 9, maxHeight: 220, overflowY: "auto" }}>
+                {categories.map((category) => {
+                  const id = String(category.id);
+                  return (
+                    <label key={category.id} style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 500, cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategoryIds.includes(id)}
+                        onChange={(event) => setSelectedCategoryIds((old) => event.target.checked ? [...old, id] : old.filter((value) => value !== id))}
+                      />
+                      {category.name}
+                    </label>
+                  );
+                })}
+              </div>
+              <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 12 }}>Selected categories mein yehi post same URL ke saath show hoga. At least one category select karein.</p>
 
               {/* POST DESCRIPTION EDITOR */}
               <label style={labelStyle}>Post Description</label>
