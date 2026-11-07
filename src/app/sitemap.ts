@@ -29,10 +29,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       "SELECT slug, updated_at, published_at FROM posts WHERE status = 'published' AND slug IS NOT NULL"
     );
     const [categoryRows] = await getPool().query(
-      "SELECT slug, updated_at FROM categories WHERE is_active = 1 AND slug IS NOT NULL"
+      "SELECT slug FROM categories WHERE is_active = 1 AND slug IS NOT NULL"
     );
     const [paperRows] = await getPool().query(
-      "SELECT updated_at, created_at FROM previous_year_papers WHERE status = 'published'"
+      "SELECT created_at FROM previous_year_papers WHERE status = 'published'"
     );
 
     const posts = (postRows as any[]).map((post) => ({
@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const categories = (categoryRows as any[]).map((category) => ({
       url: `${SITE_URL}/category/${encodeURIComponent(category.slug)}`,
-      lastModified: category.updated_at || undefined,
+      
       changeFrequency: "daily" as const,
       priority: 0.7,
     }));
