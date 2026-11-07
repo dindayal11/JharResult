@@ -22,7 +22,6 @@ export async function POST(req: Request) {
     const admin = (rows as any[])[0];
 
     if (!admin) {
-      console.log("LOGIN DEBUG: Admin email not found");
       return NextResponse.json(
         { error: "Admin account not found." },
         { status: 401 }
@@ -35,7 +34,6 @@ export async function POST(req: Request) {
     );
 
     if (!passwordValid) {
-      console.log("LOGIN DEBUG: Password mismatch");
       return NextResponse.json(
         { error: "Incorrect password." },
         { status: 401 }
@@ -47,12 +45,11 @@ export async function POST(req: Request) {
       email: admin.email
     });
 
-    console.log("LOGIN DEBUG: Session created successfully");
 
     return NextResponse.json({ ok: true });
 
   } catch (error) {
-    console.error("LOGIN API ERROR:", error);
+    console.error("Admin login failed.");
 
     return NextResponse.json(
       { error: "Login server error. Check the terminal." },
