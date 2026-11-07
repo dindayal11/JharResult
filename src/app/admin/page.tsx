@@ -46,7 +46,7 @@ export default async function AdminPage({
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   const [rows] = await getPool().execute(
-    `SELECT id,title,slug,status,verification_status,created_at,published_at
+    `SELECT id,title,slug,status,verification_status,created_at,published_at,scheduled_at
      FROM posts ${where}
      ORDER BY COALESCE(published_at, created_at) DESC LIMIT ?`,
     [...values, search || from || to || selectedCategoryId !== null ? 500 : 100]
@@ -203,8 +203,8 @@ export default async function AdminPage({
                     : "—"}
                 </td>
                 <td style={{ padding: "10px" }}>
-                  <span style={{ display: "inline-block", padding: "4px 9px", borderRadius: 20, background: p.status === "published" ? "#dcfce7" : "#fef3c7", color: p.status === "published" ? "#166534" : "#92400e", fontSize: 11, fontWeight: 700 }}>
-                    {p.status}
+                  <span style={{ display: "inline-block", padding: "4px 9px", borderRadius: 20, background: p.status === "published" ? "#dcfce7" : p.status === "scheduled" ? "#dbeafe" : "#fef3c7", color: p.status === "published" ? "#166534" : p.status === "scheduled" ? "#1d4ed8" : "#92400e", fontSize: 11, fontWeight: 700 }}>
+                    {p.status === "scheduled" ? `Scheduled${p.scheduled_at ? ` · ${new Date(p.scheduled_at).toLocaleString("en-IN")}` : ""}` : p.status}
                   </span>
                 </td>
                 <td style={{ padding: "10px", color: "#475569" }}>{p.verification_status || "—"}</td>
