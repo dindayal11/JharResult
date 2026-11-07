@@ -560,6 +560,12 @@ export default async function PostPage({
             {p.verification_status === "verified"
               ? "Verified by admin"
               : "Please verify official notice"}
+            {(p as any).updated_at && (
+              <>
+                <span>•</span>
+                Updated {new Date((p as any).updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+              </>
+            )}
           </div>
 
           {safeDescription && (
@@ -726,6 +732,10 @@ export default async function PostPage({
               Join Telegram
             </a>
           </section>
+
+          <p style={{ margin: "12px 0", fontSize: 13, color: "#52657c" }}>
+            Found an error or outdated detail? <a href="/contact" style={{ color: "#145da0", fontWeight: 700, textDecoration: "underline" }}>Report a correction</a> and include the post title and official source.
+          </p>
 
           <div className="disclaimer-box">
             <b>Note:</b> Candidates are advised to read the
