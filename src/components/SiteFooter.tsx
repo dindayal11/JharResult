@@ -3,10 +3,9 @@ const footerLinks = [
     title: "Important Links",
     links: [
       { name: "Latest Jobs", href: "/category/latest-jobs" },
-      { name: "Admit Cards", href: "/category/admit-card" },
-      { name: "Results", href: "/category/results" },
-      { name: "Answer Keys", href: "/category/answer-key" },
-      { name: "Admissions", href: "/category/admissions" },
+      { name: "Previous Year Papers", href: "/category/previous-papers" },
+      { name: "Board Updates (10th / 12th)", href: "/category/board" },
+      { name: "Scholarships", href: "/category/scholarships" },
     ],
   },
   
