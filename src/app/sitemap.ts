@@ -4,7 +4,7 @@ import { getPool } from "@/lib/db";
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://jharresult.in";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
@@ -12,9 +12,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/about",
     "/contact",
     "/privacy-policy",
-    "/terms-and-conditions",
+    "/terms",
     "/disclaimer",
     "/previous-year-papers",
+    "/category/previous-papers",
   ];
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
