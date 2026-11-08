@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   let connection: any;
   try {
     await requireAdmin();
-    const b = z.record(z.any()).parse(await req.json());
+    const b = z.record(z.string(), z.any()).parse(await req.json());
     const title = String(b.title || "").trim();
     if (!title) return NextResponse.json({ error: "Title is required." }, { status: 400 });
 
