@@ -3,8 +3,8 @@ const footerLinks = [
     title: "Important Links",
     links: [
       { name: "Latest Jobs", href: "/category/latest-jobs" },
-      { name: "Previous Year Papers", href: "/category/previous-papers" },
-      { name: "Board Updates (10th / 12th)", href: "/category/board" },
+      { name: "Previous Year Papers", href: "/previous-year-papers" },
+      { name: "Board Updates (10th / 12th)", href: "/category/results" },
       { name: "Scholarships", href: "/category/scholarships" },
     ],
   },
