@@ -30,7 +30,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const id = Number(rawId);
     if (!Number.isSafeInteger(id) || id <= 0) return NextResponse.json({ error: "Invalid post ID." }, { status: 400 });
 
-    const b = z.record(z.any()).parse(await req.json());
+    const b = z.record(z.string(), z.any()).parse(await req.json());
     const title = String(b.title || "").trim();
     if (!title) return NextResponse.json({ error: "Title is required." }, { status: 400 });
     const status = ["draft", "published", "scheduled"].includes(b.status) ? b.status : "draft";
