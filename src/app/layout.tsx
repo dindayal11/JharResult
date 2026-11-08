@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   applicationName: siteName,
+  verification: {
+    google: "PxlkVYCLEJp4mkNLHtivxzgPZxHr7yamxHfvAH08jaE",
+  },
   keywords: [
     "Jharkhand government jobs",
     "Jharkhand latest jobs",
