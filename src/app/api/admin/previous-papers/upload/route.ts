@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export const runtime = "nodejs";
@@ -35,6 +32,29 @@ async function applyWatermark(input: Buffer) {
   return Buffer.from(await document.save({ useObjectStreams: true }));
 }
 
+async function storePdfRemotely(bytes: Buffer) {
+  const secret = process.env.FILE_API_SECRET;
+  if (!secret) throw new Error("FILE_API_SECRET is not configured in the Web App environment.");
+
+  const body = new FormData();
+  body.append("file", new File([new Uint8Array(bytes)], `jharresult-${Date.now()}.pdf`, { type: "application/pdf" }));
+
+  const response = await fetch("https://files.jharresult.in/api/v1/upload.php", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret}` },
+    body,
+    signal: AbortSignal.timeout(60000),
+    cache: "no-store",
+  });
+
+  const result = await response.json().catch(() => null) as { ok?: boolean; url?: string; id?: string; error?: string } | null;
+  if (!response.ok || !result?.ok || !result.url) {
+    console.error("Persistent PDF storage rejected upload:", response.status, result?.error);
+    throw new Error(result?.error || `Persistent storage returned HTTP ${response.status}`);
+  }
+  return { url: result.url, id: result.id };
+}
+
 export async function POST(request: Request) {
   try {
     await requireAdmin();
@@ -61,15 +81,14 @@ export async function POST(request: Request) {
 
     if (watermarked.length > MAX_OUTPUT_SIZE) return NextResponse.json({ error: "The processed PDF is too large. Please upload a smaller PDF." }, { status: 400 });
 
-    const directory = path.join(process.cwd(), "public", "uploads", "previous-papers");
-    await mkdir(directory, { recursive: true });
-    const filename = `${randomUUID()}.pdf`;
-    await writeFile(path.join(directory, filename), watermarked, { flag: "wx" });
-
-    return NextResponse.json({ ok: true, url: `/uploads/previous-papers/${filename}`, filename, size: watermarked.length, watermarked: true });
+    const stored = await storePdfRemotely(watermarked);
+    return NextResponse.json({ ok: true, url: stored.url, file_id: stored.id, size: watermarked.length, watermarked: true, storage: "persistent" });
   } catch (error: any) {
     const unauthorized = error?.message === "UNAUTHORIZED";
     console.error("PDF upload error:", error);
-    return NextResponse.json({ error: unauthorized ? "Please sign in as admin." : "Could not upload and watermark PDF." }, { status: unauthorized ? 401 : 500 });
+    const message = error?.message === "FILE_API_SECRET is not configured in the Web App environment."
+      ? "Persistent file storage is not configured. Add FILE_API_SECRET in Hostinger Web App environment variables."
+      : "Could not process or save PDF to persistent storage. Please try again.";
+    return NextResponse.json({ error: unauthorized ? "Please sign in as admin." : message }, { status: unauthorized ? 401 : 502 });
   }
 }
