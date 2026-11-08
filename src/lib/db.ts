@@ -16,7 +16,7 @@ export function getPool() {
       waitForConnections: true,
       connectionLimit: 8,
       queueLimit: 0,
-      charset: "utf8mb4",
+      charset: "utf8mb4_unicode_ci",
       timezone: "Z"
     });
   }
