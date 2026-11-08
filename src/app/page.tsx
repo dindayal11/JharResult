@@ -44,7 +44,8 @@ export default async function Home() {
     posts = published;
     categories = (categoryRows[0] as CategoryLink[]) || [];
     previousPapers = paperRows[0] as any[];
-  } catch {
+    } catch (error) {
+    console.error("Homepage database error:", error);
     dbError = true;
   }
 
