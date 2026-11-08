@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
@@ -31,6 +28,29 @@ function watermarkSvg(width: number, pageHeight: number, pages: number) {
     `<text x="${width / 2}" y="${index * pageHeight + pageHeight / 2}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="700" fill="#777777" fill-opacity="0.16">JharResult</text>`
   ).join("");
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}">${labels}</svg>`);
+}
+
+async function storeImageRemotely(bytes: Buffer, filename: string, mime: string) {
+  const secret = process.env.FILE_API_SECRET;
+  if (!secret) throw new Error("FILE_API_SECRET is not configured in the Web App environment.");
+
+  const body = new FormData();
+  body.append("file", new File([new Uint8Array(bytes)], filename, { type: mime }));
+
+  const response = await fetch("https://files.jharresult.in/api/v1/upload.php", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret}` },
+    body,
+    signal: AbortSignal.timeout(60000),
+    cache: "no-store",
+  });
+
+  const result = await response.json().catch(() => null) as { ok?: boolean; url?: string; error?: string } | null;
+  if (!response.ok || !result?.ok || !result.url) {
+    console.error("Persistent image storage rejected upload:", response.status, result?.error);
+    throw new Error(result?.error || `Persistent storage returned HTTP ${response.status}`);
+  }
+  return result.url;
 }
 
 export async function POST(request: Request) {
@@ -74,15 +94,16 @@ export async function POST(request: Request) {
           ? await pipeline.webp({ quality: 88 }).toBuffer()
           : await pipeline.gif().toBuffer();
 
-    const directory = path.join(process.cwd(), "public", "uploads");
-    await mkdir(directory, { recursive: true });
-    const filename = `${randomUUID()}${extension}`;
-    await writeFile(path.join(directory, filename), watermarked, { flag: "wx" });
+    const filename = `jharresult-${Date.now()}${extension}`;
+    const url = await storeImageRemotely(watermarked, filename, file.type);
 
-    return NextResponse.json({ ok: true, url: `/uploads/${filename}`, size: watermarked.length, watermarked: true, watermark: "JharResult" });
+    return NextResponse.json({ ok: true, url, size: watermarked.length, watermarked: true, watermark: "JharResult", storage: "persistent" });
   } catch (error: any) {
     const unauthorized = error?.message === "UNAUTHORIZED";
     console.error("Image upload error:", error);
-    return NextResponse.json({ error: unauthorized ? "Please sign in." : "Could not process and watermark image. Please try another file." }, { status: unauthorized ? 401 : 500 });
+    const message = error?.message === "FILE_API_SECRET is not configured in the Web App environment."
+      ? "Persistent file storage is not configured. Add FILE_API_SECRET in Hostinger Web App environment variables."
+      : "Could not process or save image to persistent storage. Please try again.";
+    return NextResponse.json({ error: unauthorized ? "Please sign in." : message }, { status: unauthorized ? 401 : 502 });
   }
 }
