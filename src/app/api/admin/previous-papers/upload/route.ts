@@ -17,16 +17,37 @@ async function applyWatermark(input: Buffer) {
   const font = await document.embedFont(StandardFonts.HelveticaBold);
   for (const page of pages) {
     const { width, height } = page.getSize();
-    const fontSize = Math.max(18, Math.min(48, Math.min(width, height) * 0.085));
+    const fontSize = Math.max(18, Math.min(34, Math.min(width, height) * 0.055));
+    const centerSize = Math.max(22, Math.min(42, Math.min(width, height) * 0.075));
     const label = "JharResult";
     const textWidth = font.widthOfTextAtSize(label, fontSize);
+    const centerWidth = font.widthOfTextAtSize(label, centerSize);
+
+    // Repeated diagonal marks make the watermark visible even if a page is cropped.
+    const horizontalGap = Math.max(150, textWidth + 95);
+    const verticalGap = Math.max(105, fontSize * 4.2);
+    for (let y = -height; y <= height * 2; y += verticalGap) {
+      for (let x = -width; x <= width * 2; x += horizontalGap) {
+        page.drawText(label, {
+          x,
+          y,
+          size: fontSize,
+          font,
+          color: rgb(0.42, 0.42, 0.42),
+          opacity: 0.22,
+          rotate: { type: "degrees", angle: -30 },
+        });
+      }
+    }
+
+    // A slightly stronger center mark provides clear brand identification.
     page.drawText(label, {
-      x: Math.max(8, (width - textWidth) / 2),
-      y: Math.max(8, (height - fontSize) / 2),
-      size: fontSize,
+      x: Math.max(8, (width - centerWidth) / 2),
+      y: Math.max(8, (height - centerSize) / 2),
+      size: centerSize,
       font,
-      color: rgb(0.48, 0.48, 0.48),
-      opacity: 0.16,
+      color: rgb(0.38, 0.38, 0.38),
+      opacity: 0.28,
     });
   }
   return Buffer.from(await document.save({ useObjectStreams: true }));
