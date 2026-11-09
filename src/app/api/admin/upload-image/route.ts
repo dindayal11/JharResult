@@ -22,12 +22,14 @@ function matchesSignature(type: string, bytes: Buffer) {
 }
 
 function watermarkSvg(width: number, pageHeight: number, pages: number) {
-  const fontSize = Math.max(18, Math.min(width, pageHeight) * 0.085);
+  const fontSize = Math.max(18, Math.min(42, Math.min(width, pageHeight) * 0.065));
+  const centerSize = Math.max(22, Math.min(54, Math.min(width, pageHeight) * 0.085));
   const totalHeight = pageHeight * pages;
   const labels = Array.from({ length: pages }, (_, index) =>
-    `<text x="${width / 2}" y="${index * pageHeight + pageHeight / 2}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="700" fill="#777777" fill-opacity="0.16">JharResult</text>`
+    `<text x="${width / 2}" y="${index * pageHeight + pageHeight / 2}" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${centerSize}" font-weight="700" letter-spacing="1" fill="#555555" fill-opacity="0.30">JharResult</text>`
   ).join("");
-  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}">${labels}</svg>`);
+  const pattern = `<defs><pattern id="watermark" width="420" height="240" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)"><text x="210" y="120" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="700" letter-spacing="1" fill="#666666" fill-opacity="0.23">JharResult</text></pattern></defs><rect width="${width}" height="${totalHeight}" fill="url(#watermark)"/>`;
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}">${pattern}${labels}</svg>`);
 }
 
 async function storeImageRemotely(bytes: Buffer, filename: string, mime: string) {
