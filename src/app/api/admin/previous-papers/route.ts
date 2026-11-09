@@ -4,6 +4,16 @@ import { getPool } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+function isAllowedPdfUrl(value: string) {
+  if (value.startsWith("/uploads/previous-papers/")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     await requireAdmin();
@@ -37,11 +47,11 @@ export async function POST(request: Request) {
     }
 
     if (
-      !pdfUrl.startsWith("/uploads/previous-papers/") ||
-      (solutionPdfUrl && !solutionPdfUrl.startsWith("/uploads/previous-papers/"))
+      !isAllowedPdfUrl(pdfUrl) ||
+      (solutionPdfUrl && !isAllowedPdfUrl(solutionPdfUrl))
     ) {
       return NextResponse.json(
-        { error: "Invalid PDF file path." },
+        { error: "Please provide a valid HTTPS PDF link or upload a PDF file." },
         { status: 400 }
       );
     }
