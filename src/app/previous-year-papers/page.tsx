@@ -2,6 +2,13 @@
 import SiteHeader from "@/components/SiteHeader";
 import PreviousPapersList from "@/components/PreviousPapersList";
 import { getPool } from "@/lib/db";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Previous Year Question Papers",
+  description: "Find and download previous year question papers and available solutions for Jharkhand exams and courses on JharResult.",
+  alternates: { canonical: "/previous-year-papers" },
+};
 
 export const dynamic = "force-dynamic";
 
