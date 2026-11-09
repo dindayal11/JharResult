@@ -68,6 +68,30 @@ export default function RootLayout({
   return (
     <html lang="en-IN">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "@id": "https://jharresult.in/#organization",
+                name: "JharResult",
+                url: "https://jharresult.in/",
+                description: siteDescription,
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "@id": "https://jharresult.in/#website",
+                name: "JharResult",
+                url: "https://jharresult.in/",
+                publisher: { "@id": "https://jharresult.in/#organization" },
+                inLanguage: "en-IN",
+              },
+            ]).replace(/</g, "\\u003c"),
+          }}
+        />
         {children}
         <SiteFooter />
       </body>
