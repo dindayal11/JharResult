@@ -533,8 +533,10 @@ export default function PostEditor({
       };
 
       setAutoSaveStatus("Saving draft…");
+      const previousSave = autoSavePromiseRef.current;
       const request = (async () => {
         try {
+          if (previousSave) await previousSave;
           const draftId = autoDraftIdRef.current;
           const response = await fetch(
             draftId ? `/api/admin/posts/${draftId}` : "/api/admin/posts",
@@ -552,9 +554,10 @@ export default function PostEditor({
           setAutoSaveStatus("Auto-save pending — keep this page open and use Save Post before leaving.");
         }
       })();
-      autoSavePromiseRef.current = request.finally(() => {
-        autoSavePromiseRef.current = null;
+      const trackedSave = request.finally(() => {
+        if (autoSavePromiseRef.current === trackedSave) autoSavePromiseRef.current = null;
       });
+      autoSavePromiseRef.current = trackedSave;
     }, 1800);
 
     return () => window.clearTimeout(timer);
