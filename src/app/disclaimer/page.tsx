@@ -1,6 +1,7 @@
 import InfoPage, { InfoSection } from "@/components/InfoPage";
 
 export const metadata = {
+  alternates: { canonical: "/disclaimer" },
   title: "Disclaimer",
   description:
     "Read the JharResult disclaimer about independent information, official notifications, accuracy and external links.",
