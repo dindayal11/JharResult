@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -35,7 +35,7 @@ async function applyWatermark(input: Buffer) {
           font,
           color: rgb(0.42, 0.42, 0.42),
           opacity: 0.22,
-          rotate: { type: "degrees", angle: -30 },
+          rotate: degrees(-30),
         });
       }
     }
