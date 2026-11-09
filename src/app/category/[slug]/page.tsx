@@ -1,5 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import PostCard from "@/components/PostCard";
+import PreviousPapersList from "@/components/PreviousPapersList";
 import { getPool } from "@/lib/db";
 import type { PostRow } from "@/lib/posts";
 import { notFound } from "next/navigation";
@@ -50,38 +51,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
 
       {slug === "previous-papers" && (
         papers.length ? (
-          <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, minWidth: 650 }}>
-              <thead>
-                <tr style={{ background: "#173f68", color: "#fff" }}>
-                  {["Paper Details", "Subject", "Year", "Question Paper", "Solution"].map((heading) => (
-                    <th key={heading} align="left" style={{ padding: "13px 12px" }}>{heading}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {papers.map((paper) => (
-                  <tr key={paper.id} style={{ borderBottom: "1px solid #e6eaf0" }}>
-                    <td style={{ padding: "13px 12px" }}>
-                      <strong style={{ color: "#174b80" }}>{paper.title}</strong>
-                      <div className="muted" style={{ fontSize: 12, marginTop: 5 }}>{paper.exam_name}</div>
-                      <div className="muted" style={{ fontSize: 12 }}>{[paper.course, paper.stream, paper.semester].filter(Boolean).join(" • ")}</div>
-                    </td>
-                    <td style={{ padding: "13px 12px" }}>{paper.subject}</td>
-                    <td style={{ padding: "13px 12px" }}>{paper.year}</td>
-                    <td style={{ padding: "13px 12px" }}>
-                      <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: "#0756a5", fontWeight: 700 }}>Download PDF</a>
-                    </td>
-                    <td style={{ padding: "13px 12px" }}>
-                      {paper.solution_pdf_url ? (
-                        <a href={paper.solution_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: "#15803d", fontWeight: 700 }}>Download Solution</a>
-                      ) : <span className="muted">Not Available</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PreviousPapersList papers={papers} />
         ) : posts.length === 0 ? (
           <div className="panel">No previous year papers or updates have been published yet.</div>
         ) : null
