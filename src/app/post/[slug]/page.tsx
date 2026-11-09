@@ -389,21 +389,52 @@ export default async function PostPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: p.title,
-            description: p.seo_description || p.short_description || undefined,
-            datePublished: p.published_at ? new Date(p.published_at).toISOString() : undefined,
-            dateModified: (p as any).updated_at ? new Date((p as any).updated_at).toISOString() : undefined,
-            mainEntityOfPage: {
-              "@type": "WebPage",
-              "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/post/${encodeURIComponent(p.slug)}`,
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "NewsArticle",
+              headline: p.title,
+              description: p.seo_description || p.short_description || undefined,
+              datePublished: p.published_at ? new Date(p.published_at).toISOString() : undefined,
+              dateModified: (p as any).updated_at
+                ? new Date((p as any).updated_at).toISOString()
+                : p.published_at
+                  ? new Date(p.published_at).toISOString()
+                  : undefined,
+              mainEntityOfPage: {
+                "@type": "WebPage",
+                "@id": `https://jharresult.in/post/${encodeURIComponent(p.slug)}`,
+              },
+              author: { "@id": "https://jharresult.in/#organization" },
+              publisher: { "@id": "https://jharresult.in/#organization" },
+              image: (p as any).image_url || undefined,
+              inLanguage: "en-IN",
             },
-            author: { "@type": "Organization", name: "JharResult" },
-            publisher: { "@type": "Organization", name: "JharResult" },
-            image: (p as any).image_url || undefined,
-          }).replace(/</g, "\\u003c"),
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://jharresult.in/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: p.category_name,
+                  item: `https://jharresult.in/category/${encodeURIComponent(p.category_slug)}`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: p.title,
+                  item: `https://jharresult.in/post/${encodeURIComponent(p.slug)}`,
+                },
+              ],
+            },
+          ]).replace(/</g, "\\u003c"),
         }}
       />
 
