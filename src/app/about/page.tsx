@@ -1,6 +1,7 @@
 import InfoPage, { InfoSection } from "@/components/InfoPage";
 
 export const metadata = {
+  alternates: { canonical: "/about" },
   title: "About Us",
   description:
     "JharResult is an independent information portal providing information about Jharkhand government jobs, recruitment notifications, results and educational updates.",
