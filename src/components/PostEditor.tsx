@@ -488,6 +488,9 @@ export default function PostEditor({
   const [busy, setBusy] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [expandedTables, setExpandedTables] = useState<string[]>([]);
+  const [autoSaveStatus, setAutoSaveStatus] = useState("");
+  const autoDraftIdRef = useRef<number | null>(post?.id ? Number(post.id) : null);
+  const autoSavePromiseRef = useRef<Promise<void> | null>(null);
 
   const descriptionEditor = useRef<HTMLDivElement>(null);
   const descriptionInitialized = useRef(false);
@@ -505,6 +508,57 @@ export default function PostEditor({
       descriptionInitialized.current = true;
     }
   }, [form.short_description]);
+
+  // Automatically preserve new posts as unpublished drafts while the editor is open.
+  useEffect(() => {
+    if (post || !form.title.trim() || !selectedCategoryIds.length || busy || imageBusy) return;
+
+    const timer = window.setTimeout(() => {
+      const cleanedTables = customTables
+        .map((table) => ({
+          ...table,
+          title: table.title.trim(),
+          columns: table.columns.map((column) => column.trim()),
+          rows: table.rows.filter((row) => row.some((cell) => cell.trim())),
+        }))
+        .filter((table) => table.title && table.columns.length);
+
+      const payload = {
+        ...form,
+        status: "draft",
+        scheduled_at: "",
+        category_id: selectedCategoryIds[0],
+        category_ids: selectedCategoryIds,
+        custom_tables: JSON.stringify(cleanedTables),
+      };
+
+      setAutoSaveStatus("Saving draft…");
+      const request = (async () => {
+        try {
+          const draftId = autoDraftIdRef.current;
+          const response = await fetch(
+            draftId ? `/api/admin/posts/${draftId}` : "/api/admin/posts",
+            {
+              method: draftId ? "PUT" : "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }
+          );
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Draft auto-save failed.");
+          if (!draftId && data.id) autoDraftIdRef.current = Number(data.id);
+          setAutoSaveStatus("Draft saved automatically");
+        } catch {
+          setAutoSaveStatus("Auto-save pending — keep this page open and use Save Post before leaving.");
+        }
+      })();
+      autoSavePromiseRef.current = request.finally(() => {
+        autoSavePromiseRef.current = null;
+      });
+    }, 1800);
+
+    return () => window.clearTimeout(timer);
+  }, [form, customTables, selectedCategoryIds, post, busy, imageBusy]);
 
   const formatDescription = (command: string, value?: string) => {
     descriptionEditor.current?.focus();
@@ -755,6 +809,7 @@ export default function PostEditor({
     setNotice("");
 
     try {
+      if (autoSavePromiseRef.current) await autoSavePromiseRef.current;
       const cleanedTables = customTables
         .map((table) => ({
           ...table,
@@ -791,12 +846,14 @@ export default function PostEditor({
         custom_tables: JSON.stringify(cleanedTables),
       };
 
+      const existingDraftId = autoDraftIdRef.current;
+      const targetPostId = post?.id || existingDraftId;
       const response = await fetch(
-        post
-          ? `/api/admin/posts/${post.id}`
+        targetPostId
+          ? `/api/admin/posts/${targetPostId}`
           : "/api/admin/posts",
         {
-          method: post ? "PUT" : "POST",
+          method: targetPostId ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -1653,6 +1710,9 @@ export default function PostEditor({
                   : "Save Post"}
             </button>
 
+            <span role="status" aria-live="polite" style={{ color: autoSaveStatus.startsWith("Draft saved") ? "#16804a" : "#64748b", fontSize: 12 }}>
+              {autoSaveStatus || "Auto-save starts after you enter a post title."}
+            </span>
             <span style={{ color: "#64748b", fontSize: 12 }}>
               Draft save karne se public nahi hoga.
             </span>
