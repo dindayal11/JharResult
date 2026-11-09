@@ -1,6 +1,7 @@
 import InfoPage, { InfoSection } from "@/components/InfoPage";
 
 export const metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact Us",
   description:
     "Contact JharResult for information queries, corrections, suggestions, copyright concerns and website-related inquiries.",
