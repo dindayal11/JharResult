@@ -6,6 +6,16 @@ import path from "node:path";
 
 export const runtime = "nodejs";
 
+function isAllowedPdfUrl(value: string) {
+  if (value.startsWith("/uploads/previous-papers/")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(_request: Request, { params }: { params: Promise<{id:string}> }) {
   try {
     await requireAdmin();
@@ -29,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{id:st
     const pdf=String(b.pdf_url||"").trim(), solution=String(b.solution_pdf_url||"").trim();
     if(!title||!exam||!subject||!pdf) return NextResponse.json({error:"Title, exam, subject and question paper PDF are required."},{status:400});
     if(!Number.isInteger(year)||year<1950||year>2100) return NextResponse.json({error:"Please enter a valid year."},{status:400});
-    if(!pdf.startsWith("/uploads/previous-papers/")||(solution&&!solution.startsWith("/uploads/previous-papers/"))) return NextResponse.json({error:"Invalid PDF file path."},{status:400});
+    if(!isAllowedPdfUrl(pdf)||(solution&&!isAllowedPdfUrl(solution))) return NextResponse.json({error:"Please provide a valid HTTPS PDF link or upload a PDF file."},{status:400});
     await getPool().execute(`UPDATE previous_year_papers SET title=?,exam_name=?,course=?,stream=?,subject=?,year=?,semester=?,description=?,pdf_url=?,solution_pdf_url=?,status=? WHERE id=?`,
       [title,exam,String(b.course||"").trim()||null,String(b.stream||"").trim()||null,subject,year,String(b.semester||"").trim()||null,String(b.description||"").trim()||null,pdf,solution||null,b.status==="published"?"published":"draft",id]);
     return NextResponse.json({ok:true});
