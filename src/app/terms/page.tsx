@@ -1,6 +1,7 @@
 import InfoPage, { InfoSection } from "@/components/InfoPage";
 
 export const metadata = {
+  alternates: { canonical: "/terms" },
   title: "Terms & Conditions",
   description:
     "Read the Terms & Conditions for using the JharResult website.",
