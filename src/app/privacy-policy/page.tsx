@@ -1,6 +1,7 @@
 import InfoPage, { InfoSection } from "@/components/InfoPage";
 
 export const metadata = {
+  alternates: { canonical: "/privacy-policy" },
   title: "Privacy Policy",
   description:
     "Read the JharResult Privacy Policy to understand what information may be collected and how it may be used.",
