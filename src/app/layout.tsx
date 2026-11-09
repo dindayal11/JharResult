@@ -34,7 +34,6 @@ export const metadata: Metadata = {
     "Jharkhand answer key",
     "Jharkhand scholarship",
   ],
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_IN",
