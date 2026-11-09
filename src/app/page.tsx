@@ -2,12 +2,14 @@ import SiteHeader from "@/components/SiteHeader";
 import PostCard from "@/components/PostCard";
 import { getPublishedPosts } from "@/lib/posts";
 import { getPool } from "@/lib/db";
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 
 // export const viewport: Viewport = {
 //   width: 1200,
 //   initialScale: 1,
 // };
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export const dynamic = "force-dynamic";
 
