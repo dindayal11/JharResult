@@ -22,13 +22,47 @@ function matchesSignature(type: string, bytes: Buffer) {
 }
 
 function watermarkSvg(width: number, pageHeight: number, pages: number) {
-  const fontSize = Math.max(18, Math.min(42, Math.min(width, pageHeight) * 0.065));
-  const centerSize = Math.max(22, Math.min(54, Math.min(width, pageHeight) * 0.085));
+  // Font-independent vector lettering avoids missing-font boxes on Linux hosts.
+  const glyphs: Record<string, string[]> = {
+    J: ["00111","00010","00010","00010","10010","10010","01100"],
+    H: ["10001","10001","10001","11111","10001","10001","10001"],
+    A: ["01110","10001","10001","11111","10001","10001","10001"],
+    R: ["11110","10001","10001","11110","10100","10010","10001"],
+    E: ["11111","10000","10000","11110","10000","10000","11111"],
+    S: ["01111","10000","10000","01110","00001","00001","11110"],
+    U: ["10001","10001","10001","10001","10001","10001","01110"],
+    L: ["10000","10000","10000","10000","10000","10000","11111"],
+    T: ["11111","00100","00100","00100","00100","00100","00100"],
+  };
+  const word = "JHARRESULT";
+  const wordPath = (centerX: number, centerY: number, height: number) => {
+    const cell = height / 7;
+    const advance = cell * 6;
+    const totalWidth = (word.length * 6 - 1) * cell;
+    const left = centerX - totalWidth / 2;
+    const top = centerY - height / 2;
+    const parts: string[] = [];
+    [...word].forEach((letter, index) => {
+      glyphs[letter].forEach((row, rowIndex) => {
+        [...row].forEach((bit, columnIndex) => {
+          if (bit === "1") {
+            const x = left + index * advance + columnIndex * cell;
+            const y = top + rowIndex * cell;
+            parts.push(`M${x.toFixed(2)} ${y.toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}Z`);
+          }
+        });
+      });
+    });
+    return parts.join("");
+  };
+
+  const patternHeight = Math.max(18, Math.min(30, Math.min(width, pageHeight) * 0.045));
+  const centerHeight = Math.max(24, Math.min(42, Math.min(width, pageHeight) * 0.065));
   const totalHeight = pageHeight * pages;
   const labels = Array.from({ length: pages }, (_, index) =>
-    `<text x="${width / 2}" y="${index * pageHeight + pageHeight / 2}" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="${centerSize}" font-weight="500" letter-spacing="0.2" text-rendering="geometricPrecision" fill="#555555" fill-opacity="0.22">JharResult</text>`
+    `<path d="${wordPath(width / 2, index * pageHeight + pageHeight / 2, centerHeight)}" fill="#555555" fill-opacity="0.18"/>`
   ).join("");
-  const pattern = `<defs><pattern id="watermark" width="420" height="240" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)"><text x="210" y="120" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="${fontSize}" font-weight="500" letter-spacing="0.2" text-rendering="geometricPrecision" fill="#666666" fill-opacity="0.16">JharResult</text></pattern></defs><rect width="${width}" height="${totalHeight}" fill="url(#watermark)"/>`;
+  const pattern = `<defs><pattern id="watermark" width="420" height="240" patternUnits="userSpaceOnUse" patternTransform="rotate(-28)"><path d="${wordPath(210, 120, patternHeight)}" fill="#666666" fill-opacity="0.14"/></pattern></defs><rect width="${width}" height="${totalHeight}" fill="url(#watermark)"/>`;
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${totalHeight}">${pattern}${labels}</svg>`);
 }
 
