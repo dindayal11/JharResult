@@ -19,6 +19,7 @@ type CustomTable = {
   title: string;
   columns: string[];
   rows: string[][];
+  rowUpdatedAt?: (string | null)[];
   layout_direction: "row" | "column";
   layout_columns: number;
   theme_primary: string;
@@ -813,15 +814,27 @@ export default function PostEditor({
 
     try {
       if (autoSavePromiseRef.current) await autoSavePromiseRef.current;
+      const baselineTables = parseCustomTables(post?.custom_tables);
       const cleanedTables = customTables
-        .map((table) => ({
-          ...table,
-          title: table.title.trim(),
-          columns: table.columns.map((c) => c.trim()),
-          rows: table.rows.filter((row) =>
-            row.some((cell) => cell.trim())
-          ),
-        }))
+        .map((table) => {
+          const baseline = baselineTables.find((item) => item.id === table.id);
+          const rowsWithOriginalIndexes = table.rows
+            .map((row, index) => ({ row, index }))
+            .filter(({ row }) => row.some((cell) => cell.trim()));
+          const rowUpdatedAt = rowsWithOriginalIndexes.map(({ row, index }) => {
+            const previousRow = baseline?.rows[index];
+            const previousTimestamp = baseline?.rowUpdatedAt?.[index] || null;
+            const changed = !previousRow || JSON.stringify(previousRow) !== JSON.stringify(row);
+            return changed ? new Date().toISOString() : previousTimestamp;
+          });
+          return {
+            ...table,
+            title: table.title.trim(),
+            columns: table.columns.map((c) => c.trim()),
+            rows: rowsWithOriginalIndexes.map(({ row }) => row),
+            rowUpdatedAt,
+          };
+        })
         .filter(
           (table) => table.title && table.columns.length
         );
