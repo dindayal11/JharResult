@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /api/upload
+
+# Content usage preferences for automated systems
+Content-Signal: search=yes, ai-train=no
+
+Sitemap: https://jharresult.in/sitemap.xml
+Host: https://jharresult.in
