@@ -88,6 +88,34 @@ export default async function Home() {
   return (
     <>
       <SiteHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://jharresult.in/#latest-updates",
+            name: "Latest Jharkhand Jobs, Results & Education Updates",
+            url: "https://jharresult.in/",
+            isPartOf: { "@id": "https://jharresult.in/#website" },
+            mainEntity: {
+              "@type": "ItemList",
+              itemListOrder: "https://schema.org/ItemListOrderDescending",
+              numberOfItems: latest.length,
+              itemListElement: latest.map((post, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                item: {
+                  "@type": "NewsArticle",
+                  headline: post.title,
+                  url: `https://jharresult.in/post/${encodeURIComponent(post.slug)}`
+                }
+              }))
+            }
+          }).replace(/</g, "\\u003c")
+        }}
+      />
+
 
       {latest.length > 0 && (
         <div className="container">
