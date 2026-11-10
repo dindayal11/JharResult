@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
       const results = (rows as any[]).map((post) => ({
         title: post.title,
-        description: String(post.short_description || "").replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim().slice(0, 400),
+        description: String(post.short_description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 400),
         category: post.category_name,
         publishedAt: post.published_at,
         url: `https://jharresult.in/post/${encodeURIComponent(post.slug)}`,
