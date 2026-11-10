@@ -79,6 +79,14 @@ export default function RootLayout({
                 name: "JharResult",
                 url: "https://jharresult.in/",
                 description: siteDescription,
+                email: "dindayal8456@gmail.com",
+                sameAs: ["https://t.me/+_hj11IZ9nktjOWM1"],
+                contactPoint: [{
+                  "@type": "ContactPoint",
+                  contactType: "customer support",
+                  email: "dindayal8456@gmail.com",
+                  availableLanguage: ["English", "Hindi"]
+                }]
               },
               {
                 "@context": "https://schema.org",
@@ -88,7 +96,26 @@ export default function RootLayout({
                 url: "https://jharresult.in/",
                 publisher: { "@id": "https://jharresult.in/#organization" },
                 inLanguage: "en-IN",
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://jharresult.in/search?q={search_term_string}"
+                  },
+                  "query-input": "required name=search_term_string"
+                }
               },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "@id": "https://jharresult.in/#webpage",
+                url: "https://jharresult.in/",
+                name: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+                description: siteDescription,
+                isPartOf: { "@id": "https://jharresult.in/#website" },
+                about: { "@id": "https://jharresult.in/#organization" },
+                inLanguage: "en-IN"
+              }
             ]).replace(/</g, "\\u003c"),
           }}
         />
