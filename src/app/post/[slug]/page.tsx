@@ -109,11 +109,12 @@ function CustomTable({ table }: { table: any }) {
     ? table.rows
     : [];
 
-  const visibleRows = rows.filter(
-    (row: any) =>
+  const visibleRows = rows
+    .map((row: any, index: number) => ({ row, index }))
+    .filter(({ row }: any) =>
       Array.isArray(row) &&
       row.some((cell: any) => !isEmpty(cell))
-  );
+    );
 
   if (!table.title || !columns.length || !visibleRows.length) {
     return null;
@@ -170,7 +171,11 @@ function CustomTable({ table }: { table: any }) {
           </thead>
 
 <tbody>
-  {visibleRows.map((row: string[], rowIndex: number) => (
+  {visibleRows.map(({ row, index: rowIndex }: { row: string[]; index: number }) => {
+    const rowUpdatedAt = Array.isArray(table.rowUpdatedAt) ? table.rowUpdatedAt[rowIndex] : null;
+    const rowTimestamp = rowUpdatedAt ? new Date(rowUpdatedAt).getTime() : 0;
+    const rowIsNew = Boolean(rowTimestamp && Date.now() >= rowTimestamp && Date.now() - rowTimestamp <= 7 * 24 * 60 * 60 * 1000);
+    return (
     <tr key={rowIndex}>
       {columns.map((column: string, colIndex: number) => {
         const value = decodeHtmlEntities(String(row[colIndex] ?? ""))
@@ -200,6 +205,15 @@ function CustomTable({ table }: { table: any }) {
               whiteSpace: "pre-wrap",
             }}
           >
+            {colIndex === 0 && rowIsNew && (
+              <span
+                className="new-badge"
+                title={`This row was updated on ${new Date(rowUpdatedAt).toLocaleDateString("en-IN")}`}
+                style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 7, marginBottom: 5 }}
+              >
+                NEW
+              </span>
+            )}
             {/<[a-z][\s\S]*>/i.test(value) ? (
               <div
                 dangerouslySetInnerHTML={{
@@ -226,7 +240,8 @@ function CustomTable({ table }: { table: any }) {
         );
       })}
     </tr>
-  ))}
+    );
+  })}
 </tbody>
         </table>
       </div>
