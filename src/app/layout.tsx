@@ -119,6 +119,42 @@ export default function RootLayout({
             ]).replace(/</g, "\\u003c"),
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+              const register = () => {
+                const modelContext = navigator.modelContext;
+                if (!modelContext || typeof modelContext.registerTool !== "function") return;
+                if (window.__jharResultAgentToolRegistered) return;
+                window.__jharResultAgentToolRegistered = true;
+                modelContext.registerTool({
+                  name: "search_jharresult_updates",
+                  description: "Search publicly published Jharkhand jobs, results, admit cards, answer keys, admissions and education updates on JharResult.",
+                  inputSchema: {
+                    type: "object",
+                    properties: { query: { type: "string", description: "Words or phrase to search for." } },
+                    required: ["query"],
+                    additionalProperties: false
+                  },
+                  execute: async ({ query }) => {
+                    const term = String(query || "").trim().slice(0, 100);
+                    if (term.length < 2) return { error: "Enter at least two characters." };
+                    const response = await fetch("/api/agent-search?q=" + encodeURIComponent(term), {
+                      headers: { "Accept": "application/json" }
+                    });
+                    if (!response.ok) throw new Error("JharResult search is temporarily unavailable.");
+                    return await response.json();
+                  }
+                });
+              };
+              if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", register, { once: true });
+              } else {
+                register();
+              }
+            })();`
+          }}
+        />
         {children}
         <SiteFooter />
       </body>
