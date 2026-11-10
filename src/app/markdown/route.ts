@@ -26,7 +26,7 @@ export async function GET() {
     ...categories.map((category) => `- [${category.name}](https://jharresult.in/category/${encodeURIComponent(category.slug)})`),
     "",
     "## Latest published updates",
-    ...posts.map((post: any) => `- [${post.title}](https://jharresult.in/post/${encodeURIComponent(post.slug)})${post.short_description ? `: ${String(post.short_description).replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").slice(0, 240)}` : ""}`),
+    ...posts.map((post: any) => `- [${post.title}](https://jharresult.in/post/${encodeURIComponent(post.slug)})${post.short_description ? `: ${String(post.short_description).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 240)}` : ""}`),
     "",
     "JharResult is an independent information portal, not a government department. Verify time-sensitive details with the relevant official notification.",
     "",
