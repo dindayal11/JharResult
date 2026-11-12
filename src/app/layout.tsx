@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+    title: "Jhar Result (JharResult) – Jharkhand Jobs & Results",
     description: siteDescription,
   },
   robots: {
