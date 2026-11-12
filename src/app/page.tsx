@@ -140,7 +140,7 @@ export default async function Home() {
             Jharkhand Latest Jobs, Results &amp; Education Updates
           </h1>
           <p style={{ margin: "0 auto 16px", maxWidth: 760, lineHeight: 1.6 }}>
-            JAC, JSSC, JPSC, JTET, Jharkhand Police, Scholarships aur sabhi important updates ek hi jagah.
+            JAC, JSSC, JPSC, JTET, Jharkhand Police, Scholarships aur sabhi important updates ek hi jagah. Jhar Result (JharResult) par Jharkhand ke latest jobs, exam results, admit cards aur education updates paayen.
           </p>
           <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 650, margin: "0 auto" }}>
             <input className="search" type="search" name="q" placeholder="Search jobs, results, updates..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
