@@ -32,9 +32,7 @@ export default function SiteFooter() {
             </a>
 
             <p>
-              JharResult is an information portal providing updates about
-              Jharkhand government jobs, exam results, admit cards,
-              admissions, answer keys and scholarships.
+              JharResult, also known as Jhar Result, is an information portal providing updates about Jharkhand government jobs, exam results, admit cards, admissions, answer keys and scholarships.
             </p>
 
             <p>
