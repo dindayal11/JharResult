@@ -760,12 +760,13 @@ export default function PostEditor({
   };
 
   const duplicateTable = (id: string) => {
+    const copyId = `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
     setCustomTables((old) => {
       const sourceIndex = old.findIndex((table) => table.id === id);
       if (sourceIndex === -1) return old;
 
       const source = old[sourceIndex];
-      const copyId = `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const copy: CustomTable = {
         ...source,
         id: copyId,
@@ -775,15 +776,12 @@ export default function PostEditor({
         rowUpdatedAt: source.rowUpdatedAt ? [...source.rowUpdatedAt] : source.rowUpdatedAt,
       };
 
-      const next = [...old];
-      next.splice(sourceIndex + 1, 0, copy);
-      return next;
+      const updated = [...old];
+      updated.splice(sourceIndex + 1, 0, copy);
+      return updated;
     });
 
-    const copyId = `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    // The actual duplicate ID is generated inside the state updater; expand all
-    // tables matching the copied title after the state update.
-    setExpandedTables((old) => old);
+    setExpandedTables((old) => old.includes(copyId) ? old : [...old, copyId]);
   };
 
   const removeTable = (id: string) => {
