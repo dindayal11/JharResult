@@ -239,49 +239,9 @@ function RichTextToolbar() {
   };
 
   const applyHeading = (tagName: "h2" | "h3") => {
-    const editor = activeRichEditor;
-    const savedRange = activeRichRange?.cloneRange();
-    if (!editor || !savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
-
-    editor.focus();
-    const selection = window.getSelection();
-    if (!selection) return;
-    selection.removeAllRanges();
-    selection.addRange(savedRange);
-
-    const node = savedRange.startContainer;
-    const element = node.nodeType === Node.ELEMENT_NODE
-      ? node as HTMLElement
-      : node.parentElement;
-    const block = element?.closest("p, div, h2, h3, h4, blockquote, li");
-
-    if (block && editor.contains(block) && block !== editor) {
-      const heading = document.createElement(tagName);
-      heading.innerHTML = block.innerHTML;
-      block.replaceWith(heading);
-      const nextRange = document.createRange();
-      nextRange.selectNodeContents(heading);
-      selection.removeAllRanges();
-      selection.addRange(nextRange);
-      activeRichRange = nextRange.cloneRange();
-    } else {
-      const heading = document.createElement(tagName);
-      try {
-        const contents = savedRange.extractContents();
-        heading.appendChild(contents);
-        savedRange.insertNode(heading);
-        const nextRange = document.createRange();
-        nextRange.selectNodeContents(heading);
-        selection.removeAllRanges();
-        selection.addRange(nextRange);
-        activeRichRange = nextRange.cloneRange();
-      } catch {
-        document.execCommand("formatBlock", false, tagName);
-      }
-    }
-
-    activeRichOnChange?.(editor.innerHTML);
-    saveSelection();
+    // Use the browser's block-format command so headings work both with a
+    // selected paragraph and with the caret placed inside a paragraph.
+    apply("formatBlock", `<${tagName}>`);
   };
 
   const applyLineSpacing = (spacing: string) => {
@@ -435,9 +395,18 @@ function RichTextField({ value, onChange, placeholder, minHeight = 90 }: { value
     if (selection?.rangeCount && editor.contains(selection.anchorNode)) activeRichRange = selection.getRangeAt(0).cloneRange();
   };
   return (
-    <div style={{ border: "1px solid #cbd5e1", borderRadius: 7, overflow: "hidden", background: "#fff" }}>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder || "Write here..."} onFocus={rememberEditor} onClick={rememberEditor} onInput={(e) => { rememberEditor(); onChangeRef.current(e.currentTarget.innerHTML); }} onMouseUp={rememberEditor} onKeyUp={rememberEditor} style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }} />
-    </div>
+    <>
+      <style>{`
+        [contenteditable="true"] ul { list-style: disc !important; padding-left: 26px !important; margin: 8px 0 !important; }
+        [contenteditable="true"] ol { list-style: decimal !important; padding-left: 26px !important; margin: 8px 0 !important; }
+        [contenteditable="true"] li { display: list-item !important; margin: 4px 0 !important; }
+        [contenteditable="true"] h2 { display: block; font-size: 1.5em; font-weight: 700; margin: .7em 0; }
+        [contenteditable="true"] h3 { display: block; font-size: 1.25em; font-weight: 700; margin: .65em 0; }
+      `}</style>
+      <div style={{ border: "1px solid #cbd5e1", borderRadius: 7, overflow: "hidden", background: "#fff" }}>
+        <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder || "Write here..."} onFocus={rememberEditor} onClick={rememberEditor} onInput={(e) => { rememberEditor(); onChangeRef.current(e.currentTarget.innerHTML); }} onMouseUp={rememberEditor} onKeyUp={rememberEditor} style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }} />
+      </div>
+    </>
   );
 }
 
@@ -1685,9 +1654,16 @@ export default function PostEditor({
                   />
                 </section>
               ) : null)}
-              {customTables.filter((table) => table.title.trim() && table.rows.some((row) => row.some((cell) => cell.trim()))).map((table) => (
+              {customTables.filter((table) => table.title.trim() && (Boolean(table.description?.trim()) || table.rows.some((row) => row.some((cell) => cell.trim())))).map((table) => (
                 <section key={table.id} className="detail-section" style={{ margin: "20px 0 24px", border: `1px solid ${table.theme_primary}`, background: table.theme_background, color: table.theme_text, minWidth: 0 }}>
                   <h2 style={{ margin: 0, padding: "9px 12px", background: table.theme_primary, color: "#fff", fontSize: 17 }}>{table.title}</h2>
+                  {table.description && (
+                    <div
+                      className="table-description"
+                      style={{ padding: "12px 12px 0", lineHeight: 1.7, overflowWrap: "anywhere" }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.description), PREVIEW_SANITIZE_OPTIONS) }}
+                    />
+                  )}
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", color: table.theme_text, fontSize: 14, background: table.theme_background }}>
                       <thead>
