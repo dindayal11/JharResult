@@ -5,7 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 const siteUrl = "https://jharresult.in";
 const siteName = "JharResult";
 const siteDescription =
-  "Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions and scholarships in one place.";
+  "Jhar Result (JharResult) brings Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions and scholarships in one place.";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+    default: "Jhar Result (JharResult) – Jharkhand Jobs & Results",
     template: "%s | JharResult",
   },
   description: siteDescription,
@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     google: "PxlkVYCLEJp4mkNLHtivxzgPZxHr7yamxHfvAH08jaE",
   },
   keywords: [
+    "Jhar Result",
+    "JharResult",
+    "Jhar Result Jharkhand",
     "Jharkhand government jobs",
     "Jharkhand latest jobs",
     "JAC result",
@@ -77,6 +80,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 "@id": "https://jharresult.in/#organization",
                 name: "JharResult",
+                alternateName: ["Jhar Result"],
                 url: "https://jharresult.in/",
                 description: siteDescription,
                 email: "dindayal8456@gmail.com",
@@ -93,6 +97,7 @@ export default function RootLayout({
                 "@type": "WebSite",
                 "@id": "https://jharresult.in/#website",
                 name: "JharResult",
+                alternateName: ["Jhar Result"],
                 url: "https://jharresult.in/",
                 publisher: { "@id": "https://jharresult.in/#organization" },
                 inLanguage: "en-IN",
