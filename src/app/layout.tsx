@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     locale: "en_IN",
     url: siteUrl,
     siteName,
-    title: "JharResult – Jharkhand Jobs, Results & Admit Cards",
+    title: "Jhar Result (JharResult) – Jharkhand Jobs & Results",
     description: siteDescription,
   },
   twitter: {
