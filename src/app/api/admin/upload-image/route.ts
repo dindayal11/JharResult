@@ -6,12 +6,12 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const EXTENSIONS: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-};
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
 
 function matchesSignature(type: string, bytes: Buffer) {
   if (type === "image/jpeg") return bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
@@ -99,8 +99,7 @@ export async function POST(request: Request) {
     const file = form.get("file");
     if (!(file instanceof File)) return NextResponse.json({ error: "Please select an image." }, { status: 400 });
 
-    const extension = EXTENSIONS[file.type];
-    if (!extension) return NextResponse.json({ error: "Only JPG, PNG, WEBP and GIF images are allowed." }, { status: 400 });
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) return NextResponse.json({ error: "Only JPG, PNG, WEBP and GIF images are allowed." }, { status: 400 });
     if (file.size <= 0 || file.size > MAX_IMAGE_SIZE) return NextResponse.json({ error: "Image must be between 1 byte and 5 MB." }, { status: 400 });
 
     const bytes = Buffer.from(await file.arrayBuffer());
@@ -125,18 +124,22 @@ export async function POST(request: Request) {
       .rotate()
       .composite([{ input: overlay, blend: "over" }]);
 
-    const watermarked = file.type === "image/jpeg"
-      ? await pipeline.jpeg({ quality: 88, mozjpeg: true }).toBuffer()
-      : file.type === "image/png"
-        ? await pipeline.png({ compressionLevel: 8 }).toBuffer()
-        : file.type === "image/webp"
-          ? await pipeline.webp({ quality: 88 }).toBuffer()
-          : await pipeline.gif().toBuffer();
+    // Convert every accepted upload to WebP after applying the existing watermark.
+    // Sharp keeps animated input pages when encoding animated WebP.
+    const watermarked = await pipeline.webp({ quality: 90, effort: 4 }).toBuffer();
 
-    const filename = `jharresult-${Date.now()}${extension}`;
-    const url = await storeImageRemotely(watermarked, filename, file.type);
+    const filename = `jharresult-${Date.now()}.webp`;
+    const url = await storeImageRemotely(watermarked, filename, "image/webp");
 
-    return NextResponse.json({ ok: true, url, size: watermarked.length, watermarked: true, watermark: "JharResult", storage: "persistent" });
+    return NextResponse.json({
+      ok: true,
+      url,
+      size: watermarked.length,
+      format: "webp",
+      watermarked: true,
+      watermark: "JharResult",
+      storage: "persistent",
+    });
   } catch (error: any) {
     const unauthorized = error?.message === "UNAUTHORIZED";
     console.error("Image upload error:", error);
