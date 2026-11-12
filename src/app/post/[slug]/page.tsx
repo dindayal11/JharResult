@@ -14,6 +14,16 @@ function isRecentlyPublished(value: string | Date | null | undefined): boolean {
   return Number.isFinite(publishedAt) && age >= -12 * 60 * 60 * 1000 && age <= 7 * 24 * 60 * 60 * 1000;
 }
 
+function getAbsoluteImageUrl(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+
+  try {
+    return new URL(value.trim(), "https://jharresult.in").toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -22,16 +32,36 @@ export async function generateMetadata({
   const { slug } = await params;
   const p = await getPostBySlug(slug);
 
+  const title = p?.seo_title || p?.title || "Update";
+  const description = p?.seo_description || p?.short_description || "";
+  const imageUrl = getAbsoluteImageUrl((p as any)?.image_url);
+  const imageAlt = (p as any)?.image_title || p?.title || title;
+  const publishedTime = p?.published_at
+    ? new Date(p.published_at).toISOString()
+    : undefined;
+  const modifiedTime = (p as any)?.updated_at
+    ? new Date((p as any).updated_at).toISOString()
+    : publishedTime;
+
   return {
-    title: p?.seo_title || p?.title || "Update",
-    description:
-      p?.seo_description || p?.short_description || "",
+    title,
+    description,
     alternates: { canonical: `/post/${encodeURIComponent(slug)}` },
     openGraph: {
       type: "article",
-      title: p?.seo_title || p?.title || "Update",
-      description: p?.seo_description || p?.short_description || "",
-      publishedTime: p?.published_at ? new Date(p.published_at).toISOString() : undefined,
+      title,
+      description,
+      publishedTime,
+      modifiedTime,
+      ...(imageUrl
+        ? { images: [{ url: imageUrl, alt: imageAlt }] }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: imageAlt }] } : {}),
     },
   };
 }
@@ -430,13 +460,16 @@ export default async function PostPage({
                 : p.published_at
                   ? new Date(p.published_at).toISOString()
                   : undefined,
+              url: `https://jharresult.in/post/${encodeURIComponent(p.slug)}`,
               mainEntityOfPage: {
                 "@type": "WebPage",
                 "@id": `https://jharresult.in/post/${encodeURIComponent(p.slug)}`,
               },
               author: { "@id": "https://jharresult.in/#organization" },
               publisher: { "@id": "https://jharresult.in/#organization" },
-              image: (p as any).image_url || undefined,
+              image: getAbsoluteImageUrl((p as any).image_url)
+                ? [getAbsoluteImageUrl((p as any).image_url)]
+                : undefined,
               inLanguage: "en-IN",
             },
             {
