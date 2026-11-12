@@ -514,6 +514,35 @@ export default async function PostPage({
           margin-bottom: 0;
         }
 
+        .table-description ul {
+          list-style: disc !important;
+          padding-left: 25px !important;
+          margin: 8px 0 !important;
+        }
+
+        .table-description ol {
+          list-style: decimal !important;
+          padding-left: 25px !important;
+          margin: 8px 0 !important;
+        }
+
+        .table-description li {
+          display: list-item !important;
+          margin: 5px 0 !important;
+        }
+
+        .table-description h2 {
+          font-size: 1.35rem;
+          font-weight: 700;
+          margin: 12px 0 8px;
+        }
+
+        .table-description h3 {
+          font-size: 1.15rem;
+          font-weight: 700;
+          margin: 10px 0 6px;
+        }
+
         .detail-section td p,
         .detail-section td div {
           display: block;
