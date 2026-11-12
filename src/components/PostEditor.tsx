@@ -864,7 +864,7 @@ export default function PostEditor({
       }
 
       change("image_url", data.url);
-      setNotice("Image uploaded and JharResult watermark applied successfully. Add its title and save the post.");
+      setNotice("Image converted to WebP, uploaded and JharResult watermark applied successfully. Add its title and save the post.");
     } catch (error: any) {
       setNotice(error.message || "Image upload failed.");
     } finally {
