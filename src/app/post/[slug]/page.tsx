@@ -141,6 +141,20 @@ function CustomTable({ table }: { table: any }) {
         {table.title}
       </h2>
 
+      {table.description && (
+        <div
+          className="table-description"
+          style={{ padding: "12px 12px 0", lineHeight: 1.7, overflowWrap: "anywhere", color: text }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(String(table.description), {
+              ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+              ALLOWED_ATTR: ["style", "href", "target", "rel"],
+              ALLOW_DATA_ATTR: false,
+            }),
+          }}
+        />
+      )}
+
       <div style={{ overflowX: "auto" }}>
         <table
           style={{
