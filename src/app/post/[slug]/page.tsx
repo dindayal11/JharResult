@@ -167,8 +167,21 @@ function CustomTable({ table }: { table: any }) {
               )}`,
       }}
     >
-      <h2 style={{ background: primary, color: "#fff" }}>
+      <h2 style={{ background: primary, color: "#fff", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
         {table.title}
+        {(() => {
+          const tableTimestamp = table.tableUpdatedAt ? new Date(table.tableUpdatedAt).getTime() : 0;
+          const tableIsNew = Boolean(tableTimestamp && Date.now() >= tableTimestamp && Date.now() - tableTimestamp <= 7 * 24 * 60 * 60 * 1000);
+          return tableIsNew ? (
+            <span
+              className="new-badge"
+              title={`This table was added on ${new Date(table.tableUpdatedAt).toLocaleDateString("en-IN")}`}
+              style={{ display: "inline-flex", verticalAlign: "middle" }}
+            >
+              NEW
+            </span>
+          ) : null;
+        })()}
       </h2>
 
       {table.description && (
