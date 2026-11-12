@@ -15,8 +15,7 @@ export default function AboutPage() {
     >
       <InfoSection title="Welcome to JharResult">
         <p>
-          <strong>JharResult</strong> is an independent information portal
-          also known as Jhar Result, is an independent information portal providing information regarding government jobs in Jharkhand along
+          <strong>JharResult</strong>, also known as <strong>Jhar Result</strong>, is an independent information portal providing information regarding government jobs in Jharkhand along
           with recruitment notifications, results, admit cards, answer keys,
           admissions and educational news.
         </p>
