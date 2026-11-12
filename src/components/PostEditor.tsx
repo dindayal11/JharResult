@@ -238,6 +238,43 @@ function RichTextToolbar() {
     saveSelection();
   };
 
+  const applyHighlight = (color: string) => {
+    const editor = activeRichEditor;
+    const savedRange = activeRichRange?.cloneRange();
+    if (!editor || !savedRange || !editor.contains(savedRange.commonAncestorContainer)) return;
+
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    selection.removeAllRanges();
+    selection.addRange(savedRange);
+
+    if (savedRange.collapsed) {
+      // Keep the selected highlight colour active for text typed next.
+      document.execCommand("styleWithCSS", false, "true");
+      document.execCommand("hiliteColor", false, color);
+    } else {
+      // Wrap the selected content directly so the highlight is applied in one click.
+      const span = document.createElement("span");
+      span.style.backgroundColor = color;
+      try {
+        span.appendChild(savedRange.extractContents());
+        savedRange.insertNode(span);
+        const nextRange = document.createRange();
+        nextRange.selectNodeContents(span);
+        selection.removeAllRanges();
+        selection.addRange(nextRange);
+        activeRichRange = nextRange.cloneRange();
+      } catch {
+        document.execCommand("styleWithCSS", false, "true");
+        document.execCommand("hiliteColor", false, color);
+      }
+    }
+
+    activeRichOnChange?.(editor.innerHTML);
+    saveSelection();
+  };
+
   const applyHeading = (tagName: "h2" | "h3") => {
     // Use the browser's block-format command so headings work both with a
     // selected paragraph and with the caret placed inside a paragraph.
@@ -370,7 +407,8 @@ function RichTextToolbar() {
         ))}
       </div>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
-        <select aria-label="Highlight colour" defaultValue="#fff29a" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => apply("hiliteColor", event.target.value)} style={selectStyle}>
+        <select aria-label="Highlight colour" defaultValue="" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => { const color = event.target.value; if (color) applyHighlight(color); event.target.value = ""; }} style={selectStyle}>
+          <option value="" disabled>Choose</option>
           <option value="#fff29a">Yellow</option><option value="#b7e1cd">Green</option><option value="#cfe2f3">Blue</option><option value="#f4cccc">Pink</option><option value="#eadcf8">Purple</option>
         </select>
       </label>
