@@ -759,6 +759,33 @@ export default function PostEditor({
     );
   };
 
+  const duplicateTable = (id: string) => {
+    setCustomTables((old) => {
+      const sourceIndex = old.findIndex((table) => table.id === id);
+      if (sourceIndex === -1) return old;
+
+      const source = old[sourceIndex];
+      const copyId = `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const copy: CustomTable = {
+        ...source,
+        id: copyId,
+        title: `${source.title} (Copy)`,
+        columns: [...source.columns],
+        rows: source.rows.map((row) => [...row]),
+        rowUpdatedAt: source.rowUpdatedAt ? [...source.rowUpdatedAt] : source.rowUpdatedAt,
+      };
+
+      const next = [...old];
+      next.splice(sourceIndex + 1, 0, copy);
+      return next;
+    });
+
+    const copyId = `table-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // The actual duplicate ID is generated inside the state updater; expand all
+    // tables matching the copied title after the state update.
+    setExpandedTables((old) => old);
+  };
+
   const removeTable = (id: string) => {
     setCustomTables((old) =>
       old.filter((table) => table.id !== id)
@@ -1468,14 +1495,24 @@ export default function PostEditor({
                     <h4 style={{ margin: 0, color: "#253247" }}>
                       Table Rows – type your content
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => boldAllTableText(table.id)}
-                      style={{ ...tableButton, background: "#1d4ed8", display: "inline-flex", alignItems: "center", gap: 6 }}
-                      title="Make all text in this table bold"
-                    >
-                      <strong>B</strong> Bold All Table Text
-                    </button>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={() => boldAllTableText(table.id)}
+                        style={{ ...tableButton, background: "#1d4ed8", display: "inline-flex", alignItems: "center", gap: 6 }}
+                        title="Make all text in this table bold"
+                      >
+                        <strong>B</strong> Bold All Table Text
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => duplicateTable(table.id)}
+                        style={{ ...tableButton, background: "#0f766e", display: "inline-flex", alignItems: "center", gap: 6 }}
+                        title="Create a new table with the same content"
+                      >
+                        Copy Table
+                      </button>
+                    </div>
                   </div>
 
                   <div style={{ overflowX: "auto" }}>
