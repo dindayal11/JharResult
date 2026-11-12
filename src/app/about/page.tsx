@@ -11,12 +11,12 @@ export default function AboutPage() {
   return (
     <InfoPage
       title="About Us"
-      description="Know more about JharResult and the information we provide."
+      description="Know more about JharResult, also searched as Jhar Result, and the Jharkhand information we provide."
     >
       <InfoSection title="Welcome to JharResult">
         <p>
           <strong>JharResult</strong> is an independent information portal
-          providing information regarding government jobs in Jharkhand along
+          also known as Jhar Result, is an independent information portal providing information regarding government jobs in Jharkhand along
           with recruitment notifications, results, admit cards, answer keys,
           admissions and educational news.
         </p>
