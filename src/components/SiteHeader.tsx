@@ -44,7 +44,7 @@ export default async function SiteHeader() {
           </a>
 
           <div className="muted" style={{ marginTop: 4 }}>
-            Connecting Jharkhand to Every Opportunity
+            Jhar Result – Connecting Jharkhand to Every Opportunity
           </div>
 
           <ResponsiveNav primary={primary} more={more} />
