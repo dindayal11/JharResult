@@ -21,6 +21,7 @@ type CustomTable = {
   columns: string[];
   rows: string[][];
   rowUpdatedAt?: (string | null)[];
+  tableUpdatedAt?: string | null;
   layout_direction: "row" | "column";
   layout_columns: number;
   theme_primary: string;
@@ -928,12 +929,19 @@ export default function PostEditor({
             });
           }
 
+          const tableUpdatedAt = !isEditingPublishedPost
+            ? null
+            : baseline
+              ? baseline.tableUpdatedAt || null
+              : new Date().toISOString();
+
           return {
             ...table,
             title: table.title.trim(),
             columns: table.columns.map((c) => c.trim()),
             rows,
             rowUpdatedAt,
+            tableUpdatedAt,
           };
         })
         .filter((table) => table.title && table.columns.length);
