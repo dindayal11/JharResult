@@ -17,6 +17,7 @@ type Cat = {
 type CustomTable = {
   id: string;
   title: string;
+  description?: string;
   columns: string[];
   rows: string[][];
   rowUpdatedAt?: (string | null)[];
@@ -76,6 +77,7 @@ function parseCustomTables(value: unknown): CustomTable[] {
         ...table,
         id: String(table.id || `table-${index}`),
         title: String(table.title || `Table ${index + 1}`),
+        description: String(table.description || ""),
         columns: safeColumns,
         rows,
         layout_direction:
@@ -519,6 +521,7 @@ export default function PostEditor({
         .map((table) => ({
           ...table,
           title: table.title.trim(),
+          description: (table.description || "").trim(),
           columns: table.columns.map((column) => column.trim()),
           rows: table.rows.filter((row) => row.some((cell) => cell.trim())),
         }))
@@ -588,6 +591,7 @@ export default function PostEditor({
         ...DEFAULT_TABLE_STYLE,
         id,
         title: "New Table",
+        description: "",
         columns: ["Column 1", "Column 2"],
         rows: [["", ""]],
       },
@@ -1197,6 +1201,14 @@ export default function PostEditor({
                       })
                     }
                     placeholder="e.g. Important Dates"
+                  />
+
+                  <label style={{ ...labelStyle, marginTop: 14 }}>Post Description</label>
+                  <RichTextField
+                    value={table.description || ""}
+                    onChange={(value) => updateTable(table.id, { description: value })}
+                    placeholder="Is table ke baare mein additional information yahan likhein..."
+                    minHeight={100}
                   />
 
                   <h4 style={{ margin: "18px 0 8px", color: "#253247" }}>
