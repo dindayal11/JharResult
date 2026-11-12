@@ -716,6 +716,36 @@ export default function PostEditor({
     );
   };
 
+  const boldAllTableText = (id: string) => {
+    const makeContentBold = (html: string) => {
+      if (!html.trim()) return html;
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+      const textNodes: Text[] = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode as Text);
+
+      textNodes.forEach((textNode) => {
+        if (!textNode.textContent?.trim()) return;
+        const parent = textNode.parentElement;
+        if (parent?.closest("strong, b")) return;
+        const strong = document.createElement("strong");
+        textNode.parentNode?.replaceChild(strong, textNode);
+        strong.appendChild(textNode);
+      });
+
+      return container.innerHTML;
+    };
+
+    setCustomTables((old) =>
+      old.map((table) =>
+        table.id === id
+          ? { ...table, rows: table.rows.map((row) => row.map((cell) => makeContentBold(cell))) }
+          : table
+      )
+    );
+  };
+
   const removeRow = (id: string, index: number) => {
     setCustomTables((old) =>
       old.map((table) =>
@@ -1434,9 +1464,19 @@ export default function PostEditor({
                     + Add Column
                   </button>
 
-                  <h4 style={{ margin: "20px 0 8px", color: "#253247" }}>
-                    Table Rows – type your content
-                  </h4>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", margin: "20px 0 8px" }}>
+                    <h4 style={{ margin: 0, color: "#253247" }}>
+                      Table Rows – type your content
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => boldAllTableText(table.id)}
+                      style={{ ...tableButton, background: "#1d4ed8", display: "inline-flex", alignItems: "center", gap: 6 }}
+                      title="Make all text in this table bold"
+                    >
+                      <strong>B</strong> Bold All Table Text
+                    </button>
+                  </div>
 
                   <div style={{ overflowX: "auto" }}>
                     <table
