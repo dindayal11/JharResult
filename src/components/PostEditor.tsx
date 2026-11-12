@@ -880,30 +880,63 @@ export default function PostEditor({
 
     try {
       if (autoSavePromiseRef.current) await autoSavePromiseRef.current;
-      const baselineTables = parseCustomTables(post?.custom_tables);
+      // Row-level NEW badges are only generated when editing a post that
+      // was already published. Draft editing and first-time publishing must
+      // not mark every row as new.
+      const isEditingPublishedPost =
+        post?.status === "published" && form.status === "published";
+      const parsedBaselineTables = parseCustomTables(post?.custom_tables);
+      const baselineTables = parsedBaselineTables.length
+        ? parsedBaselineTables
+        : legacyToCustomTables(post);
+
       const cleanedTables = customTables
         .map((table) => {
           const baseline = baselineTables.find((item) => item.id === table.id);
-          const rowsWithOriginalIndexes = table.rows
-            .map((row, index) => ({ row, index }))
-            .filter(({ row }) => row.some((cell) => cell.trim()));
-          const rowUpdatedAt = rowsWithOriginalIndexes.map(({ row, index }) => {
-            const previousRow = baseline?.rows[index];
-            const previousTimestamp = baseline?.rowUpdatedAt?.[index] || null;
-            const changed = !previousRow || JSON.stringify(previousRow) !== JSON.stringify(row);
-            return changed ? new Date().toISOString() : previousTimestamp;
-          });
+          const rows = table.rows.filter((row) =>
+            row.some((cell) => cell.trim())
+          );
+
+          let rowUpdatedAt: (string | null)[];
+
+          if (!isEditingPublishedPost) {
+            // Keep drafts free of row-level NEW markers.
+            rowUpdatedAt = rows.map(() => null);
+          } else {
+            // Match unchanged rows by their content, not their array index.
+            // This prevents inserting/deleting/reordering one row from making
+            // every following row appear newly updated.
+            const previousTimestampsByRow = new Map<string, (string | null)[]>();
+            baseline?.rows.forEach((previousRow, index) => {
+              const key = JSON.stringify(previousRow);
+              const timestamps = previousTimestampsByRow.get(key) || [];
+              timestamps.push(baseline.rowUpdatedAt?.[index] || null);
+              previousTimestampsByRow.set(key, timestamps);
+            });
+
+            const updatedAt = new Date().toISOString();
+            rowUpdatedAt = rows.map((row) => {
+              const key = JSON.stringify(row);
+              const timestamps = previousTimestampsByRow.get(key);
+
+              if (timestamps?.length) {
+                return timestamps.shift() || null;
+              }
+
+              // Only genuinely new or edited rows receive a NEW timestamp.
+              return updatedAt;
+            });
+          }
+
           return {
             ...table,
             title: table.title.trim(),
             columns: table.columns.map((c) => c.trim()),
-            rows: rowsWithOriginalIndexes.map(({ row }) => row),
+            rows,
             rowUpdatedAt,
           };
         })
-        .filter(
-          (table) => table.title && table.columns.length
-        );
+        .filter((table) => table.title && table.columns.length);
 
       if (!selectedCategoryIds.length) {
         setNotice("Please select at least one category.");
