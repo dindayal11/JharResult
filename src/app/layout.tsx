@@ -84,7 +84,7 @@ export default function RootLayout({
                 url: "https://jharresult.in/",
                 description: siteDescription,
                 email: "dindayal8456@gmail.com",
-                sameAs: ["https://t.me/+_hj11IZ9nktjOWM1"],
+                sameAs: ["https://t.me/+_hj11IZ9nktjOWM1", "https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"],
                 contactPoint: [{
                   "@type": "ContactPoint",
                   contactType: "customer support",
