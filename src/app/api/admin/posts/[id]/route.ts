@@ -74,3 +74,36 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     connection?.release();
   }
 }
+
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await requireAdmin();
+    const { id: rawId } = await params;
+    const id = Number(rawId);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return NextResponse.json({ error: "Invalid post ID." }, { status: 400 });
+    }
+
+    const pool = getPool();
+    const [existing]: any = await pool.execute(
+      "SELECT id, title FROM posts WHERE id = ? LIMIT 1",
+      [id]
+    );
+    if (!existing.length) {
+      return NextResponse.json({ error: "Post not found. It may already be deleted." }, { status: 404 });
+    }
+
+    // post_categories rows are removed automatically by the database's
+    // ON DELETE CASCADE foreign key when the post is deleted.
+    await pool.execute("DELETE FROM posts WHERE id = ?", [id]);
+    return NextResponse.json({ ok: true, id, title: existing[0].title });
+  } catch (error: any) {
+    const unauthorized = error?.message === "UNAUTHORIZED";
+    console.error("Delete post error:", error);
+    return NextResponse.json(
+      { error: unauthorized ? "Please sign in." : "Could not delete this post. Please try again." },
+      { status: unauthorized ? 401 : 500 }
+    );
+  }
+}
