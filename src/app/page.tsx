@@ -165,7 +165,7 @@ export default async function Home() {
 >
   <div>
     <strong style={{ color: "#174b80", fontSize: 16 }}>
-      Join Our Telegram Channel
+      Join Our Channels
     </strong>
   
   </div>
