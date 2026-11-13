@@ -209,15 +209,15 @@ function CustomTable({ table }: { table: any }) {
               <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.max(1, row.length) + ", minmax(0, 1fr))" }}>
                 {row.map((rawCell: any, cellIndex: number) => {
                   const value = decodeHtmlEntities(String(rawCell ?? "")).replace(/\\+(?=[<>])/g, "").trim();
-                  const markdownLink = value.match(/^\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)$/i);
+                  const markdownLink = value.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);
                   const candidate = markdownLink ? markdownLink[2] : value;
-                  const isEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(candidate);
-                  const isWebsite = /^https?:\\/\\/\\S+$/i.test(candidate);
+                  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate);
+                  const isWebsite = /^https?:\/\/\S+$/i.test(candidate);
                   const href = isEmail ? "mailto:" + candidate : isWebsite ? candidate : "";
                   return (
                     <div key={cellIndex} style={{ padding: "10px 9px", border: "1px solid #dce3ec", minWidth: 0, verticalAlign: "top", overflowWrap: "anywhere", whiteSpace: "pre-wrap", background: rowIndex === 0 ? accent : background, color: rowIndex === 0 ? "#fff" : text }}>
                       {cellIndex === 0 && rowIsNew && <span className="new-badge" title={"This row was updated on " + new Date(rowUpdatedAt).toLocaleDateString("en-IN")} style={{ display: "inline-flex", marginRight: 7 }}>NEW</span>}
-                      {/<[a-z][\\s\\S]*>/i.test(value) ? (
+                      {/<[a-z][\s\S]*>/i.test(value) ? (
                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value, { ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"], ALLOWED_ATTR: ["style", "href", "target", "rel"], ALLOW_DATA_ATTR: false }) }} />
                       ) : href ? (
                         <a href={href} target={isEmail ? undefined : "_blank"} rel={isEmail ? undefined : "noopener noreferrer"} style={{ color: rowIndex === 0 ? "#fff" : "#145da0", fontWeight: 700, textDecoration: "underline" }}>{markdownLink?.[1] || "Click Here ↗"}</a>
@@ -272,10 +272,10 @@ function CustomTable({ table }: { table: any }) {
 
         // Detect a URL/email from the cell content, regardless of its heading.
         // Also support Markdown-style links pasted into a table cell.
-        const markdownLink = value.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);
+                  const markdownLink = value.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/i);
         const candidate = markdownLink ? markdownLink[2] : value;
-        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate);
-        const isWebsite = /^https?:\/\/\S+$/i.test(candidate);
+                  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate);
+                  const isWebsite = /^https?:\/\/\S+$/i.test(candidate);
         const href = isEmail
           ? `mailto:${candidate}`
           : isWebsite
