@@ -22,6 +22,7 @@ type CustomTable = {
   rows: string[][];
   rowUpdatedAt?: (string | null)[];
   tableUpdatedAt?: string | null;
+  freeform_layout?: boolean;
   layout_direction: "row" | "column";
   layout_columns: number;
   theme_primary: string;
@@ -66,11 +67,11 @@ function parseCustomTables(value: unknown): CustomTable[] {
         : ["Column 1", "Column 2"];
 
       const rows = Array.isArray(table.rows)
-        ? table.rows.map((row: any) =>
-            safeColumns.map((_: string, i: number) =>
-  String(Array.isArray(row) ? row[i] ?? "" : row?.[i] ?? "")
-)
-          )
+        ? table.rows.map((row: any) => {
+            const source = Array.isArray(row) ? row : [];
+            const count = table.freeform_layout ? source.length : safeColumns.length;
+            return Array.from({ length: count }, (_, i) => String(source[i] ?? ""));
+          })
         : [];
 
       return {
@@ -602,6 +603,7 @@ export default function PostEditor({
         description: "",
         columns: ["Column 1", "Column 2"],
         rows: [["", ""]],
+        freeform_layout: false,
       },
     ]);
 
@@ -678,19 +680,21 @@ export default function PostEditor({
   };
 
   const addRow = (id: string) => {
-    setCustomTables((old) =>
-      old.map((table) =>
-        table.id === id
-          ? {
-              ...table,
-              rows: [
-                ...table.rows,
-                table.columns.map(() => ""),
-              ],
-            }
-          : table
-      )
-    );
+    setCustomTables((old) => old.map((table) => table.id === id
+      ? { ...table, rows: [...table.rows, Array.from({ length: table.freeform_layout ? 2 : table.columns.length }, () => "")] }
+      : table));
+  };
+
+  const addCellToRow = (id: string, rowIndex: number) => {
+    setCustomTables((old) => old.map((table) => table.id !== id ? table : {
+      ...table, rows: table.rows.map((row, index) => index === rowIndex ? [...row, ""] : row),
+    }));
+  };
+
+  const removeCellFromRow = (id: string, rowIndex: number, cellIndex: number) => {
+    setCustomTables((old) => old.map((table) => table.id !== id ? table : {
+      ...table, rows: table.rows.map((row, index) => index === rowIndex && row.length > 1 ? row.filter((_, i) => i !== cellIndex) : row),
+    }));
   };
 
   const updateCell = (
@@ -1462,7 +1466,15 @@ export default function PostEditor({
                     </div>
                   </div>
 
-                  <h4 style={{ margin: "16px 0 8px", color: "#253247" }}>
+                  <div style={{ margin: "16px 0 12px", padding: 12, border: "1px solid #bfdbfe", borderRadius: 8, background: "#eff6ff" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 700, color: "#173f70" }}>
+                      <input type="checkbox" checked={Boolean(table.freeform_layout)} onChange={(e) => updateTable(table.id, { freeform_layout: e.target.checked, rows: e.target.checked ? table.rows.map((row) => row.length ? row : ["", ""]) : table.rows.map((row) => Array.from({ length: table.columns.length }, (_, i) => row[i] || "")) })} />
+                      Flexible Row &amp; Column Layout
+                    </label>
+                    <p style={{ margin: "6px 0 0", fontSize: 12, color: "#475569" }}>Har row mein apni marzi se cells add/remove karein. Har row ke columns alag ho sakte hain.</p>
+                  </div>
+
+                  {!table.freeform_layout && <><h4 style={{ margin: "16px 0 8px", color: "#253247" }}>
                     Columns – edit column headings
                   </h4>
 
@@ -1528,7 +1540,7 @@ export default function PostEditor({
                     onClick={() => addColumn(table.id)}
                   >
                     + Add Column
-                  </button>
+                  </button></>
 
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", margin: "20px 0 8px" }}>
                     <h4 style={{ margin: 0, color: "#253247" }}>
@@ -1554,7 +1566,30 @@ export default function PostEditor({
                     </div>
                   </div>
 
-                  <div style={{ overflowX: "auto" }}>
+                  {table.freeform_layout ? (
+                    <div style={{ display: "grid", gap: 10 }}>
+                      {table.rows.map((row, rowIndex) => (
+                        <div key={rowIndex} style={{ border: "1px solid #cbd5e1", borderRadius: 7, padding: 8, background: "#f8fafc" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7, gap: 8 }}>
+                            <strong style={{ fontSize: 12, color: "#475569" }}>Row {rowIndex + 1} · {row.length} columns</strong>
+                            <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ ...tableButton, background: "#a12b2b", padding: "6px 10px" }}>Delete Row</button>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.max(1,row.length) + ", minmax(130px, 1fr))", gap: 6, overflowX: "auto" }}>
+                            {row.map((cell, cellIndex) => (
+                              <div key={cellIndex} style={{ minWidth: 0, border: "1px solid #dbe3ed", borderRadius: 5, padding: 5, background: "#fff" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, marginBottom: 4 }}>
+                                  <strong>Cell {cellIndex + 1}</strong>
+                                  <button type="button" title="Remove this cell" onClick={() => removeCellFromRow(table.id, rowIndex, cellIndex)} disabled={row.length <= 1} style={{ border: 0, background: "transparent", color: "#b42318", cursor: "pointer" }}>×</button>
+                                </div>
+                                <RichTextField value={cell || ""} onChange={(value) => updateCell(table.id, rowIndex, cellIndex, value)} placeholder="Enter content..." minHeight={58} />
+                              </div>
+                            ))}
+                          </div>
+                          <button type="button" onClick={() => addCellToRow(table.id, rowIndex)} style={{ ...tableButton, marginTop: 7, background: "#475569" }}>+ Add Column to This Row</button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <div style={{ overflowX: "auto" }}>
                     <table
                       style={{
                         width: "100%",
@@ -1643,7 +1678,7 @@ export default function PostEditor({
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </div>}
 
                   <div
                     style={{
@@ -1818,7 +1853,19 @@ export default function PostEditor({
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.description), PREVIEW_SANITIZE_OPTIONS) }}
                     />
                   )}
-                  <div style={{ overflowX: "auto" }}>
+                  {table.freeform_layout ? (
+                    <div style={{ display: "grid", gap: 0, color: table.theme_text, fontSize: 14, background: table.theme_background }}>
+                      {table.rows.filter((row) => row.some((cell) => cell.trim())).map((row, rowIndex) => (
+                        <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.max(1,row.length) + ", minmax(0, 1fr))" }}>
+                          {row.map((cell, cellIndex) => (
+                            <div key={cellIndex} style={{ border: "1px solid #dce3ec", padding: "10px 9px", minWidth: 0, overflowWrap: "anywhere", background: rowIndex === 0 ? table.theme_accent : table.theme_background, color: rowIndex === 0 ? "#fff" : table.theme_text }}>
+                              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(cell || ""), PREVIEW_SANITIZE_OPTIONS) }} />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  ) : <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", color: table.theme_text, fontSize: 14, background: table.theme_background }}>
                       <thead>
                         <tr>{table.columns.map((column, i) => <th key={i} style={{ border: "1px solid #dce3ec", padding: "10px 9px", textAlign: "left", background: table.theme_accent, color: "#fff" }}>{column}</th>)}</tr>
@@ -1833,7 +1880,7 @@ export default function PostEditor({
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </div>}
                 </section>
               ))}
               <p style={{ marginTop: 14, color: "#64748b", fontSize: 12 }}>Preview is for content review; final public layout may differ slightly.</p>
