@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DeletePostButton from "@/components/admin/DeletePostButton";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getPool } from "@/lib/db";
@@ -209,7 +210,10 @@ export default async function AdminPage({
                 </td>
                 <td style={{ padding: "10px", color: "#475569" }}>{p.verification_status || "—"}</td>
                 <td style={{ padding: "10px 14px" }}>
-                  <Link href={`/admin/posts/${p.id}`} style={{ display: "inline-block", padding: "6px 12px", borderRadius: 6, background: "#eaf2ff", color: "#1d4ed8", fontWeight: 700, textDecoration: "none" }}>Edit</Link>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <Link href={`/admin/posts/${p.id}`} style={{ display: "inline-block", padding: "6px 12px", borderRadius: 6, background: "#eaf2ff", color: "#1d4ed8", fontWeight: 700, textDecoration: "none" }}>Edit</Link>
+                    <DeletePostButton postId={p.id} postTitle={p.title} />
+                  </div>
                 </td>
               </tr>
             ))}
