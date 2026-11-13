@@ -1,5 +1,6 @@
 
 import SiteHeader from "@/components/SiteHeader";
+import SharePostButton from "@/components/SharePostButton";
 import { getPostBySlug, getPublishedPosts, parseJson } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -896,6 +897,8 @@ export default async function PostPage({
               </a>
             </div>
           </section>
+
+          <SharePostButton title={p.title} />
 
           <p style={{ margin: "12px 0", fontSize: 13, color: "#52657c" }}>
             Found an error or outdated detail? <a href="/contact" style={{ color: "#145da0", fontWeight: 700, textDecoration: "underline" }}>Report a correction</a> and include the post title and official source.
