@@ -820,7 +820,7 @@ export default async function PostPage({
           </div>
 
           <section
-            aria-label="Join JharResult Telegram Channel"
+            aria-label="Join JharResult Telegram and WhatsApp Channels"
             style={{
               margin: "22px 0",
               padding: "16px 18px",
@@ -836,63 +836,63 @@ export default async function PostPage({
           >
             <div>
               <strong style={{ display: "block", color: "#174b80", fontSize: 16 }}>
-                Join Our Telegram Channel
+                Join Our Channels
               </strong>
               <span style={{ display: "block", color: "#52657c", fontSize: 13, marginTop: 3 }}>
-                Get the latest Jharkhand job, result and education updates directly on Telegram.
+                Get the latest Jharkhand jobs, results and education updates on Telegram and WhatsApp.
               </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-<a
-              href="https://t.me/+_hj11IZ9nktjOWM1"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Join JharResult Telegram Channel"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 16px",
-                background: "#229ED9",
-                color: "#fff",
-                borderRadius: 5,
-                fontWeight: 700,
-                fontSize: 14,
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M22 2 2.8 9.5c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 6c.2.7.1 1 .8 1 .5 0 .8-.2 1.1-.5l2.8-2.7 5.8 4.3c1.1.6 1.9.3 2.2-1L24 3.5C24.3 2 23.4 1.3 22 2ZM9.2 12.2 20 5.4c.5-.3 1-.1.6.3l-8.9 8-.4 4.1-2.1-5.6Z" />
-              </svg>
-              Join Telegram
-            <
-<a
-  href="https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Join JharResult WhatsApp Channel"
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 9,
-    padding: "10px 18px",
-    background: "#25D366",
-    color: "#fff",
-    borderRadius: 5,
-    fontWeight: 700,
-    fontSize: 14,
-    textDecoration: "none",
-    whiteSpace: "nowrap",
-  }}
->
-  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M20.2 3.8A11.5 11.5 0 0 0 2.1 17.6L.8 23.2l5.7-1.3A11.5 11.5 0 0 0 20.2 3.8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    <path d="M8.1 7.2c-.3-.7-.7-.7-1-.7h-.8c-.3 0-.8.1-1.1.6-.4.4-1.4 1.3-1.4 3.1s1.4 3.5 1.6 3.7c.2.3 2.7 4.2 6.5 5.7 3.2 1.3 3.8 1 4.5.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.1-.2-.4-.3-.8-.5l-2.5-1.2c-.3-.1-.6-.2-.8.2-.3.4-1 1.2-1.2 1.5-.2.3-.4.3-.8.1-.4-.2-1.7-.6-3.2-2-1.2-1.1-2-2.4-2.2-2.8-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.6.1-.3 0-.5 0-.7L8.1 7.2Z" fill="currentColor" />
-  </svg>
-  Join WhatsApp
-</a>
-</div>/a>
+              <a
+                href="https://t.me/+_hj11IZ9nktjOWM1"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join JharResult Telegram Channel"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 16px",
+                  background: "#229ED9",
+                  color: "#fff",
+                  borderRadius: 5,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M22 2 2.8 9.5c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 6c.2.7.1 1 .8 1 .5 0 .8-.2 1.1-.5l2.8-2.7 5.8 4.3c1.1.6 1.9.3 2.2-1L24 3.5C24.3 2 23.4 1.3 22 2ZM9.2 12.2 20 5.4c.5-.3 1-.1.6.3l-8.9 8-.4 4.1-2.1-5.6Z" />
+                </svg>
+                Join Telegram
+              </a>
+              <a
+                href="https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Join JharResult WhatsApp Channel"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 9,
+                  padding: "10px 18px",
+                  background: "#25D366",
+                  color: "#fff",
+                  borderRadius: 5,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20.2 3.8A11.5 11.5 0 0 0 2.1 17.6L.8 23.2l5.7-1.3A11.5 11.5 0 0 0 20.2 3.8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8.1 7.2c-.3-.7-.7-.7-1-.7h-.8c-.3 0-.8.1-1.1.6-.4.4-1.4 1.3-1.4 3.1s1.4 3.5 1.6 3.7c.2.3 2.7 4.2 6.5 5.7 3.2 1.3 3.8 1 4.5.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.1-.2-.4-.3-.8-.5l-2.5-1.2c-.3-.1-.6-.2-.8.2-.3.4-1 1.2-1.2 1.5-.2.3-.4.3-.8.1-.4-.2-1.7-.6-3.2-2-1.2-1.1-2-2.4-2.2-2.8-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.6.1-.3 0-.5 0-.7L8.1 7.2Z" fill="currentColor" />
+                </svg>
+                Join WhatsApp
+              </a>
+            </div>
           </section>
 
           <p style={{ margin: "12px 0", fontSize: 13, color: "#52657c" }}>
