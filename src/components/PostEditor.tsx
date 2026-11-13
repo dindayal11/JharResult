@@ -1540,7 +1540,7 @@ export default function PostEditor({
                     onClick={() => addColumn(table.id)}
                   >
                     + Add Column
-                  </button></>
+                  </button></>}
 
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", margin: "20px 0 8px" }}>
                     <h4 style={{ margin: 0, color: "#253247" }}>
