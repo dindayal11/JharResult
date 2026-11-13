@@ -171,6 +171,7 @@ export default async function Home() {
   </div>
 
   
+<div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
 <a
   href="https://t.me/+_hj11IZ9nktjOWM1"
   target="_blank"
@@ -201,6 +202,32 @@ export default async function Home() {
   </svg>
   Join Telegram
 </a>
+<a
+  href="https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Join JharResult WhatsApp Channel"
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 9,
+    padding: "10px 18px",
+    background: "#25D366",
+    color: "#fff",
+    borderRadius: 5,
+    fontWeight: 700,
+    fontSize: 14,
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+  }}
+>
+  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M20.2 3.8A11.5 11.5 0 0 0 2.1 17.6L.8 23.2l5.7-1.3A11.5 11.5 0 0 0 20.2 3.8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M8.1 7.2c-.3-.7-.7-.7-1-.7h-.8c-.3 0-.8.1-1.1.6-.4.4-1.4 1.3-1.4 3.1s1.4 3.5 1.6 3.7c.2.3 2.7 4.2 6.5 5.7 3.2 1.3 3.8 1 4.5.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.1-.2-.4-.3-.8-.5l-2.5-1.2c-.3-.1-.6-.2-.8.2-.3.4-1 1.2-1.2 1.5-.2.3-.4.3-.8.1-.4-.2-1.7-.6-3.2-2-1.2-1.1-2-2.4-2.2-2.8-.2-.4 0-.6.2-.8l.6-.7c.2-.2.3-.4.4-.6.1-.3 0-.5 0-.7L8.1 7.2Z" fill="currentColor" />
+  </svg>
+  Join WhatsApp
+</a>
+</div>
 
 </section>
 
