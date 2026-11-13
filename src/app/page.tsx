@@ -173,6 +173,7 @@ export default async function Home() {
   
 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
 <a
+  className="social-channel-btn social-channel-telegram"
   href="https://t.me/+_hj11IZ9nktjOWM1"
   target="_blank"
   rel="noopener noreferrer"
@@ -203,6 +204,7 @@ export default async function Home() {
   Join Telegram
 </a>
 <a
+  className="social-channel-btn social-channel-whatsapp"
   href="https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"
   target="_blank"
   rel="noopener noreferrer"
