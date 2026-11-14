@@ -584,7 +584,7 @@ export default function PostEditor({
 
   // Automatically preserve new posts as unpublished drafts while the editor is open.
   useEffect(() => {
-    if (!form.title.trim() || !selectedCategoryIds.length || busy || imageBusy) return;
+    if (post || !form.title.trim() || !selectedCategoryIds.length || busy || imageBusy) return;
 
     const timer = window.setTimeout(() => {
       const cleanedTables = customTables
