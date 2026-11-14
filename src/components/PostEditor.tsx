@@ -411,7 +411,7 @@ function RichTextToolbar() {
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>Highlight
         <select aria-label="Highlight colour" defaultValue="" onMouseDown={saveBeforePicker} onFocus={saveBeforePicker} onChange={(event) => { const color = event.target.value; if (color) applyHighlight(color); event.target.value = ""; }} style={selectStyle}>
           <option value="" disabled>Choose</option>
-          <option value="#fff29a">Yellow</option><option value="#b7e1cd">Green</option><option value="#cfe2f3">Blue</option><option value="#f4cccc">Pink</option><option value="#eadcf8">Purple</option>
+          <option value="#FFE45C">Yellow</option><option value="#86DFA8">Green</option><option value="#8BC5FF">Blue</option><option value="#FF9DB5">Pink</option><option value="#C7A0F5">Purple</option>
         </select>
       </label>
     </div>
