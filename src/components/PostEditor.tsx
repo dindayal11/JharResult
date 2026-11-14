@@ -501,6 +501,8 @@ export default function PostEditor({
   const [imageBusy, setImageBusy] = useState(false);
   const [expandedTables, setExpandedTables] = useState<string[]>([]);
   const [autoSaveStatus, setAutoSaveStatus] = useState("");
+  const [recoveryReady, setRecoveryReady] = useState(false);
+  const recoveryKey = `jharresult-post-editor-recovery-${post?.id ? String(post.id) : "new"}`;
   const autoDraftIdRef = useRef<number | null>(post?.id ? Number(post.id) : null);
   const autoSavePromiseRef = useRef<Promise<void> | null>(null);
 
@@ -521,9 +523,68 @@ export default function PostEditor({
     }
   }, [form.short_description]);
 
+  // Restore a recent browser-side safety copy after an unexpected shutdown.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(recoveryKey);
+      if (raw) {
+        const snapshot = JSON.parse(raw);
+        const age = Date.now() - Number(snapshot.savedAt || 0);
+        if (snapshot.version === 1 && age >= 0 && age <= 7 * 24 * 60 * 60 * 1000) {
+          const shouldRestore = window.confirm(
+            "A recently auto-saved recovery copy was found. Restore your unsaved changes?"
+          );
+          if (shouldRestore) {
+            if (snapshot.form && typeof snapshot.form === "object") {
+              setForm((current: any) => ({ ...current, ...snapshot.form }));
+              if (descriptionEditor.current && typeof snapshot.form.short_description === "string") {
+                descriptionEditor.current.innerHTML = snapshot.form.short_description;
+                descriptionInitialized.current = true;
+              }
+            }
+            if (Array.isArray(snapshot.categoryIds)) setSelectedCategoryIds(snapshot.categoryIds);
+            if (Array.isArray(snapshot.customTables)) setCustomTables(snapshot.customTables);
+            setAutoSaveStatus("Recovered changes from this browser");
+          } else {
+            window.localStorage.removeItem(recoveryKey);
+          }
+        } else {
+          window.localStorage.removeItem(recoveryKey);
+        }
+      }
+    } catch {
+      // Ignore unavailable storage or malformed recovery data.
+    } finally {
+      setRecoveryReady(true);
+    }
+  }, [recoveryKey]);
+
+  // Keep a frequent local recovery copy. This also protects edits to already-published posts
+  // without changing the live post on the server until the editor is manually saved.
+  useEffect(() => {
+    if (!recoveryReady || busy || imageBusy) return;
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(recoveryKey, JSON.stringify({
+          version: 1,
+          savedAt: Date.now(),
+          form,
+          categoryIds: selectedCategoryIds,
+          customTables,
+        }));
+        if (!autoSaveStatus.startsWith("Draft saved") && !autoSaveStatus.startsWith("Recovered")) {
+          setAutoSaveStatus("Recovery copy saved on this computer");
+        }
+      } catch {
+        setAutoSaveStatus("Browser storage unavailable — server draft save is still used for new posts");
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [recoveryReady, recoveryKey, form, selectedCategoryIds, customTables, busy, imageBusy]);
+
   // Automatically preserve new posts as unpublished drafts while the editor is open.
   useEffect(() => {
-    if (post || !form.title.trim() || !selectedCategoryIds.length || busy || imageBusy) return;
+    if (!form.title.trim() || !selectedCategoryIds.length || busy || imageBusy) return;
 
     const timer = window.setTimeout(() => {
       const cleanedTables = customTables
@@ -571,7 +632,7 @@ export default function PostEditor({
         if (autoSavePromiseRef.current === trackedSave) autoSavePromiseRef.current = null;
       });
       autoSavePromiseRef.current = trackedSave;
-    }, 1800);
+    }, 1000);
 
     return () => window.clearTimeout(timer);
   }, [form, customTables, selectedCategoryIds, post, busy, imageBusy]);
@@ -994,6 +1055,7 @@ export default function PostEditor({
         throw new Error(data.error || "Save failed");
       }
 
+      try { window.localStorage.removeItem(recoveryKey); } catch {}
       window.location.href = "/admin";
     } catch (error: any) {
       setNotice(error.message);
@@ -1916,7 +1978,7 @@ export default function PostEditor({
             </button>
 
             <span role="status" aria-live="polite" style={{ color: autoSaveStatus.startsWith("Draft saved") ? "#16804a" : "#64748b", fontSize: 12 }}>
-              {autoSaveStatus || "Auto-save starts after you enter a post title."}
+              {autoSaveStatus || "Auto-save starts after you enter a post title and category."}
             </span>
             <span style={{ color: "#64748b", fontSize: 12 }}>
               Draft save karne se public nahi hoga.
