@@ -22,6 +22,7 @@ export default function ResponsiveNav({
     <>
       <nav className="desktop-nav">
         <a href="/">Home</a>
+        <a href="/quiz" className="quiz-nav-link">Quiz</a>
         {primary.map((c) => (
           <a key={c.slug} href={`/category/${c.slug}`}>
             {c.name}
@@ -57,6 +58,7 @@ export default function ResponsiveNav({
         {open && (
           <div className="mobile-menu-panel">
             <a href="/" onClick={() => setOpen(false)}>Home</a>
+            <a href="/quiz" onClick={() => setOpen(false)} className="quiz-mobile-link">Quiz</a>
 
             {primary.map((c) => (
               <a
@@ -115,6 +117,9 @@ export default function ResponsiveNav({
           text-decoration: none;
           cursor: pointer;
         }
+
+        .desktop-nav > a:hover,
+        .desktop-nav > a.quiz-nav-link { background: #f28c28; color: #fff; }
 
         .desktop-nav > a:hover,
         .desktop-nav :global(.nav-more > summary:hover) {
@@ -206,6 +211,8 @@ export default function ResponsiveNav({
             font-weight: 600;
             cursor: pointer;
           }
+
+          .mobile-menu-panel a.quiz-mobile-link { background: #fff2e4; color: #9a4d00; font-weight: 800; }
 
           .mobile-menu-panel a:hover,
           .mobile-more-button:hover {
