@@ -424,7 +424,14 @@ function RichTextField({ value, onChange, placeholder, minHeight = 90 }: { value
   onChangeRef.current = onChange;
   useEffect(() => {
     const editor = editorRef.current;
-    if (editor && editor.innerHTML !== (value || "")) editor.innerHTML = value || "";
+    if (!editor) return;
+
+    // While the user is typing, the contentEditable DOM is the source of truth.
+    // Replacing innerHTML on every controlled-value update can reset the caret
+    // and make recently typed text appear to disappear (especially with rich HTML).
+    if (document.activeElement === editor) return;
+
+    if (editor.innerHTML !== (value || "")) editor.innerHTML = value || "";
   }, [value]);
   const rememberEditor = () => {
     const editor = editorRef.current;
