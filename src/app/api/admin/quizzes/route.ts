@@ -28,8 +28,9 @@ function cleanQuiz(body:any){
 }
 async function saveQuiz(connection:any,body:any,id?:number){
   const b=cleanQuiz(body);
-  const [cats]:any=await connection.execute("SELECT id FROM quiz_categories WHERE id=? AND is_active=1",[b.categoryId]);
+  const [cats]:any=await connection.execute("SELECT c.id,(SELECT COUNT(*) FROM quiz_categories child WHERE child.parent_id=c.id AND child.is_active=1) AS child_count FROM quiz_categories c WHERE c.id=? AND c.is_active=1",[b.categoryId]);
   if(!cats.length) throw new Error("Selected quiz category is not available.");
+  if(Number(cats[0].child_count)>0) throw new Error("Please select the deepest category (subject or chapter) for this quiz.");
   const base=makeSlug(b.title).slice(0,220)||"practice-quiz";
   let slug=base,n=2;
   while(true){
@@ -66,7 +67,7 @@ export async function GET(req:Request){
       for(const q of questions){const [opts]:any=await getPool().execute("SELECT option_text,is_correct FROM quiz_options WHERE question_id=? ORDER BY sort_order",[q.id]);q.options=opts;}
       return NextResponse.json({quiz:rows[0],questions});
     }
-    const [categories]:any=await getPool().query("SELECT c.id,c.name,c.slug,p.name AS parent_name FROM quiz_categories c LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE c.is_active=1 AND c.parent_id IS NOT NULL ORDER BY p.sort_order,p.id,c.sort_order,c.id");
+    const [categories]:any=await getPool().query("SELECT c.id,c.parent_id,c.name,c.slug,c.category_type,p.name AS parent_name FROM quiz_categories c LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE c.is_active=1 AND NOT EXISTS (SELECT 1 FROM quiz_categories child WHERE child.parent_id=c.id AND child.is_active=1) ORDER BY c.sort_order,c.id");
     const [quizzes]:any=await getPool().query("SELECT q.id,q.title,q.slug,q.status,q.question_count,q.duration_minutes,q.created_at,c.name AS category_name,p.name AS parent_name FROM quizzes q JOIN quiz_categories c ON c.id=q.category_id LEFT JOIN quiz_categories p ON p.id=c.parent_id ORDER BY q.created_at DESC LIMIT 300");
     return NextResponse.json({categories,quizzes});
   }catch(e:any){return NextResponse.json({error:e.message==="UNAUTHORIZED"?"Please sign in.":"Could not load quiz manager."},{status:e.message==="UNAUTHORIZED"?401:500});}
