@@ -35,8 +35,8 @@ export default function QuizManager(){
  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}><h3 style={{margin:0}}>Question Bank ({form.questions.length})</h3><button type="button" className="btn" onClick={addQuestion}>＋ Add Question</button></div>
  {form.questions.map((q:Question,i:number)=><section key={i} style={{padding:15,border:"1px solid #dce4ee",borderRadius:8,background:"#f9fbfd"}}>
  <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}><strong style={{color:"#173f68"}}>Question {i+1}</strong><button type="button" onClick={()=>setForm((f:any)=>({...f,questions:f.questions.filter((_:any,j:number)=>j!==i)}))} disabled={form.questions.length===1} style={{border:0,background:"transparent",color:"#b42318",fontWeight:700,cursor:"pointer"}}>Remove</button></div>
- <label>Question (English)<textarea required rows={2} value={q.question_text} onChange={e=>setQuestion(i,"question_text",e.target.value)}/></label>
- <label>Question (Hindi – optional)<textarea rows={2} value={q.question_text_hi} onChange={e=>setQuestion(i,"question_text_hi",e.target.value)}/></label>
+ <label>Question (English – optional)<textarea rows={2} value={q.question_text} onChange={e=>setQuestion(i,"question_text",e.target.value)}/></label>
+ <label>Question (Hindi)<textarea required rows={2} value={q.question_text_hi} onChange={e=>setQuestion(i,"question_text_hi",e.target.value)}/></label>
  <div className="qm-options">{q.options.map((o,j)=><label key={j}>Option {String.fromCharCode(65+j)}<input required value={o.text} onChange={e=>setOption(i,j,e.target.value)}/></label>)}</div>
  <label>Correct answer<select value={q.correct_index} onChange={e=>setQuestion(i,"correct_index",Number(e.target.value))}>{q.options.map((o,j)=><option key={j} value={j}>{String.fromCharCode(65+j)} – {o.text||"Option "+(j+1)}</option>)}</select></label>
  <label>Explanation (optional)<textarea rows={2} value={q.explanation} onChange={e=>setQuestion(i,"explanation",e.target.value)}/></label>
