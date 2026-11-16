@@ -65,7 +65,7 @@ export async function GET(req:Request){
       for(const q of questions){const [opts]:any=await getPool().execute("SELECT option_text,is_correct FROM quiz_options WHERE question_id=? ORDER BY sort_order",[q.id]);q.options=opts;}
       return NextResponse.json({quiz:rows[0],questions});
     }
-    const [categories]:any=await getPool().query("SELECT c.id,c.name,c.slug,p.name AS parent_name FROM quiz_categories c LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE c.is_active=1 ORDER BY p.sort_order,p.id,c.sort_order,c.id");
+    const [categories]:any=await getPool().query("SELECT c.id,c.name,c.slug,p.name AS parent_name FROM quiz_categories c LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE c.is_active=1 AND c.parent_id IS NOT NULL ORDER BY p.sort_order,p.id,c.sort_order,c.id");
     const [quizzes]:any=await getPool().query("SELECT q.id,q.title,q.slug,q.status,q.question_count,q.duration_minutes,q.created_at,c.name AS category_name,p.name AS parent_name FROM quizzes q JOIN quiz_categories c ON c.id=q.category_id LEFT JOIN quiz_categories p ON p.id=c.parent_id ORDER BY q.created_at DESC LIMIT 300");
     return NextResponse.json({categories,quizzes});
   }catch(e:any){return NextResponse.json({error:e.message==="UNAUTHORIZED"?"Please sign in.":"Could not load quiz manager."},{status:e.message==="UNAUTHORIZED"?401:500});}
