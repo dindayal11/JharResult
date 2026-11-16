@@ -12,11 +12,12 @@ function cleanQuiz(body:any){
   if(questions.length>200) throw new Error("A quiz can contain up to 200 questions.");
   const normalized=questions.map((q:any,i:number)=>{
     const question=String(q.question_text||"").trim();
+    const questionHi=String(q.question_text_hi||"").trim();
     const options=Array.isArray(q.options)?q.options.map((o:any)=>String(o.text||"").trim()):[];
     const correct=Number(q.correct_index);
-    if(!question||options.length!==4||options.some((o:string)=>!o)||!Number.isInteger(correct)||correct<0||correct>3)
-      throw new Error(`Question ${i+1}: enter question, all four options and select the correct answer.`);
-    return {question,questionHi:String(q.question_text_hi||"").trim()||null,explanation:String(q.explanation||"").trim()||null,explanationHi:String(q.explanation_hi||"").trim()||null,difficulty:["easy","medium","hard"].includes(q.difficulty)?q.difficulty:"medium",options,correct};
+    if(!questionHi||options.length!==4||options.some((o:string)=>!o)||!Number.isInteger(correct)||correct<0||correct>3)
+      throw new Error(`Question ${i+1}: enter the Hindi question, all four options and select the correct answer.`);
+    return {question,questionHi,explanation:String(q.explanation||"").trim()||null,explanationHi:String(q.explanation_hi||"").trim()||null,difficulty:["easy","medium","hard"].includes(q.difficulty)?q.difficulty:"medium",options,correct};
   });
   const duration=Math.max(1,Math.min(240,Number(body.duration_minutes)||20));
   const marks=Math.max(0.25,Math.min(100,Number(body.marks_per_question)||1));
