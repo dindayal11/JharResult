@@ -746,6 +746,18 @@ export default function PostEditor({
       : table));
   };
 
+  const insertRow = (id: string, index: number) => {
+    setCustomTables((old) => old.map((table) => {
+      if (table.id !== id) return table;
+      const width = table.freeform_layout
+        ? Math.max(1, table.rows[index]?.length || 2)
+        : Math.max(1, table.columns.length);
+      const rows = [...table.rows];
+      rows.splice(index, 0, Array.from({ length: width }, () => ""));
+      return { ...table, rows };
+    }));
+  };
+
   const addCellToRow = (id: string, rowIndex: number) => {
     setCustomTables((old) => old.map((table) => table.id !== id ? table : {
       ...table, rows: table.rows.map((row, index) => index === rowIndex ? [...row, ""] : row),
@@ -1632,9 +1644,13 @@ export default function PostEditor({
                     <div style={{ display: "grid", gap: 10 }}>
                       {table.rows.map((row, rowIndex) => (
                         <div key={rowIndex} style={{ border: "1px solid #cbd5e1", borderRadius: 7, padding: 8, background: "#f8fafc" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7, gap: 8 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", marginBottom: 7, gap: 8 }}>
                             <strong style={{ fontSize: 12, color: "#475569" }}>Row {rowIndex + 1} · {row.length} columns</strong>
-                            <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ ...tableButton, background: "#a12b2b", padding: "6px 10px" }}>Delete Row</button>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                              <button type="button" onClick={() => insertRow(table.id, rowIndex)} style={{ ...tableButton, background: "#1d4ed8", padding: "6px 9px" }}>＋ Insert Above</button>
+                              <button type="button" onClick={() => insertRow(table.id, rowIndex + 1)} style={{ ...tableButton, background: "#0f766e", padding: "6px 9px" }}>＋ Insert Below</button>
+                              <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ ...tableButton, background: "#a12b2b", padding: "6px 10px" }}>Delete Row</button>
+                            </div>
                           </div>
                           <div style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.max(1,row.length) + ", minmax(130px, 1fr))", gap: 6, overflowX: "auto" }}>
                             {row.map((cell, cellIndex) => (
@@ -1719,22 +1735,17 @@ export default function PostEditor({
                                 padding: 5,
                               }}
                             >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeRow(table.id, rowIndex)
-                                }
-                                style={{
-                                  border: "1px solid #fecaca",
-                                  color: "#b42318",
-                                  background: "#fff5f5",
-                                  borderRadius: 6,
-                                  padding: "8px 10px",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Delete
-                              </button>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "stretch", minWidth: 112 }}>
+                                <button type="button" onClick={() => insertRow(table.id, rowIndex)} style={{ border: "1px solid #bfdbfe", color: "#1d4ed8", background: "#eff6ff", borderRadius: 6, padding: "7px 8px", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11, fontWeight: 700 }}>
+                                  ＋ Insert Above
+                                </button>
+                                <button type="button" onClick={() => insertRow(table.id, rowIndex + 1)} style={{ border: "1px solid #99f6e4", color: "#0f766e", background: "#f0fdfa", borderRadius: 6, padding: "7px 8px", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11, fontWeight: 700 }}>
+                                  ＋ Insert Below
+                                </button>
+                                <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ border: "1px solid #fecaca", color: "#b42318", background: "#fff5f5", borderRadius: 6, padding: "7px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>
+                                  Delete Row
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
