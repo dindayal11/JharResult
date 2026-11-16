@@ -22,7 +22,7 @@ export async function POST(req:Request){
     const quiz=qz[0];
     const [pool]:any=await connection.execute("SELECT id,question_text,question_text_hi FROM quiz_questions WHERE quiz_id=? AND is_active=1",[quizId]);
     if(pool.length<Number(quiz.question_count)){await connection.rollback();return NextResponse.json({error:"This quiz is being prepared. Please try again later."},{status:409});}
-    const questions=shuffle(pool).slice(0,Number(quiz.question_count));
+    const questions:any[]=shuffle<any>(pool as any[]).slice(0,Number(quiz.question_count));
     const jar=await cookies(); let token=jar.get(COOKIE)?.value;
     if(!token||!/^[a-f0-9]{64}$/.test(token)) token=randomBytes(32).toString("hex");
     const tokenHash=hash(token);
@@ -33,7 +33,7 @@ export async function POST(req:Request){
     const publicId=randomUUID();
     const [attempt]:any=await connection.execute("INSERT INTO quiz_attempts(public_id,quiz_id,category_id,participant_id,status,total_questions,total_marks,started_at,expires_at) VALUES(?,?,?,?,'in_progress',?,?,NOW(),DATE_ADD(NOW(),INTERVAL ? MINUTE))",[publicId,quizId,quiz.category_id,participantId,questions.length,Number(quiz.marks_per_question)*questions.length,Number(quiz.duration_minutes)]);
     const attemptId=Number(attempt.insertId);
-    const payload=[];
+    const payload:any[]=[];
     for(let i=0;i<questions.length;i++){
       const q=questions[i];
       const [opts]:any=await connection.execute("SELECT id,option_text,option_text_hi FROM quiz_options WHERE question_id=? ORDER BY sort_order,id",[q.id]);
