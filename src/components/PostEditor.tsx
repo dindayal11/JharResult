@@ -1735,17 +1735,9 @@ export default function PostEditor({
                                 padding: 5,
                               }}
                             >
-                              <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "stretch", minWidth: 112 }}>
-                                <button type="button" onClick={() => insertRow(table.id, rowIndex)} style={{ border: "1px solid #bfdbfe", color: "#1d4ed8", background: "#eff6ff", borderRadius: 6, padding: "7px 8px", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11, fontWeight: 700 }}>
-                                  ＋ Insert Above
-                                </button>
-                                <button type="button" onClick={() => insertRow(table.id, rowIndex + 1)} style={{ border: "1px solid #99f6e4", color: "#0f766e", background: "#f0fdfa", borderRadius: 6, padding: "7px 8px", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11, fontWeight: 700 }}>
-                                  ＋ Insert Below
-                                </button>
-                                <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ border: "1px solid #fecaca", color: "#b42318", background: "#fff5f5", borderRadius: 6, padding: "7px 8px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>
-                                  Delete Row
-                                </button>
-                              </div>
+                              <button type="button" onClick={() => removeRow(table.id, rowIndex)} style={{ border: "1px solid #fecaca", color: "#b42318", background: "#fff5f5", borderRadius: 6, padding: "8px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+                                Delete Row
+                              </button>
                             </td>
                           </tr>
                         ))}
