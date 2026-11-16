@@ -49,6 +49,22 @@ const legacyDefinitions = [
   { key: "faqs", title: "Frequently Asked Questions", columns: ["Question", "Answer"] },
 ];
 
+type FAQItem = { question: string; answer: string };
+
+function parseFAQs(value: unknown): FAQItem[] {
+  if (!value) return [];
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((item: any) => ({
+      question: String(item?.question ?? item?.Question ?? ""),
+      answer: String(item?.answer ?? item?.Answer ?? ""),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 function parseCustomTables(value: unknown): CustomTable[] {
   if (!value) return [];
 
@@ -475,6 +491,7 @@ export default function PostEditor({
       post?.category_id || categories[0]?.id || ""
     ),
     short_description: post?.short_description || "",
+    faqs: JSON.stringify(parseFAQs(post?.faqs)),
     organization: post?.organization || "",
     source_url: post?.source_url || "",
     application_url: post?.application_url || "",
@@ -1797,6 +1814,38 @@ export default function PostEditor({
             + Add New Table
           </button>
 
+          {/* FREQUENTLY ASKED QUESTIONS */}
+          <section style={sectionStyle}>
+            <div style={{ padding: 18 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <h2 style={{ margin: "0 0 5px", fontSize: 18 }}>Frequently Asked Questions (FAQ)</h2>
+                  <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>Add questions and clear answers for students. These will appear on the published post.</p>
+                </div>
+                <button type="button" onClick={() => change("faqs", JSON.stringify([...parseFAQs(form.faqs), { question: "", answer: "" }]))} style={{ ...tableButton, background: "#16804a" }}>＋ Add FAQ</button>
+              </div>
+              <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+                {parseFAQs(form.faqs).map((faq, index) => (
+                  <div key={index} style={{ border: "1px solid #dbe3ed", borderRadius: 9, padding: 14, background: "#f8fafc" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      <strong style={{ color: "#173f70" }}>Question {index + 1}</strong>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button type="button" disabled={index === 0} onClick={() => { const items = parseFAQs(form.faqs); [items[index - 1], items[index]] = [items[index], items[index - 1]]; change("faqs", JSON.stringify(items)); }} style={{ ...tableButton, background: "#475569", padding: "6px 9px" }}>↑</button>
+                        <button type="button" disabled={index === parseFAQs(form.faqs).length - 1} onClick={() => { const items = parseFAQs(form.faqs); [items[index + 1], items[index]] = [items[index], items[index + 1]]; change("faqs", JSON.stringify(items)); }} style={{ ...tableButton, background: "#475569", padding: "6px 9px" }}>↓</button>
+                        <button type="button" onClick={() => change("faqs", JSON.stringify(parseFAQs(form.faqs).filter((_, i) => i !== index)))} style={{ ...tableButton, background: "#a12b2b", padding: "6px 9px" }}>Delete</button>
+                      </div>
+                    </div>
+                    <label style={labelStyle}>Question</label>
+                    <input style={inputStyle} value={faq.question} placeholder="e.g. When will the admit card be released?" onChange={(e) => { const items = parseFAQs(form.faqs); items[index].question = e.target.value; change("faqs", JSON.stringify(items)); }} />
+                    <label style={labelStyle}>Answer</label>
+                    <RichTextField value={faq.answer} placeholder="Write a helpful answer..." minHeight={75} onChange={(value) => { const items = parseFAQs(form.faqs); items[index].answer = value; change("faqs", JSON.stringify(items)); }} />
+                  </div>
+                ))}
+                {parseFAQs(form.faqs).length === 0 && <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>No FAQs added yet. Click “Add FAQ” to create your first question.</p>}
+              </div>
+            </div>
+          </section>
+
           {/* OTHER INFORMATION */}
 
           <section style={sectionStyle}>
@@ -1903,6 +1952,19 @@ export default function PostEditor({
                   style={{ margin: "18px 0", padding: "15px 17px", border: "1px solid #dce3ec", borderLeft: "4px solid #e87920", borderRadius: 7, background: "#f8fafc", color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.short_description), PREVIEW_SANITIZE_OPTIONS) }}
                 />
+              )}
+              {parseFAQs(form.faqs).some((faq) => faq.question.trim() || faq.answer.trim()) && (
+                <section className="detail-section" style={{ margin: "20px 0 24px", border: "1px solid #dce3ec", borderRadius: 7, overflow: "hidden" }}>
+                  <h2 style={{ margin: 0, padding: "10px 12px", background: "#173f70", color: "#fff", fontSize: 18 }}>Frequently Asked Questions</h2>
+                  <div style={{ padding: 12 }}>
+                    {parseFAQs(form.faqs).filter((faq) => faq.question.trim() || faq.answer.trim()).map((faq, index) => (
+                      <div key={index} style={{ padding: "10px 0", borderBottom: index === parseFAQs(form.faqs).length - 1 ? 0 : "1px solid #e2e8f0" }}>
+                        <strong>Q. {faq.question}</strong>
+                        <div style={{ marginTop: 6 }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer, PREVIEW_SANITIZE_OPTIONS) }} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
               )}
               {(["organization", "qualification", "selection_process", "how_to_apply"] as const).map((key) => form[key] ? (
                 <section key={key} className="detail-section" style={{ margin: "20px 0 24px", border: "1px solid #dce3ec", borderRadius: 4, overflow: "hidden" }}>
