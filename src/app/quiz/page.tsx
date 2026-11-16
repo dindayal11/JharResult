@@ -59,7 +59,7 @@ export default async function QuizHomePage() {
                 <Link className="quiz-notification-item" href={`/quiz/start/${quiz.slug}`} key={quiz.id}>
                   <span className="quiz-notification-icon" aria-hidden="true">📝</span>
                   <span className="quiz-notification-copy"><strong>{quiz.title}</strong><small>{quiz.parent_name?quiz.parent_name+" · ":""}{quiz.category_name} · {quiz.question_count} Questions · {quiz.duration_minutes} Minutes</small></span>
-                  {quiz.is_new===1&&<span className="quiz-new-badge">NEW</span>}
+                  {quiz.is_new===1&&<span className="new-badge">NEW</span>}
                   <span className="quiz-notification-open" aria-hidden="true">Start →</span>
                 </Link>
               ))}
@@ -114,7 +114,6 @@ export default async function QuizHomePage() {
         .quiz-notification-copy{display:grid;gap:4px;flex:1;min-width:0}
         .quiz-notification-copy strong{color:#173f68;font-size:13px;line-height:1.4}
         .quiz-notification-copy small{color:#78879a;font-size:10px;line-height:1.4}
-        .quiz-new-badge{padding:4px 7px;border-radius:5px;background:#e11d48;color:#fff;font-size:9px;font-weight:900;letter-spacing:.5px}
         .quiz-notification-open{padding:8px 10px;border-radius:7px;background:#173f68;color:#fff;font-size:10px;font-weight:800;white-space:nowrap}
         .quiz-groups{display:grid;gap:22px;margin-top:24px}
         .quiz-group{background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
