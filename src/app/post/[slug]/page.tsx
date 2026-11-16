@@ -419,6 +419,14 @@ export default async function PostPage({
       })
     : "";
 
+  const faqData = parseJson((p as any).faqs);
+  const faqs: { question: string; answer: string }[] = Array.isArray(faqData)
+    ? faqData.map((item: any) => ({
+        question: String(item?.question ?? item?.Question ?? ""),
+        answer: String(item?.answer ?? item?.Answer ?? ""),
+      })).filter((item) => item.question.trim() || item.answer.trim())
+    : [];
+
   const primary = "#173f70";
   const accent = "#e87920";
   const background = "#ffffff";
@@ -437,7 +445,6 @@ export default async function PostPage({
       ["Age Limit", p.age_limit],
       ["Vacancy Details", p.vacancy_details],
       ["Important Links", p.important_links],
-      ["Frequently Asked Questions", p.faqs],
     ] as const;
 
     customTables = oldDefinitions.flatMap(([title, raw]) => {
@@ -824,6 +831,20 @@ export default async function PostPage({
               />
             </div>
           </div>
+
+          {faqs.length > 0 && (
+            <section className="detail-section" style={{ margin: "22px 0", border: "1px solid #dce3ec", borderRadius: 9, overflow: "hidden", background: "#fff" }}>
+              <h2 style={{ margin: 0, padding: "12px 15px", background: primary, color: "#fff", fontSize: 19 }}>Frequently Asked Questions</h2>
+              <div style={{ padding: "8px 15px" }}>
+                {faqs.map((faq, index) => (
+                  <div key={index} style={{ padding: "13px 0", borderBottom: index === faqs.length - 1 ? 0 : "1px solid #e2e8f0" }}>
+                    <h3 style={{ margin: 0, color: primary, fontSize: 16, lineHeight: 1.5 }}>Q{index + 1}. {faq.question}</h3>
+                    {faq.answer && <div style={{ marginTop: 7, color: text, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer, { ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "p", "div", "br", "ul", "ol", "li", "a", "span"], ALLOWED_ATTR: ["href", "target", "rel", "style"] }) }} />}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           <div className="official-actions">
             {p.application_url && (
