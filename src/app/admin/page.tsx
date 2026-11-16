@@ -73,6 +73,7 @@ export default async function AdminPage({
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Link className="btn" href="/admin/quizzes" style={{ background: "#7c3aed" }}>Manage Quizzes</Link>
           <Link className="btn" href="/admin/categories">
             Manage Categories
           </Link>
