@@ -41,12 +41,12 @@ async function saveQuiz(connection:any,body:any,id?:number){
   if(id){
     const [exists]:any=await connection.execute("SELECT id FROM quizzes WHERE id=?",[id]);
     if(!exists.length) throw new Error("Quiz not found.");
-    await connection.execute("UPDATE quizzes SET category_id=?,title=?,slug=?,description=?,instructions=?,question_count=?,duration_minutes=?,marks_per_question=?,negative_marking=?,language=?,status=?,published_at=IF(?='published',COALESCE(published_at,NOW()),NULL) WHERE id=?",
-      [b.categoryId,b.title,slug,b.description,b.instructions,b.questions.length,b.duration,b.marks,b.negative,b.language,b.status,b.status,id]);
+    await connection.execute("UPDATE quizzes SET category_id=?,title=?,slug=?,description=?,instructions=?,question_count=?,duration_minutes=?,marks_per_question=?,negative_marking=?,language=?,status=?,published_at=IF(?,COALESCE(published_at,NOW()),NULL) WHERE id=?",
+      [b.categoryId,b.title,slug,b.description,b.instructions,b.questions.length,b.duration,b.marks,b.negative,b.language,b.status,b.status==="published"?1:0,id]);
     await connection.execute("DELETE FROM quiz_questions WHERE quiz_id=?",[id]);
   }else{
-    const [result]:any=await connection.execute("INSERT INTO quizzes (category_id,title,slug,description,instructions,question_count,duration_minutes,marks_per_question,negative_marking,language,status,published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,IF(?='published',NOW(),NULL))",
-      [b.categoryId,b.title,slug,b.description,b.instructions,b.questions.length,b.duration,b.marks,b.negative,b.language,b.status,b.status]);
+    const [result]:any=await connection.execute("INSERT INTO quizzes (category_id,title,slug,description,instructions,question_count,duration_minutes,marks_per_question,negative_marking,language,status,published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,IF(?,NOW(),NULL))",
+      [b.categoryId,b.title,slug,b.description,b.instructions,b.questions.length,b.duration,b.marks,b.negative,b.language,b.status,b.status==="published"?1:0]);
     id=Number(result.insertId);
   }
   for(const q of b.questions){
