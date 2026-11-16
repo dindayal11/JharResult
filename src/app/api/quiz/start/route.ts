@@ -13,7 +13,7 @@ export async function POST(req:Request){
   try{
     const body=await req.json();
     const quizId=Number(body.quiz_id);
-    const displayName=String(body.display_name||"").trim().replace(/\\s+/g," ");
+    const displayName=String(body.display_name||"").trim().replace(/\s+/g," ");
     if(!Number.isInteger(quizId)||quizId<1) return NextResponse.json({error:"Invalid quiz."},{status:400});
     if(displayName.length<2||displayName.length>80) return NextResponse.json({error:"Name must be between 2 and 80 characters."},{status:400});
     connection=await getPool().getConnection(); await connection.beginTransaction();
