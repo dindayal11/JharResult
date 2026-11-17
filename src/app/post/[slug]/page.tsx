@@ -419,6 +419,14 @@ export default async function PostPage({
       })
     : "";
 
+  const safeContentHtml = (p as any).content_html
+    ? DOMPurify.sanitize(String((p as any).content_html), {
+        ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td", "img"],
+        ALLOWED_ATTR: ["style", "href", "target", "rel", "src", "alt", "width", "height"],
+        ALLOW_DATA_ATTR: false,
+      })
+    : "";
+
   const faqData = parseJson((p as any).faqs);
   const faqs: { question: string; answer: string }[] = Array.isArray(faqData)
     ? faqData.map((item: any) => ({
@@ -748,6 +756,11 @@ export default async function PostPage({
                 __html: safeDescription,
               }}
             />
+          )}
+
+          {safeContentHtml && (
+            <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 2.5vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", color: text, lineHeight: 1.75, overflowWrap: "anywhere", minWidth: 0 }}
+              dangerouslySetInnerHTML={{ __html: safeContentHtml }} />
           )}
 
           {(p as any).image_url && (
