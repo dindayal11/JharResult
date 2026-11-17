@@ -570,6 +570,7 @@ export default function PostEditor({
       post?.category_id || categories[0]?.id || ""
     ),
     short_description: post?.short_description || "",
+    content_html: post?.content_html || "",
     faqs: JSON.stringify(parseFAQs(post?.faqs)),
     organization: post?.organization || "",
     source_url: post?.source_url || "",
@@ -1227,6 +1228,23 @@ export default function PostEditor({
     >
       <form onSubmit={save}>
           <RichTextToolbar />
+          <section style={{ ...sectionStyle, overflow: "visible" }}>
+            <div style={{ padding: "14px clamp(10px, 3vw, 24px) 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                <h2 style={{ margin: 0, fontSize: 18 }}>Article Content</h2>
+                <span style={{ color: "#64748b", fontSize: 12 }}>Tap or click anywhere on the page to write</span>
+              </div>
+              <div style={{ width: "100%", maxWidth: 980, margin: "0 auto", padding: "clamp(16px, 4vw, 48px)", minHeight: "min(1100px, 72vh)", background: "#fff", border: "1px solid #d7dee8", borderRadius: 4, boxShadow: "0 5px 22px rgba(15,23,42,.08)", boxSizing: "border-box" }}>
+                <RichTextField
+                  value={form.content_html || ""}
+                  onChange={(value) => change("content_html", value)}
+                  placeholder="Start writing your article here..."
+                  minHeight={620}
+                />
+              </div>
+              <p style={{ maxWidth: 980, margin: "9px auto 0", color: "#64748b", fontSize: 12, lineHeight: 1.5 }}>Your article body is saved separately from the short summary and SEO fields. On mobile, the page automatically fits the screen width.</p>
+            </div>
+          </section>
           <section style={sectionStyle}>
             <div style={{ padding: 18 }}>
               <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>
@@ -2025,6 +2043,10 @@ export default function PostEditor({
               <p style={{ color: "#64748b", fontSize: 13 }}>Categories: {categories.filter((item) => selectedCategoryIds.includes(String(item.id))).map((item) => item.name).join(", ") || "None selected"}</p>
               {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
               {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
+              {form.content_html && (
+                <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 3vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.content_html), PREVIEW_SANITIZE_OPTIONS) }} />
+              )}
               {form.short_description && (
                 <div
                   className="article-summary"
