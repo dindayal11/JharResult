@@ -2054,16 +2054,16 @@ export default function PostEditor({
               <p style={{ color: "#64748b", fontSize: 13 }}>Categories: {categories.filter((item) => selectedCategoryIds.includes(String(item.id))).map((item) => item.name).join(", ") || "None selected"}</p>
               {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
               {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
-              {form.content_html && (
-                <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 3vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.content_html), PREVIEW_SANITIZE_OPTIONS) }} />
-              )}
               {form.short_description && (
                 <div
                   className="article-summary"
                   style={{ margin: "18px 0", padding: "15px 17px", border: "1px solid #dce3ec", borderLeft: "4px solid #e87920", borderRadius: 7, background: "#f8fafc", color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.short_description), PREVIEW_SANITIZE_OPTIONS) }}
                 />
+              )}
+              {form.content_html && (
+                <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 3vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.content_html), PREVIEW_SANITIZE_OPTIONS) }} />
               )}
               {parseFAQs(form.faqs).some((faq) => faq.question.trim() || faq.answer.trim()) && (
                 <section className="detail-section" style={{ margin: "20px 0 24px", border: "1px solid #dce3ec", borderRadius: 7, overflow: "hidden" }}>
