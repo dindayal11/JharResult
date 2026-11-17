@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 
 const PREVIEW_SANITIZE_OPTIONS = {
-  ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+  ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
   ALLOWED_ATTR: ["style", "href", "target", "rel"],
   ALLOW_DATA_ATTR: false,
 };
@@ -293,6 +293,50 @@ function RichTextToolbar() {
     saveSelection();
   };
 
+  const insertHtmlAtSelection = (html: string) => {
+    const editor = activeRichEditor;
+    if (!editor) return;
+    editor.focus();
+    const selection = window.getSelection();
+    if (selection && activeRichRange && editor.contains(activeRichRange.commonAncestorContainer)) {
+      selection.removeAllRanges();
+      selection.addRange(activeRichRange);
+    }
+    document.execCommand("insertHTML", false, html);
+    activeRichOnChange?.(editor.innerHTML);
+    const nextSelection = window.getSelection();
+    if (nextSelection?.rangeCount) activeRichRange = nextSelection.getRangeAt(0).cloneRange();
+  };
+
+  const insertStyledHeading = (style: "blue" | "highlight") => {
+    const text = window.prompt("Heading text");
+    if (!text?.trim()) return;
+    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const html = style === "blue"
+      ? '<h2 style="margin:18px 0 12px;padding:12px 16px;border-left:6px solid #e87920;background:#173f70;color:#fff;font-size:21px;line-height:1.4;font-weight:600">' + escaped + '</h2><p><br></p>'
+      : '<h2 style="margin:18px 0 12px;color:#182638;font-size:22px;line-height:1.45;font-weight:800"><span style="background:#ffe45c;padding:0 3px">' + escaped + '</span></h2><p><br></p>';
+    insertHtmlAtSelection(html);
+  };
+
+  const insertTableAtSelection = () => {
+    const rowInput = window.prompt("Number of rows (excluding heading row)", "2");
+    if (rowInput === null) return;
+    const colInput = window.prompt("Number of columns", "2");
+    if (colInput === null) return;
+    const rows = Math.min(20, Math.max(1, Number.parseInt(rowInput, 10) || 1));
+    const cols = Math.min(10, Math.max(1, Number.parseInt(colInput, 10) || 1));
+    let html = '<table style="width:100%;border-collapse:collapse;margin:14px 0;font-size:14px"><thead><tr>';
+    for (let c = 0; c < cols; c++) html += '<th style="border:1px solid #dce3ec;padding:10px;background:#e87920;color:#fff;text-align:left">Heading ' + (c + 1) + '</th>';
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) html += '<td style="border:1px solid #dce3ec;padding:10px;vertical-align:top">Cell ' + (r + 1) + '-' + (c + 1) + '</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+    insertHtmlAtSelection(html);
+  };
+
   const applyHeading = (tagName: "h2" | "h3") => {
     // Use the browser's block-format command so headings work both with a
     // selected paragraph and with the caret placed inside a paragraph.
@@ -370,6 +414,9 @@ function RichTextToolbar() {
       {button("1. Numbering", "insertOrderedList")}
       {headingButton("H2", "h2")}
       {headingButton("H3", "h3")}
+      <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => insertStyledHeading("blue")}>Styled Heading</button>
+      <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => insertStyledHeading("highlight")}>Highlight Heading</button>
+      <button type="button" style={{ ...buttonStyle, background: "#e87920", color: "#fff" }} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={insertTableAtSelection}>＋ Insert Table</button>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
         Line spacing
         <select
