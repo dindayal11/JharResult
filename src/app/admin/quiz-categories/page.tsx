@@ -47,6 +47,18 @@ export default function QuizCategoryManager(){
   }catch(e:any){setError(e.message||"Could not create category.");}
   finally{setSaving(false);}
  }
+ async function deleteCategory(category:Category){
+  const confirmed=window.confirm(`Delete category "${category.name}"? This is allowed only when it has no quizzes and no active child categories.`);
+  if(!confirmed)return;
+  setSaving(true);setError("");setNotice("");
+  try{
+   const r=await fetch("/api/admin/quiz-categories?id="+category.id,{method:"DELETE"});
+   const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not delete category.");
+   if(editing?.id===category.id)setEditing(null);
+   setNotice("Category deleted successfully.");await load();
+  }catch(e:any){setError(e.message||"Could not delete category.");}
+  finally{setSaving(false);}
+ }
  async function updateCategory(e:any){
   e.preventDefault();if(!editing)return;setSaving(true);setError("");setNotice("");
   try{
@@ -93,7 +105,7 @@ export default function QuizCategoryManager(){
     <div className="categoryMark" style={{background:depthOf(c)===0?"#eaf2ff":depthOf(c)===1?"#e9f8f1":"#f4efff",color:depthOf(c)===0?"#2563eb":depthOf(c)===1?"#16834a":"#7c3aed"}}>{depthOf(c)===0?"P":depthOf(c)===1?"S":"N"}</div>
     <div className="categoryInfo"><strong>{c.name}</strong><span>{pathOf(c)}</span></div>
     <span className="levelTag">{depthOf(c)===0?"Parent":depthOf(c)===1?"Subcategory":"Nested L"+(depthOf(c)+1)}</span>
-    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button>
+    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button><button type="button" className="btn deleteBtn" disabled={saving} onClick={()=>deleteCategory(c)}>Delete</button>
    </div>)}</div>}
   </section>
   <style>{`
@@ -121,7 +133,7 @@ export default function QuizCategoryManager(){
    .categoryMark{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;font-size:11px;font-weight:800;flex-shrink:0}
    .categoryInfo{display:grid;gap:2px;min-width:0;flex:1}.categoryInfo strong{font-size:13px;color:#263548}.categoryInfo span{font-size:11px;color:#8290a2;overflow-wrap:anywhere}
    .levelTag{font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:5px 7px;border-radius:20px;white-space:nowrap}
-   .editBtn{padding:6px 11px;font-size:12px;flex-shrink:0}
+   .editBtn{padding:6px 11px;font-size:12px;flex-shrink:0}.deleteBtn{padding:6px 11px;font-size:12px;flex-shrink:0;background:#b42318}
    @media(max-width:760px){.managerGrid{grid-template-columns:1fr}.listHeader{align-items:stretch;flex-direction:column}.searchBox{max-width:none}.levelTag{display:none}.categoryRow{gap:7px}.categoryInfo span{font-size:10px}}
   `}</style>
  </main>;
