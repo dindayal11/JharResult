@@ -14,12 +14,14 @@ export async function POST(req:Request){
     const body=await req.json();
     const quizId=Number(body.quiz_id);
     const displayName=String(body.display_name||"").trim().replace(/\s+/g," ");
+    const requestedLanguage=body.language==="hindi"?"hindi":"english";
     if(!Number.isInteger(quizId)||quizId<1) return NextResponse.json({error:"Invalid quiz."},{status:400});
     if(displayName.length<2||displayName.length>80) return NextResponse.json({error:"Name must be between 2 and 80 characters."},{status:400});
     connection=await getPool().getConnection(); await connection.beginTransaction();
     const [qz]:any=await connection.execute("SELECT q.*,c.name AS category_name FROM quizzes q JOIN quiz_categories c ON c.id=q.category_id WHERE q.id=? AND q.status='published' AND c.is_active=1 LIMIT 1",[quizId]);
     if(!qz.length){await connection.rollback();return NextResponse.json({error:"This quiz is not available."},{status:404});}
     const quiz=qz[0];
+    if(quiz.language!=="both"&&quiz.language!==requestedLanguage){await connection.rollback();return NextResponse.json({error:"This quiz is not available in the selected language."},{status:400});}
     const [pool]:any=await connection.execute("SELECT id,question_text,question_text_hi FROM quiz_questions WHERE quiz_id=? AND is_active=1",[quizId]);
     if(pool.length<Number(quiz.question_count)){await connection.rollback();return NextResponse.json({error:"This quiz is being prepared. Please try again later."},{status:409});}
     const questions:any[]=shuffle<any>(pool as any[]).slice(0,Number(quiz.question_count));
@@ -40,10 +42,10 @@ export async function POST(req:Request){
       if(opts.length!==4) throw new Error("A question in this quiz does not have four options.");
       const ordered=shuffle(opts);
       await connection.execute("INSERT INTO quiz_attempt_questions(attempt_id,question_id,question_order,option_order) VALUES(?,?,?,?)",[attemptId,q.id,i+1,JSON.stringify(ordered.map((o:any)=>Number(o.id)))]);
-      payload.push({id:Number(q.id),question:quiz.language==="hindi"?(q.question_text_hi||q.question_text):q.question_text,question_hi:quiz.language==="english"?null:q.question_text_hi,options:ordered.map((o:any,index:number)=>({id:Number(o.id),label:String.fromCharCode(65+index),text:quiz.language==="hindi"?(o.option_text_hi||o.option_text):o.option_text,text_hi:quiz.language==="english"?null:o.option_text_hi}))});
+      payload.push({id:Number(q.id),question:requestedLanguage==="hindi"?(q.question_text_hi||q.question_text):q.question_text,question_hi:null,options:ordered.map((o:any,index:number)=>({id:Number(o.id),label:String.fromCharCode(65+index),text:requestedLanguage==="hindi"?(o.option_text_hi||o.option_text):o.option_text,text_hi:null}))});
     }
     await connection.commit();
-    const response=NextResponse.json({attempt_id:publicId,title:quiz.title,category:quiz.category_name,duration_minutes:Number(quiz.duration_minutes),expires_at:new Date(Date.now()+Number(quiz.duration_minutes)*60000).toISOString(),questions:payload});
+    const response=NextResponse.json({attempt_id:publicId,title:quiz.title,category:quiz.category_name,duration_minutes:Number(quiz.duration_minutes),expires_at:new Date(Date.now()+Number(quiz.duration_minutes)*60000).toISOString(),language:requestedLanguage,questions:payload});
     response.cookies.set(COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:60*60*24*365});
     return response;
   }catch(error:any){if(connection)await connection.rollback();console.error("Quiz start failed:",error);return NextResponse.json({error:error.message==="A question in this quiz does not have four options."?error.message:"Could not start this quiz. Please try again."},{status:500});}
