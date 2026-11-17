@@ -337,6 +337,37 @@ function RichTextToolbar() {
     insertHtmlAtSelection(html);
   };
 
+  const deleteTableAtSelection = () => {
+    const editor = activeRichEditor;
+    const range = activeRichRange;
+    if (!editor || !range || !editor.contains(range.commonAncestorContainer)) {
+      window.alert("Pehle us table ke kisi cell mein click karein jise delete karna hai.");
+      return;
+    }
+
+    const node = range.startContainer;
+    const element = node.nodeType === Node.ELEMENT_NODE ? node as HTMLElement : node.parentElement;
+    const table = element?.closest("table");
+    if (!table || !editor.contains(table)) {
+      window.alert("Cursor ko us table ke kisi cell mein rakhein jise delete karna hai.");
+      return;
+    }
+
+    if (!window.confirm("Kya aap selected table ko delete karna chahte hain?")) return;
+    const paragraph = document.createElement("p");
+    paragraph.innerHTML = "<br>";
+    table.parentNode?.insertBefore(paragraph, table);
+    table.remove();
+    const nextRange = document.createRange();
+    nextRange.setStart(paragraph, 0);
+    nextRange.collapse(true);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(nextRange);
+    activeRichRange = nextRange.cloneRange();
+    activeRichOnChange?.(editor.innerHTML);
+  };
+
   const applyHeading = (tagName: "h2" | "h3") => {
     // Use the browser's block-format command so headings work both with a
     // selected paragraph and with the caret placed inside a paragraph.
@@ -417,6 +448,7 @@ function RichTextToolbar() {
       <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => insertStyledHeading("blue")}>Styled Heading</button>
       <button type="button" style={buttonStyle} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={() => insertStyledHeading("highlight")}>Highlight Heading</button>
       <button type="button" style={{ ...buttonStyle, background: "#e87920", color: "#fff" }} onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={insertTableAtSelection}>＋ Insert Table</button>
+      <button type="button" style={{ ...buttonStyle, background: "#b42318", color: "#fff" }} title="Delete the table containing the cursor" onMouseDown={(event) => { event.preventDefault(); saveSelection(); }} onClick={deleteTableAtSelection}>Delete Table</button>
       <label style={{ ...buttonStyle, display: "inline-flex", alignItems: "center", gap: 5 }}>
         Line spacing
         <select
