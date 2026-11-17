@@ -2074,13 +2074,7 @@ export default function PostEditor({
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.description), PREVIEW_SANITIZE_OPTIONS) }}
                     />
                   )}
-                  {table.footer_content && (
-                    <div
-                      className="table-footer-content"
-                      style={{ padding: "12px", lineHeight: 1.7, overflowWrap: "anywhere", color: table.theme_text }}
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.footer_content), PREVIEW_SANITIZE_OPTIONS) }}
-                    />
-                  )}
+
                   {table.freeform_layout ? (
                     <div style={{ display: "grid", gap: 0, color: table.theme_text, fontSize: 14, background: table.theme_background }}>
                       {table.rows.filter((row) => row.some((cell) => cell.trim())).map((row, rowIndex) => (
@@ -2109,6 +2103,13 @@ export default function PostEditor({
                       </tbody>
                     </table>
                   </div>}
+                  {table.footer_content && (
+                    <div
+                      className="table-footer-content"
+                      style={{ padding: "12px", lineHeight: 1.7, overflowWrap: "anywhere", color: table.theme_text }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.footer_content), PREVIEW_SANITIZE_OPTIONS) }}
+                    />
+                  )}
                 </section>
               ))}
               <p style={{ marginTop: 14, color: "#64748b", fontSize: 12 }}>Preview is for content review; final public layout may differ slightly.</p>
