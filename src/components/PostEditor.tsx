@@ -18,6 +18,7 @@ type CustomTable = {
   id: string;
   title: string;
   description?: string;
+  footer_content?: string;
   columns: string[];
   rows: string[][];
   rowUpdatedAt?: (string | null)[];
