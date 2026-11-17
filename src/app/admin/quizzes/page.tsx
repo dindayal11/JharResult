@@ -24,9 +24,9 @@ export default function QuizManager(){
     let found=list.find(c=>c.name===name&&c.parent_id===parentId);
     if(!found){
      if(parentId===null)throw new Error("Parent category not found: "+name);
-     const created=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,parent_id:parentId,description:""})});
+     const created:Response=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,parent_id:parentId,description:""})});
      const data=await created.json();if(!created.ok)throw new Error(data.error||("Could not create category: "+name));
-     const refreshed=await fetch("/api/admin/quiz-categories");const refreshedData=await refreshed.json();if(!refreshed.ok)throw new Error(refreshedData.error||"Could not refresh categories.");
+     const refreshed:Response=await fetch("/api/admin/quiz-categories");const refreshedData=await refreshed.json();if(!refreshed.ok)throw new Error(refreshedData.error||"Could not refresh categories.");
      list=refreshedData.categories||[];found=list.find(c=>c.id===Number(data.id));
     }
     if(!found)throw new Error("Could not resolve category: "+name);
