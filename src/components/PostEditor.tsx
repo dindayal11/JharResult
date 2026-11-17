@@ -2052,8 +2052,6 @@ export default function PostEditor({
               </div>
               <h1 style={{ margin: "14px 0 8px", fontSize: 25 }}>{form.title || "Post title preview"}</h1>
               <p style={{ color: "#64748b", fontSize: 13 }}>Categories: {categories.filter((item) => selectedCategoryIds.includes(String(item.id))).map((item) => item.name).join(", ") || "None selected"}</p>
-              {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
-              {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
               {form.short_description && (
                 <div
                   className="article-summary"
@@ -2065,6 +2063,8 @@ export default function PostEditor({
                 <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 3vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#182638", lineHeight: 1.75, overflowWrap: "anywhere" }}
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(form.content_html), PREVIEW_SANITIZE_OPTIONS) }} />
               )}
+              {form.image_url && <img src={form.image_url} alt={form.image_title || form.title || "Post image"} style={{ maxWidth: "100%", maxHeight: 320, objectFit: "contain" }} />}
+              {form.image_title && <p style={{ color: "#64748b", fontSize: 12 }}>{form.image_title}</p>}
               {parseFAQs(form.faqs).some((faq) => faq.question.trim() || faq.answer.trim()) && (
                 <section className="detail-section" style={{ margin: "20px 0 24px", border: "1px solid #dce3ec", borderRadius: 7, overflow: "hidden" }}>
                   <h2 style={{ margin: 0, padding: "10px 12px", background: "#173f70", color: "#fff", fontSize: 18 }}>Frequently Asked Questions</h2>
