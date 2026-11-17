@@ -12,7 +12,7 @@ export default function QuizManager(){
  async function load(){setLoading(true);const [r,cr]=await Promise.all([fetch("/api/admin/quizzes"),fetch("/api/admin/quiz-categories")]);if(r.status===401||cr.status===401){location.href="/admin/login";return;}const d=await r.json();const cd=await cr.json();setCategories(d.categories||[]);setAllCategories(cd.categories||[]);setQuizzes(d.quizzes||[]);setError(d.error||cd.error||"");setLoading(false);}
  function categoryPath(id:number):string{const c=allCategories.find(x=>x.id===id);if(!c)return "";return c.parent_id?categoryPath(c.parent_id)+" / "+c.name:c.name;}
  async function importQuizFile(e:any){
-  const file=e.target.files?.[0];if(!file)return;
+  const input=e.currentTarget as HTMLInputElement;const file=input.files?.[0];if(!file)return;let imported=false;
   setBusy(true);setError("");setNotice("");
   try{
    const raw=JSON.parse(await file.text());
@@ -36,9 +36,9 @@ export default function QuizManager(){
    const payload={...quiz,category_id:parentId,status:"published"};
    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
    const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Quiz import failed.");
-   setNotice("Quiz imported and published successfully: "+quiz.title);await load();
+   setNotice("Quiz imported and published successfully: "+quiz.title);imported=true;await load();
   }catch(err:any){setError(err.message||"Could not import quiz file.");}
-  finally{setBusy(false);e.target.value="";}
+  finally{setBusy(false);if(imported)input.value="";}
  }
  async function createCategory(e:any){e.preventDefault();setCategoryBusy(true);setCategoryNotice("");setError("");const r=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(newCategory)});const d=await r.json();setCategoryBusy(false);if(!r.ok){setError(d.error||"Could not create category");return;}setCategoryNotice("Category created successfully.");setNewCategory({name:"",parent_id:"",description:""});await load();}
  useEffect(()=>{load()},[]);
