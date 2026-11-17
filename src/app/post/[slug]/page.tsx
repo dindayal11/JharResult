@@ -333,6 +333,19 @@ function CustomTable({ table }: { table: any }) {
 </tbody>
         </table>
       </div>}
+      {table.footer_content && (
+        <div
+          className="table-footer-content"
+          style={{ padding: "12px", lineHeight: 1.7, overflowWrap: "anywhere", color: text }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(String(table.footer_content), {
+              ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
+              ALLOWED_ATTR: ["style", "href", "target", "rel"],
+              ALLOW_DATA_ATTR: false,
+            }),
+          }}
+        />
+      )}
     </section>
   );
 }
