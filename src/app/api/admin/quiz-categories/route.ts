@@ -100,3 +100,27 @@ export async function PUT(req:Request){
     return NextResponse.json({error:unauthorized?"Please sign in.":e.code==="ER_DUP_ENTRY"?"A category with this URL already exists.":"Could not update category."},{status:unauthorized?401:400});
   }
 }
+
+
+export async function DELETE(req:Request){
+  try{
+    await requireAdmin();
+    const id=Number(new URL(req.url).searchParams.get("id"));
+    if(!Number.isInteger(id)||id<1)
+      return NextResponse.json({error:"Invalid category ID."},{status:400});
+    const pool=getPool();
+    const [rows]:any=await pool.execute("SELECT id,name FROM quiz_categories WHERE id=? AND is_active=1 LIMIT 1",[id]);
+    if(!rows.length)return NextResponse.json({error:"Category not found or already deleted."},{status:404});
+    const [children]:any=await pool.execute("SELECT COUNT(*) AS total FROM quiz_categories WHERE parent_id=? AND is_active=1",[id]);
+    if(Number(children[0]?.total)>0)
+      return NextResponse.json({error:"This category has subcategories. Delete or move its child categories first."},{status:409});
+    const [quizzes]:any=await pool.execute("SELECT COUNT(*) AS total FROM quizzes WHERE category_id=?",[id]);
+    if(Number(quizzes[0]?.total)>0)
+      return NextResponse.json({error:"This category contains quizzes. Delete or move those quizzes first."},{status:409});
+    await pool.execute("UPDATE quiz_categories SET is_active=0 WHERE id=?",[id]);
+    return NextResponse.json({ok:true,message:"Category deleted successfully."});
+  }catch(e:any){
+    const unauthorized=e.message==="UNAUTHORIZED";
+    return NextResponse.json({error:unauthorized?"Please sign in.":"Could not delete category."},{status:unauthorized?401:500});
+  }
+}
