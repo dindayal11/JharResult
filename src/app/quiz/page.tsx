@@ -18,7 +18,7 @@ export default async function QuizHomePage() {
   let unavailable = false;
   let publishedQuizzes: PublishedQuiz[] = [];
   try {
-    const [publishedRows]:any = await getPool().query("SELECT q.id,q.title,q.slug,q.question_count,q.duration_minutes,q.published_at,c.name AS category_name,p.name AS parent_name,IF(q.published_at>=DATE_SUB(NOW(),INTERVAL 7 DAY),1,0) AS is_new FROM quizzes q JOIN quiz_categories c ON c.id=q.category_id LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE q.status='published' AND c.is_active=1 ORDER BY q.published_at DESC,q.created_at DESC LIMIT 12");
+    const [publishedRows]:any = await getPool().query("SELECT q.id,q.title,q.slug,q.question_count,q.duration_minutes,q.published_at,c.name AS category_name,p.name AS parent_name,IF(q.published_at>=DATE_SUB(NOW(),INTERVAL 7 DAY),1,0) AS is_new FROM quizzes q JOIN quiz_categories c ON c.id=q.category_id LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE q.status='published' AND c.is_active=1 ORDER BY q.published_at DESC,q.created_at DESC LIMIT 7");
     publishedQuizzes = publishedRows as PublishedQuiz[];
     const [rows] = await getPool().query(
       "SELECT id,name,slug,description FROM quiz_categories WHERE parent_id IS NULL AND is_active=1 ORDER BY sort_order,id"
