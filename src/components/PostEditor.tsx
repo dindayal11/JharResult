@@ -442,6 +442,8 @@ function RichTextToolbar() {
       {button("I", "italic")}
       {button("U̲ Underline", "underline")}
       {button("S̶ Strikethrough", "strikeThrough")}
+      {button("↶ Undo (Ctrl+Z)", "undo")}
+      {button("↷ Redo (Ctrl+Y)", "redo")}
       {button("• Bullets", "insertUnorderedList")}
       {button("1. Numbering", "insertOrderedList")}
       {headingButton("H2", "h2")}
@@ -547,7 +549,19 @@ function RichTextField({ value, onChange, placeholder, minHeight = 90 }: { value
         [contenteditable="true"] h3 { display: block; font-size: 1.25em; font-weight: 700; margin: .65em 0; }
       `}</style>
       <div style={{ border: "1px solid #cbd5e1", borderRadius: 7, overflow: "hidden", background: "#fff" }}>
-        <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder || "Write here..."} onFocus={rememberEditor} onClick={rememberEditor} onInput={(e) => { rememberEditor(); onChangeRef.current(e.currentTarget.innerHTML); }} onMouseUp={rememberEditor} onKeyUp={rememberEditor} style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }} />
+        <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" data-placeholder={placeholder || "Write here..."} onFocus={rememberEditor} onClick={rememberEditor} onInput={(e) => { rememberEditor(); onChangeRef.current(e.currentTarget.innerHTML); }} onKeyDown={(e) => {
+          if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z") {
+            e.preventDefault();
+            rememberEditor();
+            document.execCommand("undo", false);
+            onChangeRef.current(e.currentTarget.innerHTML);
+          } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
+            e.preventDefault();
+            rememberEditor();
+            document.execCommand("redo", false);
+            onChangeRef.current(e.currentTarget.innerHTML);
+          }
+        }} onMouseUp={rememberEditor} onKeyUp={rememberEditor} style={{ minHeight, padding: 11, outline: "none", color: "#182638", lineHeight: 1.6, overflowWrap: "anywhere" }} />
       </div>
     </>
   );
