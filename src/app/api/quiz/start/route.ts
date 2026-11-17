@@ -42,7 +42,7 @@ export async function POST(req:Request){
       if(opts.length!==4) throw new Error("A question in this quiz does not have four options.");
       const ordered=shuffle(opts);
       await connection.execute("INSERT INTO quiz_attempt_questions(attempt_id,question_id,question_order,option_order) VALUES(?,?,?,?)",[attemptId,q.id,i+1,JSON.stringify(ordered.map((o:any)=>Number(o.id)))]);
-      payload.push({id:Number(q.id),question:requestedLanguage==="hindi"?(q.question_text_hi||q.question_text):q.question_text,question_hi:null,options:ordered.map((o:any,index:number)=>({id:Number(o.id),label:String.fromCharCode(65+index),text:requestedLanguage==="hindi"?(o.option_text_hi||o.option_text):o.option_text,text_hi:null}))});
+      payload.push({id:Number(q.id),question:requestedLanguage==="hindi"?(q.question_text_hi||q.question_text):(q.question_text||q.question_text_hi),question_hi:null,options:ordered.map((o:any,index:number)=>({id:Number(o.id),label:String.fromCharCode(65+index),text:requestedLanguage==="hindi"?(o.option_text_hi||o.option_text):(o.option_text||o.option_text_hi),text_hi:null}))});
     }
     await connection.commit();
     const response=NextResponse.json({attempt_id:publicId,title:quiz.title,category:quiz.category_name,duration_minutes:Number(quiz.duration_minutes),expires_at:new Date(Date.now()+Number(quiz.duration_minutes)*60000).toISOString(),language:requestedLanguage,questions:payload});
