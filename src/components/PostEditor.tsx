@@ -1234,7 +1234,18 @@ export default function PostEditor({
                 <h2 style={{ margin: 0, fontSize: 18 }}>Article Content</h2>
                 <span style={{ color: "#64748b", fontSize: 12 }}>Tap or click anywhere on the page to write</span>
               </div>
-              <div style={{ width: "100%", maxWidth: 980, margin: "0 auto", padding: "clamp(16px, 4vw, 48px)", minHeight: "min(1100px, 72vh)", background: "#fff", border: "1px solid #d7dee8", borderRadius: 4, boxShadow: "0 5px 22px rgba(15,23,42,.08)", boxSizing: "border-box" }}>
+              <div className="jharresult-writing-page" style={{ width: "100%", maxWidth: 980, margin: "0 auto", padding: "clamp(16px, 4vw, 48px)", minHeight: "min(1100px, 72vh)", background: "#fff", border: "1px solid #d7dee8", borderRadius: 4, boxShadow: "0 5px 22px rgba(15,23,42,.08)", boxSizing: "border-box" }}>
+                <style>{`
+                  .jharresult-writing-page [contenteditable="true"] { min-height: 620px !important; width: 100%; box-sizing: border-box; padding: 0 !important; outline: none; font-size: 16px; line-height: 1.75; overflow-wrap: anywhere; }
+                  .jharresult-writing-page [contenteditable="true"]:empty:before { content: attr(data-placeholder); color: #94a3b8; pointer-events: none; }
+                  .jharresult-writing-page table { max-width: 100%; }
+                  .jharresult-writing-page img { max-width: 100%; height: auto; }
+                  @media (max-width: 640px) {
+                    .jharresult-writing-page { padding: 14px !important; min-height: 70vh !important; border-radius: 2px !important; }
+                    .jharresult-writing-page [contenteditable="true"] { min-height: 65vh !important; font-size: 16px; }
+                    .jharresult-writing-page table { display: block; overflow-x: auto; }
+                  }
+                `}</style>
                 <RichTextField
                   value={form.content_html || ""}
                   onChange={(value) => change("content_html", value)}
