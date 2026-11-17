@@ -11,6 +11,35 @@ export default function QuizManager(){
  const [categories,setCategories]=useState<Category[]>([]);const [allCategories,setAllCategories]=useState<Category[]>([]);const [newCategory,setNewCategory]=useState({name:"",parent_id:"",description:""});const [categoryBusy,setCategoryBusy]=useState(false);const [categoryNotice,setCategoryNotice]=useState("");const [quizzes,setQuizzes]=useState<Quiz[]>([]);const [form,setForm]=useState<any>(blankForm());const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");const [autoSaveStatus,setAutoSaveStatus]=useState("");const [recoveryReady,setRecoveryReady]=useState(false);const autoSavePromiseRef=useRef<Promise<void>|null>(null);const editingPublishedRef=useRef(false);const recoveryKey="jharresult-quiz-manager-recovery-v1";
  async function load(){setLoading(true);const [r,cr]=await Promise.all([fetch("/api/admin/quizzes"),fetch("/api/admin/quiz-categories")]);if(r.status===401||cr.status===401){location.href="/admin/login";return;}const d=await r.json();const cd=await cr.json();setCategories(d.categories||[]);setAllCategories(cd.categories||[]);setQuizzes(d.quizzes||[]);setError(d.error||cd.error||"");setLoading(false);}
  function categoryPath(id:number):string{const c=allCategories.find(x=>x.id===id);if(!c)return "";return c.parent_id?categoryPath(c.parent_id)+" / "+c.name:c.name;}
+ async function importQuizFile(e:any){
+  const file=e.target.files?.[0];if(!file)return;
+  setBusy(true);setError("");setNotice("");
+  try{
+   const raw=JSON.parse(await file.text());
+   if(raw.format!=="jharresult.quiz-import.v1"||!raw.quiz||!Array.isArray(raw.quiz.category_path)||!Array.isArray(raw.quiz.questions)||!raw.quiz.questions.length)throw new Error("Invalid JharResult quiz import file.");
+   const quiz=raw.quiz;
+   const cr=await fetch("/api/admin/quiz-categories");const cd=await cr.json();if(!cr.ok)throw new Error(cd.error||"Could not load categories.");
+   let list:Category[]=cd.categories||[];let parentId:number|null=null;
+   for(const name of quiz.category_path){
+    let found=list.find(c=>c.name===name&&c.parent_id===parentId);
+    if(!found){
+     if(parentId===null)throw new Error("Parent category not found: "+name);
+     const created=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,parent_id:parentId,description:""})});
+     const data=await created.json();if(!created.ok)throw new Error(data.error||("Could not create category: "+name));
+     const refreshed=await fetch("/api/admin/quiz-categories");const refreshedData=await refreshed.json();if(!refreshed.ok)throw new Error(refreshedData.error||"Could not refresh categories.");
+     list=refreshedData.categories||[];found=list.find(c=>c.id===Number(data.id));
+    }
+    if(!found)throw new Error("Could not resolve category: "+name);
+    parentId=found.id;
+   }
+   if(!parentId)throw new Error("Quiz category path is incomplete.");
+   const payload={...quiz,category_id:parentId,status:"published"};
+   const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+   const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Quiz import failed.");
+   setNotice("Quiz imported and published successfully: "+quiz.title);await load();
+  }catch(err:any){setError(err.message||"Could not import quiz file.");}
+  finally{setBusy(false);e.target.value="";}
+ }
  async function createCategory(e:any){e.preventDefault();setCategoryBusy(true);setCategoryNotice("");setError("");const r=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(newCategory)});const d=await r.json();setCategoryBusy(false);if(!r.ok){setError(d.error||"Could not create category");return;}setCategoryNotice("Category created successfully.");setNewCategory({name:"",parent_id:"",description:""});await load();}
  useEffect(()=>{load()},[]);
  useEffect(()=>{try{const raw=window.localStorage.getItem(recoveryKey);if(raw){const snapshot=JSON.parse(raw);const age=Date.now()-Number(snapshot.savedAt||0);if(snapshot.version===1&&age>=0&&age<=7*24*60*60*1000&&snapshot.form){if(window.confirm("A recently auto-saved Quiz Manager draft was found. Restore your unsaved quiz changes?")){setForm(snapshot.form);setAutoSaveStatus("Recovered unsaved quiz changes from this browser");}else{window.localStorage.removeItem(recoveryKey);}}else{window.localStorage.removeItem(recoveryKey);}}}catch{}finally{setRecoveryReady(true);}},[]);
@@ -25,6 +54,7 @@ export default function QuizManager(){
  async function remove(id:number){if(!confirm("Delete this quiz and its questions? This cannot be undone."))return;const r=await fetch("/api/admin/quizzes?id="+id,{method:"DELETE"});const d=await r.json();if(!r.ok){setError(d.error||"Delete failed");return;}setNotice("Quiz deleted.");load();}
  return <main className="container" style={{padding:"28px 0 45px",maxWidth:1120}}>
  <div style={{marginBottom:18}}><Link href="/admin">← Admin Dashboard</Link><h1 style={{margin:"9px 0 3px",color:"#173f68"}}>Quiz Manager</h1><p className="muted">Create practice tests, manage question banks and publish quizzes for JAC and Jharkhand competitive exams.</p></div>
+ <section className="panel" style={{padding:18,borderRadius:10,border:"1px solid #dce4ee",marginBottom:18}}><h2 style={{marginTop:0}}>Bulk Quiz Import</h2><p className="muted" style={{fontSize:13}}>Import a JharResult JSON quiz file. Missing child categories in the selected path are created automatically; the quiz is published after a successful import.</p><label style={{display:"grid",gap:8,fontSize:13,fontWeight:700,color:"#34445a"}}>Choose quiz import file<input type="file" accept=".json,application/json" onChange={importQuizFile} disabled={busy}/></label>{busy&&<p className="muted">Importing quiz and preparing categories…</p>}</section>
  <section className="panel" style={{padding:20,borderRadius:10,border:"1px solid #dce4ee",marginBottom:18}}><h2 style={{marginTop:0}}>Category & Subcategory Manager</h2><p className="muted" style={{fontSize:13}}>Create unlimited levels, for example JAC Board → Class 8 → Mathematics → Rational Numbers.</p><form onSubmit={createCategory} className="qm-grid"><label>New category / subject / chapter<input required maxLength={120} value={newCategory.name} onChange={e=>setNewCategory({...newCategory,name:e.target.value})} placeholder="e.g. Mathematics or Rational Numbers"/></label><label>Parent category<select required value={newCategory.parent_id} onChange={e=>setNewCategory({...newCategory,parent_id:e.target.value})}><option value="">Select parent category</option>{allCategories.map(c=><option key={c.id} value={c.id}>{categoryPath(c.id)}</option>)}</select></label><label style={{gridColumn:"1/-1"}}>Description (optional)<textarea rows={2} value={newCategory.description} onChange={e=>setNewCategory({...newCategory,description:e.target.value})}/></label><div><button className="btn" disabled={categoryBusy}>{categoryBusy?"Creating...":"＋ Create Subcategory"}</button></div></form>{categoryNotice&&<p style={{color:"#16834a",fontWeight:600}}>{categoryNotice}</p>}<div style={{marginTop:14,display:"grid",gap:6}}>{allCategories.filter(c=>c.parent_id===null).map(root=><div key={root.id} style={{fontSize:12,color:"#52657c"}}><strong>{root.name}</strong><span> — {allCategories.filter(c=>c.parent_id===root.id).length} direct subcategories</span></div>)}</div></section>
  <section className="panel" style={{padding:20,borderRadius:10,border:"1px solid #dce4ee"}}>
  <h2 style={{marginTop:0}}>{form.id?"Edit Quiz":"Create New Quiz"}</h2>
