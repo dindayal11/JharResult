@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 
 const PREVIEW_SANITIZE_OPTIONS = {
-  ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
-  ALLOWED_ATTR: ["style", "href", "target", "rel"],
+  ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "s", "strike", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td", "img"],
+  ALLOWED_ATTR: ["style", "href", "target", "rel", "src", "alt", "width", "height"],
   ALLOW_DATA_ATTR: false,
 };
 
