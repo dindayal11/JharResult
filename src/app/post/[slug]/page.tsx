@@ -191,7 +191,7 @@ function CustomTable({ table }: { table: any }) {
           style={{ padding: "12px 12px 0", lineHeight: 1.7, overflowWrap: "anywhere", color: text }}
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(String(table.description), {
-              ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+              ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
               ALLOWED_ATTR: ["style", "href", "target", "rel"],
               ALLOW_DATA_ATTR: false,
             }),
@@ -218,7 +218,7 @@ function CustomTable({ table }: { table: any }) {
                     <div key={cellIndex} style={{ padding: "10px 9px", border: "1px solid #dce3ec", minWidth: 0, verticalAlign: "top", overflowWrap: "anywhere", whiteSpace: "pre-wrap", background: rowIndex === 0 ? accent : background, color: rowIndex === 0 ? "#fff" : text }}>
                       {cellIndex === 0 && rowIsNew && <span className="new-badge" title={"This row was updated on " + new Date(rowUpdatedAt).toLocaleDateString("en-IN")} style={{ display: "inline-flex", marginRight: 7 }}>NEW</span>}
                       {/<[a-z][\s\S]*>/i.test(value) ? (
-                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value, { ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"], ALLOWED_ATTR: ["style", "href", "target", "rel"], ALLOW_DATA_ATTR: false }) }} />
+                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value, { ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"], ALLOWED_ATTR: ["style", "href", "target", "rel"], ALLOW_DATA_ATTR: false }) }} />
                       ) : href ? (
                         <a href={href} target={isEmail ? undefined : "_blank"} rel={isEmail ? undefined : "noopener noreferrer"} style={{ color: rowIndex === 0 ? "#fff" : "#145da0", fontWeight: 700, textDecoration: "underline" }}>{markdownLink?.[1] || "Click Here ↗"}</a>
                       ) : value || "—"}
@@ -306,7 +306,7 @@ function CustomTable({ table }: { table: any }) {
               <div
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(value, {
-                    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+                    ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
                     ALLOWED_ATTR: ["style", "href", "target", "rel"],
                     ALLOW_DATA_ATTR: false,
                   }),
@@ -361,7 +361,7 @@ function TextSection({
         style={{ padding: "0 12px 12px", lineHeight: 1.7, overflowWrap: "anywhere" }}
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(String(value), {
-            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote"],
+            ALLOWED_TAGS: ["b", "strong", "i", "em", "u", "p", "div", "br", "ul", "ol", "li", "span", "h2", "h3", "h4", "a", "blockquote", "table", "thead", "tbody", "tr", "th", "td"],
             ALLOWED_ATTR: ["style", "href", "target", "rel"],
             ALLOW_DATA_ATTR: false,
           }),
