@@ -1495,6 +1495,13 @@ export default function PostEditor({
                     placeholder="Is table ke baare mein additional information yahan likhein..."
                     minHeight={100}
                   />
+                  <label style={{ ...labelStyle, marginTop: 14 }}>Table ke Neeche ka Content</label>
+                  <RichTextField
+                    value={table.footer_content || ""}
+                    onChange={(value) => updateTable(table.id, { footer_content: value })}
+                    placeholder="Table ke neeche additional details, instructions ya explanation yahan likhein..."
+                    minHeight={100}
+                  />
 
                   <h4 style={{ margin: "18px 0 8px", color: "#253247" }}>
                     Table Layout &amp; Colors
@@ -2065,6 +2072,13 @@ export default function PostEditor({
                       className="table-description"
                       style={{ padding: "12px 12px 0", lineHeight: 1.7, overflowWrap: "anywhere" }}
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.description), PREVIEW_SANITIZE_OPTIONS) }}
+                    />
+                  )}
+                  {table.footer_content && (
+                    <div
+                      className="table-footer-content"
+                      style={{ padding: "12px", lineHeight: 1.7, overflowWrap: "anywhere", color: table.theme_text }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(table.footer_content), PREVIEW_SANITIZE_OPTIONS) }}
                     />
                   )}
                   {table.freeform_layout ? (
