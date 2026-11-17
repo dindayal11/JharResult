@@ -13,9 +13,9 @@ function cleanQuiz(body:any){
   const normalized=questions.map((q:any,i:number)=>{
     const question=String(q.question_text||"").trim();
     const questionHi=String(q.question_text_hi||"").trim();
-    const options=Array.isArray(q.options)?q.options.map((o:any)=>String(o.text||"").trim()):[];
+    const options=Array.isArray(q.options)?q.options.map((o:any)=>({text:String(o.text||"").trim(),textHi:String(o.text_hi||"").trim()||null})):[];
     const correct=Number(q.correct_index);
-    if((!question&&!questionHi)||options.length!==4||options.some((o:string)=>!o)||!Number.isInteger(correct)||correct<0||correct>3)
+    if((!question&&!questionHi)||options.length!==4||options.some((o:any)=>!o.text&&!o.textHi)||!Number.isInteger(correct)||correct<0||correct>3)
       throw new Error(`Question ${i+1}: enter the question in Hindi or English, all four options and select the correct answer.`);
     return {question,questionHi,explanation:String(q.explanation||"").trim()||null,explanationHi:String(q.explanation_hi||"").trim()||null,difficulty:["easy","medium","hard"].includes(q.difficulty)?q.difficulty:"medium",options,correct};
   });
@@ -51,7 +51,7 @@ async function saveQuiz(connection:any,body:any,id?:number){
   }
   for(const q of b.questions){
     const [qr]:any=await connection.execute("INSERT INTO quiz_questions (quiz_id,question_text,question_text_hi,explanation,explanation_hi,difficulty) VALUES (?,?,?,?,?,?)",[id,q.question,q.questionHi,q.explanation,q.explanationHi,q.difficulty]);
-    const values=q.options.map((option:string,index:number)=>[qr.insertId,option,null,index===q.correct?1:0,index+1]);
+    const values=q.options.map((option:any,index:number)=>[qr.insertId,option.text,option.textHi,index===q.correct?1:0,index+1]);
     await connection.query("INSERT INTO quiz_options (question_id,option_text,option_text_hi,is_correct,sort_order) VALUES ?",[values.map((v:any)=>[v[0],v[1],v[2],v[3],v[4]])]);
   }
   return {id,slug};
@@ -64,7 +64,7 @@ export async function GET(req:Request){
       const [rows]:any=await getPool().execute("SELECT * FROM quizzes WHERE id=?",[id]);
       if(!rows.length)return NextResponse.json({error:"Quiz not found."},{status:404});
       const [questions]:any=await getPool().execute("SELECT * FROM quiz_questions WHERE quiz_id=? ORDER BY id",[id]);
-      for(const q of questions){const [opts]:any=await getPool().execute("SELECT option_text,is_correct FROM quiz_options WHERE question_id=? ORDER BY sort_order",[q.id]);q.options=opts;}
+      for(const q of questions){const [opts]:any=await getPool().execute("SELECT option_text,option_text_hi,is_correct FROM quiz_options WHERE question_id=? ORDER BY sort_order",[q.id]);q.options=opts;}
       return NextResponse.json({quiz:rows[0],questions});
     }
     const [categories]:any=await getPool().query("SELECT c.id,c.parent_id,c.name,c.slug,c.category_type,p.name AS parent_name FROM quiz_categories c LEFT JOIN quiz_categories p ON p.id=c.parent_id WHERE c.is_active=1 AND NOT EXISTS (SELECT 1 FROM quiz_categories child WHERE child.parent_id=c.id AND child.is_active=1) ORDER BY c.sort_order,c.id");
