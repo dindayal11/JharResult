@@ -124,6 +124,34 @@ export async function PUT(req:Request){
   finally{connection?.release();}
 }
 export async function DELETE(req:Request){
-  try{await requireAdmin();const id=Number(new URL(req.url).searchParams.get("id"));if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});await getPool().execute("DELETE FROM quizzes WHERE id=?",[id]);return NextResponse.json({ok:true});}
-  catch(e:any){const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":"Could not delete quiz."},{status:unauthorized?401:500});}
+  let connection:any;
+  try{
+    await requireAdmin();
+    const url=new URL(req.url);
+    const classId=Number(url.searchParams.get("class_id"));
+    if(Number.isInteger(classId)&&classId>0){
+      connection=await getPool().getConnection();
+      await connection.beginTransaction();
+      const [rows]:any=await connection.execute("SELECT id,parent_id,slug,category_type FROM quiz_categories WHERE id=? AND is_active=1 LIMIT 1",[classId]);
+      const cls=rows[0];
+      if(!cls||cls.category_type!=="jac_board")throw new Error("Selected category is not a valid JAC Board class.");
+      const [parents]:any=await connection.execute("SELECT slug FROM quiz_categories WHERE id=? AND is_active=1 LIMIT 1",[cls.parent_id]);
+      if(!parents.length||parents[0].slug!=="jac-board")throw new Error("Bulk deletion is allowed only for a class directly under JAC Board.");
+      const [categoryRows]:any=await connection.query("SELECT id,parent_id FROM quiz_categories WHERE is_active=1");
+      const descendants=new Set<number>([classId]);let changed=true;
+      while(changed){changed=false;for(const row of categoryRows){const id=Number(row.id),parent=row.parent_id===null?null:Number(row.parent_id);if(parent!==null&&descendants.has(parent)&&!descendants.has(id)){descendants.add(id);changed=true;}}}
+      const ids=Array.from(descendants);const placeholders=ids.map(()=>"?").join(",");
+      const [result]:any=await connection.execute("DELETE FROM quizzes WHERE category_id IN ("+placeholders+")",ids);
+      await connection.commit();
+      return NextResponse.json({ok:true,deleted_count:Number(result.affectedRows||0)});
+    }
+    const id=Number(url.searchParams.get("id"));
+    if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});
+    await getPool().execute("DELETE FROM quizzes WHERE id=?",[id]);
+    return NextResponse.json({ok:true});
+  }catch(e:any){
+    if(connection)await connection.rollback();
+    const unauthorized=e.message==="UNAUTHORIZED";
+    return NextResponse.json({error:unauthorized?"Please sign in.":e.message||"Could not delete quiz."},{status:unauthorized?401:400});
+  }finally{connection?.release();}
 }
