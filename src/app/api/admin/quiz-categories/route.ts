@@ -103,24 +103,36 @@ export async function PUT(req:Request){
 
 
 export async function DELETE(req:Request){
+  let connection:any;
   try{
     await requireAdmin();
     const id=Number(new URL(req.url).searchParams.get("id"));
     if(!Number.isInteger(id)||id<1)
       return NextResponse.json({error:"Invalid category ID."},{status:400});
-    const pool=getPool();
-    const [rows]:any=await pool.execute("SELECT id,name FROM quiz_categories WHERE id=? AND is_active=1 LIMIT 1",[id]);
-    if(!rows.length)return NextResponse.json({error:"Category not found or already deleted."},{status:404});
-    const [children]:any=await pool.execute("SELECT COUNT(*) AS total FROM quiz_categories WHERE parent_id=? AND is_active=1",[id]);
-    if(Number(children[0]?.total)>0)
-      return NextResponse.json({error:"This category has subcategories. Delete or move its child categories first."},{status:409});
-    const [quizzes]:any=await pool.execute("SELECT COUNT(*) AS total FROM quizzes WHERE category_id=?",[id]);
-    if(Number(quizzes[0]?.total)>0)
-      return NextResponse.json({error:"This category contains quizzes. Delete or move those quizzes first."},{status:409});
-    await pool.execute("UPDATE quiz_categories SET is_active=0 WHERE id=?",[id]);
-    return NextResponse.json({ok:true,message:"Category deleted successfully."});
+    connection=await getPool().getConnection();
+    await connection.beginTransaction();
+    const [rows]:any=await connection.execute("SELECT id,name FROM quiz_categories WHERE id=? AND is_active=1 LIMIT 1",[id]);
+    if(!rows.length)throw new Error("Category not found or already deleted.");
+    const [categoryRows]:any=await connection.query("SELECT id,parent_id FROM quiz_categories WHERE is_active=1");
+    const descendants=new Set<number>([id]);let changed=true;
+    while(changed){
+      changed=false;
+      for(const row of categoryRows){
+        const childId=Number(row.id),parentId=row.parent_id===null?null:Number(row.parent_id);
+        if(parentId!==null&&descendants.has(parentId)&&!descendants.has(childId)){
+          descendants.add(childId);changed=true;
+        }
+      }
+    }
+    const ids=Array.from(descendants);
+    const placeholders=ids.map(()=>"?").join(",");
+    const [deleted]:any=await connection.execute("DELETE FROM quizzes WHERE category_id IN ("+placeholders+")",ids);
+    await connection.execute("UPDATE quiz_categories SET is_active=0 WHERE id IN ("+placeholders+")",ids);
+    await connection.commit();
+    return NextResponse.json({ok:true,message:"Category and its nested categories deleted successfully.",deleted_quizzes:Number(deleted.affectedRows||0),deleted_categories:ids.length});
   }catch(e:any){
+    if(connection)await connection.rollback();
     const unauthorized=e.message==="UNAUTHORIZED";
-    return NextResponse.json({error:unauthorized?"Please sign in.":"Could not delete category."},{status:unauthorized?401:500});
-  }
+    return NextResponse.json({error:unauthorized?"Please sign in.":e.message||"Could not delete category."},{status:unauthorized?401:400});
+  }finally{connection?.release();}
 }
