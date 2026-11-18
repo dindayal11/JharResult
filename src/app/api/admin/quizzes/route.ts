@@ -74,9 +74,48 @@ export async function GET(req:Request){
 }
 export async function POST(req:Request){
   let connection:any;
-  try{await requireAdmin();const body=await req.json();connection=await getPool().getConnection();await connection.beginTransaction();const result=await saveQuiz(connection,body);await connection.commit();return NextResponse.json({ok:true,...result});}
-  catch(e:any){if(connection)await connection.rollback();const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":e.message||"Could not save quiz."},{status:unauthorized?401:400});}
-  finally{connection?.release();}
+  try{
+    await requireAdmin();
+    const body=await req.json();
+    connection=await getPool().getConnection();
+    await connection.beginTransaction();
+    if(Array.isArray(body.quizzes)){
+      const classId=Number(body.replace_class_id);
+      if(!Number.isInteger(classId)||classId<1)throw new Error("Select a valid JAC class for replacement.");
+      if(!body.quizzes.length)throw new Error("The import file contains no quizzes.");
+      if(body.quizzes.length>300)throw new Error("A class import can contain up to 300 quizzes.");
+      const [categoryRows]:any=await connection.query("SELECT id,parent_id,slug,category_type FROM quiz_categories WHERE is_active=1");
+      const byId=new Map<number,any>(categoryRows.map((row:any)=>[Number(row.id),row]));
+      const classCategory=byId.get(classId);
+      const root=classCategory?.parent_id===null?null:byId.get(Number(classCategory?.parent_id));
+      if(!classCategory||!root||root.slug!=="jac-board"||classCategory.category_type!=="jac_board")
+        throw new Error("Replacement is allowed only for a class directly under JAC Board.");
+      const descendants=new Set<number>([classId]);let changed=true;
+      while(changed){changed=false;for(const row of categoryRows){const id=Number(row.id),parent=row.parent_id===null?null:Number(row.parent_id);if(parent!==null&&descendants.has(parent)&&!descendants.has(id)){descendants.add(id);changed=true;}}}
+      const seenCategories=new Set<number>();
+      for(let i=0;i<body.quizzes.length;i++){
+        const quiz=body.quizzes[i];const categoryId=Number(quiz.category_id);
+        if(!Number.isInteger(categoryId)||!descendants.has(categoryId)||categoryId===classId)
+          throw new Error("Quiz "+(i+1)+" does not belong to the selected class.");
+        if(seenCategories.has(categoryId))throw new Error("The import file contains more than one quiz for the same final category. Combine those questions into one quiz.");
+        seenCategories.add(categoryId);
+        cleanQuiz(quiz);
+      }
+      const ids=Array.from(descendants);const placeholders=ids.map(()=>"?").join(",");
+      await connection.execute("UPDATE quizzes SET status='archived' WHERE category_id IN ("+placeholders+") AND status IN ('draft','published')",ids);
+      const imported=[];
+      for(const quiz of body.quizzes)imported.push(await saveQuiz(connection,{...quiz,status:"published"}));
+      await connection.commit();
+      return NextResponse.json({ok:true,imported_count:imported.length,class_category_id:classId});
+    }
+    const result=await saveQuiz(connection,body);
+    await connection.commit();
+    return NextResponse.json({ok:true,...result});
+  }catch(e:any){
+    if(connection)await connection.rollback();
+    const unauthorized=e.message==="UNAUTHORIZED";
+    return NextResponse.json({error:unauthorized?"Please sign in.":e.message||"Could not save quiz."},{status:unauthorized?401:400});
+  }finally{connection?.release();}
 }
 export async function PUT(req:Request){
   let connection:any;
