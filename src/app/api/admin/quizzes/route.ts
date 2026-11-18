@@ -90,7 +90,12 @@ export async function POST(req:Request){
       const root=classCategory?.parent_id===null?null:byId.get(Number(classCategory?.parent_id));
       if(!classCategory||!root||root.slug!=="jac-board"||classCategory.category_type!=="jac_board")
         throw new Error("Replacement is allowed only for a class directly under JAC Board.");
-      const descendants=new Set<number>([classId]);let changed=true;
+      const scopeId=body.replace_category_id===null||body.replace_category_id===undefined?classId:Number(body.replace_category_id);
+      if(!Number.isInteger(scopeId)||!byId.has(scopeId))throw new Error("Select a valid replacement category.");
+      const descendantsOfClass=new Set<number>([classId]);let classChanged=true;
+      while(classChanged){classChanged=false;for(const row of categoryRows){const id=Number(row.id),parent=row.parent_id===null?null:Number(row.parent_id);if(parent!==null&&descendantsOfClass.has(parent)&&!descendantsOfClass.has(id)){descendantsOfClass.add(id);classChanged=true;}}}
+      if(!descendantsOfClass.has(scopeId)||scopeId===classId)throw new Error("Replacement category must be inside the selected class and below the class root.");
+      const descendants=new Set<number>([scopeId]);let changed=true;
       while(changed){changed=false;for(const row of categoryRows){const id=Number(row.id),parent=row.parent_id===null?null:Number(row.parent_id);if(parent!==null&&descendants.has(parent)&&!descendants.has(id)){descendants.add(id);changed=true;}}}
       const seenCategories=new Set<number>();
       for(let i=0;i<body.quizzes.length;i++){
@@ -106,7 +111,7 @@ export async function POST(req:Request){
       const imported=[];
       for(const quiz of body.quizzes)imported.push(await saveQuiz(connection,{...quiz,status:"published"}));
       await connection.commit();
-      return NextResponse.json({ok:true,imported_count:imported.length,class_category_id:classId});
+      return NextResponse.json({ok:true,imported_count:imported.length,class_category_id:classId,replaced_category_id:scopeId});
     }
     const result=await saveQuiz(connection,body);
     await connection.commit();
