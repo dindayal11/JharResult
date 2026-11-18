@@ -48,14 +48,14 @@ export default function QuizCategoryManager(){
   finally{setSaving(false);}
  }
  async function deleteCategory(category:Category){
-  const confirmed=window.confirm(`Delete category "${category.name}"? This is allowed only when it has no quizzes and no active child categories.`);
+  const confirmed=window.confirm(`Delete "${pathOf(category)}" and all its nested categories? All quizzes assigned anywhere inside this category tree will also be permanently deleted. This cannot be undone.`);
   if(!confirmed)return;
   setSaving(true);setError("");setNotice("");
   try{
    const r=await fetch("/api/admin/quiz-categories?id="+category.id,{method:"DELETE"});
    const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not delete category.");
-   if(editing?.id===category.id)setEditing(null);
-   setNotice("Category deleted successfully.");await load();
+   if(editing&&d.deleted_category_ids?.includes(editing.id))setEditing(null);
+   setNotice(`Category tree deleted: ${d.deleted_categories||1} categories and ${d.deleted_quizzes||0} quizzes.`);await load();
   }catch(e:any){setError(e.message||"Could not delete category.");}
   finally{setSaving(false);}
  }
