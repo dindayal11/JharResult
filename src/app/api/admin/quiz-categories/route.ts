@@ -129,7 +129,7 @@ export async function DELETE(req:Request){
     const [deleted]:any=await connection.execute("DELETE FROM quizzes WHERE category_id IN ("+placeholders+")",ids);
     await connection.execute("UPDATE quiz_categories SET is_active=0 WHERE id IN ("+placeholders+")",ids);
     await connection.commit();
-    return NextResponse.json({ok:true,message:"Category and its nested categories deleted successfully.",deleted_quizzes:Number(deleted.affectedRows||0),deleted_categories:ids.length});
+    return NextResponse.json({ok:true,message:"Category and its nested categories deleted successfully.",deleted_quizzes:Number(deleted.affectedRows||0),deleted_categories:ids.length,deleted_category_ids:ids});
   }catch(e:any){
     if(connection)await connection.rollback();
     const unauthorized=e.message==="UNAUTHORIZED";
