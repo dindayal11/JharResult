@@ -41,6 +41,9 @@ export default function QuizManager(){
    if(Array.isArray(raw.quizzes)){
     if(!Array.isArray(raw.class_path)||raw.class_path.length!==2)throw new Error("Class-wise JSON must include class_path with JAC Board and one class name.");
     if(!raw.quizzes.length)throw new Error("The class-wise JSON contains no quizzes.");
+    const className=String(raw.class_path[1]);
+    const confirmed=window.confirm("Replace all existing quizzes for "+className+" with "+raw.quizzes.length+" quizzes from this file?\\n\\nOther classes will remain unchanged. Previous quiz attempts and results will be preserved.");
+    if(!confirmed)return;
     const classId=await resolveCategoryPath(raw.class_path);
     const prepared=[];
     for(let i=0;i<raw.quizzes.length;i++){
@@ -49,9 +52,6 @@ export default function QuizManager(){
      const categoryId=await resolveCategoryPath(quiz.category_path);
      prepared.push({...quiz,category_id:categoryId});
     }
-    const className=String(raw.class_path[1]);
-    const confirmed=window.confirm("Replace all existing quizzes for "+className+" with "+prepared.length+" quizzes from this file?\n\nOther classes will remain unchanged. Previous quiz attempts and results will be preserved.");
-    if(!confirmed)return;
     const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,quizzes:prepared})});
     const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Class-wise replacement failed.");
     setNotice(className+" MCQs replaced successfully. "+result.imported_count+" quizzes imported; previous attempts and results preserved.");imported=true;await load();
