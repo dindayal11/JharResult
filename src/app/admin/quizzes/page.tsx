@@ -42,9 +42,12 @@ export default function QuizManager(){
     if(!Array.isArray(raw.class_path)||raw.class_path.length!==2)throw new Error("Class-wise JSON must include class_path with JAC Board and one class name.");
     if(!raw.quizzes.length)throw new Error("The class-wise JSON contains no quizzes.");
     const className=String(raw.class_path[1]);
-    const confirmed=window.confirm("Replace all existing quizzes for "+className+" with "+raw.quizzes.length+" quizzes from this file?\n\nOther classes will remain unchanged. Previous quiz attempts and results will be preserved.");
+    const scopePath=Array.isArray(raw.replace_category_path)?raw.replace_category_path:null;
+    const scopeLabel=scopePath?scopePath.join(" / "):className;
+    const confirmed=window.confirm("Replace existing quizzes only inside "+scopeLabel+" with "+raw.quizzes.length+" quizzes from this file?\n\nQuizzes outside this category will remain unchanged. Previous quiz attempts and results will be preserved.");
     if(!confirmed)return;
     const classId=await resolveCategoryPath(raw.class_path);
+    const replaceCategoryId=scopePath?await resolveCategoryPath(scopePath):null;
     const prepared=[];
     for(let i=0;i<raw.quizzes.length;i++){
      const quiz=raw.quizzes[i];
@@ -52,9 +55,9 @@ export default function QuizManager(){
      const categoryId=await resolveCategoryPath(quiz.category_path);
      prepared.push({...quiz,category_id:categoryId});
     }
-    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,quizzes:prepared})});
+    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,replace_category_id:replaceCategoryId,quizzes:prepared})});
     const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Class-wise replacement failed.");
-    setNotice(className+" MCQs replaced successfully. "+result.imported_count+" quizzes imported; previous attempts and results preserved.");imported=true;await load();
+    setNotice(scopeLabel+" MCQs replaced successfully. "+result.imported_count+" quizzes imported; quizzes outside this category and previous attempts/results preserved.");imported=true;await load();
    }else{
     if(!raw.quiz||!Array.isArray(raw.quiz.category_path)||!Array.isArray(raw.quiz.questions)||!raw.quiz.questions.length)throw new Error("Invalid JharResult quiz import file.");
     const categoryId=await resolveCategoryPath(raw.quiz.category_path);
