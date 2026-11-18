@@ -16,27 +16,53 @@ export default function QuizManager(){
   setBusy(true);setError("");setNotice("");
   try{
    const raw=JSON.parse(await file.text());
-   if(raw.format!=="jharresult.quiz-import.v1"||!raw.quiz||!Array.isArray(raw.quiz.category_path)||!Array.isArray(raw.quiz.questions)||!raw.quiz.questions.length)throw new Error("Invalid JharResult quiz import file.");
-   const quiz=raw.quiz;
+   if(raw.format!=="jharresult.quiz-import.v1")throw new Error("Invalid JharResult quiz import file.");
    const cr=await fetch("/api/admin/quiz-categories");const cd=await cr.json();if(!cr.ok)throw new Error(cd.error||"Could not load categories.");
-   let list:Category[]=cd.categories||[];let parentId:number|null=null;
-   for(const name of quiz.category_path){
-    let found=list.find(c=>c.name===name&&c.parent_id===parentId);
-    if(!found){
-     if(parentId===null)throw new Error("Parent category not found: "+name);
-     const created:Response=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,parent_id:parentId,description:""})});
-     const data=await created.json();if(!created.ok)throw new Error(data.error||("Could not create category: "+name));
-     const refreshed:Response=await fetch("/api/admin/quiz-categories");const refreshedData=await refreshed.json();if(!refreshed.ok)throw new Error(refreshedData.error||"Could not refresh categories.");
-     list=refreshedData.categories||[];found=list.find(c=>c.id===Number(data.id));
+   let list:Category[]=cd.categories||[];
+   async function resolveCategoryPath(path:any){
+    if(!Array.isArray(path)||!path.length||path.some((name:any)=>typeof name!=="string"||!name.trim()))throw new Error("Every quiz must include a complete category_path.");
+    let parentId:number|null=null;
+    for(const rawName of path){
+     const name=rawName.trim();
+     let found=list.find(c=>c.name===name&&c.parent_id===parentId);
+     if(!found){
+      if(parentId===null)throw new Error("Parent category not found: "+name);
+      const created=await fetch("/api/admin/quiz-categories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,parent_id:parentId,description:""})});
+      const data=await created.json();if(!created.ok)throw new Error(data.error||("Could not create category: "+name));
+      const refreshed=await fetch("/api/admin/quiz-categories");const refreshedData=await refreshed.json();if(!refreshed.ok)throw new Error(refreshedData.error||"Could not refresh categories.");
+      list=refreshedData.categories||[];found=list.find(c=>c.id===Number(data.id));
+     }
+     if(!found)throw new Error("Could not resolve category: "+name);
+     parentId=found.id;
     }
-    if(!found)throw new Error("Could not resolve category: "+name);
-    parentId=found.id;
+    if(!parentId)throw new Error("Category path is incomplete.");
+    return parentId;
    }
-   if(!parentId)throw new Error("Quiz category path is incomplete.");
-   const payload={...quiz,category_id:parentId,status:"published"};
-   const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-   const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Quiz import failed.");
-   setNotice("Quiz imported and published successfully: "+quiz.title);imported=true;await load();
+   if(Array.isArray(raw.quizzes)){
+    if(!Array.isArray(raw.class_path)||raw.class_path.length!==2)throw new Error("Class-wise JSON must include class_path with JAC Board and one class name.");
+    if(!raw.quizzes.length)throw new Error("The class-wise JSON contains no quizzes.");
+    const classId=await resolveCategoryPath(raw.class_path);
+    const prepared=[];
+    for(let i=0;i<raw.quizzes.length;i++){
+     const quiz=raw.quizzes[i];
+     if(!quiz||!Array.isArray(quiz.category_path)||quiz.category_path.length<3||quiz.category_path[0]!==raw.class_path[0]||quiz.category_path[1]!==raw.class_path[1])throw new Error("Quiz "+(i+1)+": category_path must start with the selected class path.");
+     const categoryId=await resolveCategoryPath(quiz.category_path);
+     prepared.push({...quiz,category_id:categoryId});
+    }
+    const className=String(raw.class_path[1]);
+    const confirmed=window.confirm("Replace all existing quizzes for "+className+" with "+prepared.length+" quizzes from this file?\n\nOther classes will remain unchanged. Previous quiz attempts and results will be preserved.");
+    if(!confirmed)return;
+    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,quizzes:prepared})});
+    const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Class-wise replacement failed.");
+    setNotice(className+" MCQs replaced successfully. "+result.imported_count+" quizzes imported; previous attempts and results preserved.");imported=true;await load();
+   }else{
+    if(!raw.quiz||!Array.isArray(raw.quiz.category_path)||!Array.isArray(raw.quiz.questions)||!raw.quiz.questions.length)throw new Error("Invalid JharResult quiz import file.");
+    const categoryId=await resolveCategoryPath(raw.quiz.category_path);
+    const payload={...raw.quiz,category_id:categoryId,status:"published"};
+    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Quiz import failed.");
+    setNotice("Quiz imported and published successfully: "+raw.quiz.title);imported=true;await load();
+   }
   }catch(err:any){setError(err.message||"Could not import quiz file.");}
   finally{setBusy(false);if(imported)input.value="";}
  }
