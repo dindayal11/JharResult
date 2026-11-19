@@ -133,12 +133,25 @@ export async function DELETE(req:Request){
     await requireAdmin();
     const id=Number(new URL(req.url).searchParams.get("id"));
     if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});
-    // quiz_attempts.quiz_id references quizzes.id; never hard-delete quiz history.
-    const [result]:any=await getPool().execute("UPDATE quizzes SET status='archived' WHERE id=? AND status<>'archived'",[id]);
-    if(!result.affectedRows){
-      const [rows]:any=await getPool().execute("SELECT id FROM quizzes WHERE id=? LIMIT 1",[id]);
-      if(!rows.length)return NextResponse.json({error:"Quiz not found."},{status:404});
-    }
-    return NextResponse.json({ok:true,archived:true,message:"Quiz archived. Student attempts and results were preserved."});
-  }catch(e:any){const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":"Could not archive quiz."},{status:unauthorized?401:500});}
+    const connection=await getPool().getConnection();
+    try{
+      await connection.beginTransaction();
+      const [rows]:any=await connection.execute("SELECT id FROM quizzes WHERE id=? LIMIT 1",[id]);
+      if(!rows.length){await connection.rollback();return NextResponse.json({error:"Quiz not found."},{status:404});}
+      const [attemptRows]:any=await connection.execute("SELECT id FROM quiz_attempts WHERE quiz_id=?",[id]);
+      const attemptIds=attemptRows.map((row:any)=>Number(row.id));
+      if(attemptIds.length){
+        const placeholders=attemptIds.map(()=>"?").join(",");
+        await connection.execute("DELETE FROM quiz_attempt_questions WHERE attempt_id IN ("+placeholders+")",attemptIds);
+        await connection.execute("DELETE FROM quiz_answers WHERE attempt_id IN ("+placeholders+")",attemptIds);
+        await connection.execute("DELETE FROM quiz_attempts WHERE id IN ("+placeholders+")",attemptIds);
+      }
+      await connection.execute("DELETE qo FROM quiz_options qo INNER JOIN quiz_questions qq ON qq.id=qo.question_id WHERE qq.quiz_id=?",[id]);
+      await connection.execute("DELETE FROM quiz_questions WHERE quiz_id=?",[id]);
+      await connection.execute("DELETE FROM quizzes WHERE id=?",[id]);
+      await connection.commit();
+      return NextResponse.json({ok:true,deleted:true,message:"Quiz, questions, student attempts and results permanently deleted.",deleted_attempts:attemptIds.length});
+    }catch(error){await connection.rollback();throw error;}
+    finally{connection.release();}
+  }catch(e:any){const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":"Could not delete quiz."},{status:unauthorized?401:500});}
 }
