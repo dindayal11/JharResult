@@ -300,9 +300,9 @@ export default async function Home() {
       </main>
 
       <style>{`
-        .home-quiz-promos{margin:0 0 22px}
+        .home-quiz-promos{margin:0 0 15px}
         .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-        .home-quiz-promo{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;gap:17px;min-height:166px;overflow:hidden;padding:17px 20px;border:1px solid #ffffff55;border-radius:13px;color:#fff;text-decoration:none;box-shadow:0 7px 18px #173f681c;transition:transform .2s ease,box-shadow .2s ease}
+        .home-quiz-promo{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:112px;overflow:hidden;padding:11px 14px;border:1px solid #ffffff55;border-radius:13px;color:#fff;text-decoration:none;box-shadow:0 7px 18px #173f681c;transition:transform .2s ease,box-shadow .2s ease}
         .home-quiz-promo:hover{transform:translateY(-3px);box-shadow:0 13px 25px #173f682b;color:#fff}
         .home-quiz-promo-10{background:linear-gradient(115deg,#123e91 0%,#2563eb 55%,#4388f5 100%)}
         .home-quiz-promo-12{background:linear-gradient(115deg,#075c48 0%,#0d966b 55%,#22b879 100%)}
@@ -310,13 +310,13 @@ export default async function Home() {
         .home-quiz-promo-glow{position:absolute;z-index:-1;width:130px;height:130px;right:48px;bottom:-105px;border-radius:50%;background:#ffffff22;filter:blur(5px)}
         .home-quiz-promo-top,.home-quiz-promo-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
         .home-quiz-promo-tag{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #ffffff55;border-radius:5px;background:#ffffff18;color:#fff;font-size:10px;font-weight:900;letter-spacing:1px}
-        .home-quiz-promo-icon{display:grid;place-items:center;width:29px;height:29px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;font-size:15px}
-        .home-quiz-promo-title{position:relative;z-index:1;font-size:clamp(22px,2.5vw,30px);font-weight:900;line-height:1.08;letter-spacing:-.5px;text-shadow:0 2px 8px #001b4533}
+        .home-quiz-promo-icon{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;font-size:15px}
+        .home-quiz-promo-title{position:relative;z-index:1;font-size:clamp(17px,2vw,22px);font-weight:900;line-height:1.08;letter-spacing:-.5px;text-shadow:0 2px 8px #001b4533}
         .home-quiz-promo-bottom{flex-wrap:wrap;color:#eaf2ff;font-size:11px;font-weight:600}
-        .home-quiz-promo-bottom strong{display:inline-flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #ffffff70;border-radius:6px;background:#ffffff20;color:#fff;font-size:11px;white-space:nowrap}
+        .home-quiz-promo-bottom strong{display:inline-flex;align-items:center;gap:9px;padding:6px 9px;border:1px solid #ffffff70;border-radius:6px;background:#ffffff20;color:#fff;font-size:11px;white-space:nowrap}
         .home-quiz-promo-bottom strong span{font-size:16px;line-height:10px;transition:transform .2s}
         .home-quiz-promo:hover .home-quiz-promo-bottom strong span{transform:translateX(3px)}
-        .home-quiz-promo-number{position:absolute;z-index:-1;right:14px;bottom:-27px;color:#ffffff13;font-size:112px;font-weight:900;line-height:1;letter-spacing:-8px;pointer-events:none}
+        .home-quiz-promo-number{position:absolute;z-index:-1;right:14px;bottom:-27px;color:#ffffff13;font-size:82px;font-weight:900;line-height:1;letter-spacing:-8px;pointer-events:none}
         @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .update-row { display:flex; gap:8px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed #dce2e9; }
         .update-bullet { color:#e07b22; font-weight:900; }
