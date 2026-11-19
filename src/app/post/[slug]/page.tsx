@@ -1004,14 +1004,14 @@ export default async function PostPage({
 
             <a
               className="side-link"
-              href="/category/previous-papers"
+              href="/previous-year-papers"
             >
               Previous Year Papers
             </a>
 
             <a
               className="side-link"
-              href="/category/board"
+              href="/category/boards"
             >
               Board Updates
             </a>
