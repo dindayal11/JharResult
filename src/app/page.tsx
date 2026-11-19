@@ -234,6 +234,17 @@ export default async function Home() {
 </section>
 
 
+        <section aria-label="JAC Board Online Quiz" style={{ marginBottom: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+            <a href="/quiz/jac-board/class-10" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 88, padding: "16px 18px", border: "2px solid #172554", borderRadius: 12, background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff", textAlign: "center", fontSize: "clamp(15px, 2vw, 19px)", fontWeight: 800, lineHeight: 1.4, textDecoration: "none", boxShadow: "0 4px 0 #172554" }}>
+              📝 JAC Class 10th Online Quiz<br />MCQ Practice →
+            </a>
+            <a href="/quiz/jac-board/class-12" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 88, padding: "16px 18px", border: "2px solid #14532d", borderRadius: 12, background: "linear-gradient(135deg, #16a34a, #15803d)", color: "#fff", textAlign: "center", fontSize: "clamp(15px, 2vw, 19px)", fontWeight: 800, lineHeight: 1.4, textDecoration: "none", boxShadow: "0 4px 0 #14532d" }}>
+              📚 JAC Class 12th Online Quiz<br />MCQ Practice →
+            </a>
+          </div>
+        </section>
+
         {dbError && (
           <div className="panel" style={{ marginBottom: 18, color: "#9b2c2c" }}>
             Updates could not be loaded right now. Please check the database connection.
