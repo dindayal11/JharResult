@@ -105,7 +105,7 @@ export default function QuizCategoryManager(){
     <div className="categoryMark" style={{background:depthOf(c)===0?"#eaf2ff":depthOf(c)===1?"#e9f8f1":"#f4efff",color:depthOf(c)===0?"#2563eb":depthOf(c)===1?"#16834a":"#7c3aed"}}>{depthOf(c)===0?"P":depthOf(c)===1?"S":"N"}</div>
     <div className="categoryInfo"><strong>{c.name}</strong><span>{pathOf(c)}</span></div>
     <span className="levelTag">{depthOf(c)===0?"Parent":depthOf(c)===1?"Subcategory":"Nested L"+(depthOf(c)+1)}</span>
-    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button><button type="button" className="btn deleteBtn" disabled={saving} onClick={()=>deleteCategory(c)}>Archive</button>
+    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button><button type="button" className="btn deleteBtn" disabled={saving} onClick={()=>deleteCategory(c)}>Delete</button>
    </div>)}</div>}
   </section>
   <style>{`
