@@ -48,14 +48,14 @@ export default function QuizCategoryManager(){
   finally{setSaving(false);}
  }
  async function deleteCategory(category:Category){
-  const confirmed=window.confirm(`Archive "${pathOf(category)}" and all its nested categories? Quizzes in this category tree will be archived, but student attempts and results will be preserved.`);
+  const confirmed=window.confirm(`Permanently DELETE "${pathOf(category)}" and all its nested categories, quizzes, questions, student attempts and results? This action cannot be undone.`);
   if(!confirmed)return;
   setSaving(true);setError("");setNotice("");
   try{
    const r=await fetch("/api/admin/quiz-categories?id="+category.id,{method:"DELETE"});
    const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not delete category.");
    if(editing&&d.deleted_category_ids?.includes(editing.id))setEditing(null);
-   setNotice(`Category tree archived: ${d.archived_categories||1} categories and ${d.archived_quizzes||0} quizzes. Student attempts and results were preserved.`);await load();
+   setNotice(`Permanently deleted ${d.deleted_categories||0} categories, ${d.deleted_quizzes||0} quizzes and ${d.deleted_attempts||0} student attempts/results.`);await load();
   }catch(e:any){setError(e.message||"Could not delete category.");}
   finally{setSaving(false);}
  }
