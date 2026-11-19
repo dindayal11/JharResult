@@ -238,14 +238,14 @@ export default async function Home() {
           <div className="home-quiz-promo-grid">
             <a href="/quiz/jac-board/class-10" className="home-quiz-promo home-quiz-promo-10">
               <span className="home-quiz-promo-glow" aria-hidden="true" />
-              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 10</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
+              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 10</span><span className="new-badge">NEW</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
               <span className="home-quiz-promo-title">Class 10th<br />Online Quiz</span>
               <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
               <span className="home-quiz-promo-number" aria-hidden="true">10</span>
             </a>
             <a href="/quiz/jac-board/class-12" className="home-quiz-promo home-quiz-promo-12">
               <span className="home-quiz-promo-glow" aria-hidden="true" />
-              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 12</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
+              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 12</span><span className="new-badge">NEW</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
               <span className="home-quiz-promo-title">Class 12th<br />Online Quiz</span>
               <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
               <span className="home-quiz-promo-number" aria-hidden="true">12</span>
@@ -309,7 +309,7 @@ export default async function Home() {
         .home-quiz-promo:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-48px;top:-95px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 18px #ffffff0c,0 0 0 38px #ffffff0a,0 0 0 60px #ffffff08}
         .home-quiz-promo-glow{position:absolute;z-index:-1;width:130px;height:130px;right:48px;bottom:-105px;border-radius:50%;background:#ffffff22;filter:blur(5px)}
         .home-quiz-promo-top,.home-quiz-promo-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
-        .home-quiz-promo-tag{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #ffffff55;border-radius:5px;background:#ffffff18;color:#fff;font-size:10px;font-weight:900;letter-spacing:1px}
+        .home-quiz-promo-top .new-badge{margin-left:auto;flex:0 0 auto}.home-quiz-promo-tag{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #ffffff55;border-radius:5px;background:#ffffff18;color:#fff;font-size:10px;font-weight:900;letter-spacing:1px}
         .home-quiz-promo-icon{display:grid;place-items:center;width:24px;height:24px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;font-size:15px}
         .home-quiz-promo-title{position:relative;z-index:1;font-size:clamp(17px,2vw,22px);font-weight:900;line-height:1.08;letter-spacing:-.5px;text-shadow:0 2px 8px #001b4533}
         .home-quiz-promo-bottom{flex-wrap:wrap;color:#eaf2ff;font-size:11px;font-weight:600}
