@@ -107,7 +107,9 @@ export async function POST(req:Request){
         cleanQuiz(quiz);
       }
       const ids=Array.from(descendants);const placeholders=ids.map(()=>"?").join(",");
-      await connection.execute("UPDATE quizzes SET status='archived' WHERE category_id IN ("+placeholders+") AND status IN ('draft','published')",ids);
+      if(body.replace_existing===true){
+        await connection.execute("UPDATE quizzes SET status='archived' WHERE category_id IN ("+placeholders+") AND status IN ('draft','published')",ids);
+      }
       const imported=[];
       for(const quiz of body.quizzes)imported.push(await saveQuiz(connection,{...quiz,status:"published"}));
       await connection.commit();
