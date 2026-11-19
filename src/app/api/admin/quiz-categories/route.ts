@@ -126,12 +126,27 @@ export async function DELETE(req:Request){
     }
     const ids=Array.from(descendants);
     const placeholders=ids.map(()=>"?").join(",");
-    // Preserve quiz rows because quiz_attempts.quiz_id references quizzes.id.
-    // Archive quizzes in this category tree instead of deleting their history.
-    const [archived]:any=await connection.execute("UPDATE quizzes SET status='archived' WHERE category_id IN ("+placeholders+") AND status<>'archived'",ids);
-    await connection.execute("UPDATE quiz_categories SET is_active=0 WHERE id IN ("+placeholders+")",ids);
+    const [quizRows]:any=await connection.execute("SELECT id FROM quizzes WHERE category_id IN ("+placeholders+")",ids);
+    const quizIds=quizRows.map((row:any)=>Number(row.id));
+    let deletedAttempts=0;
+    if(quizIds.length){
+      const quizPlaceholders=quizIds.map(()=>"?").join(",");
+      const [attemptRows]:any=await connection.execute("SELECT id FROM quiz_attempts WHERE quiz_id IN ("+quizPlaceholders+")",quizIds);
+      const attemptIds=attemptRows.map((row:any)=>Number(row.id));
+      if(attemptIds.length){
+        const attemptPlaceholders=attemptIds.map(()=>"?").join(",");
+        await connection.execute("DELETE FROM quiz_attempt_questions WHERE attempt_id IN ("+attemptPlaceholders+")",attemptIds);
+        await connection.execute("DELETE FROM quiz_answers WHERE attempt_id IN ("+attemptPlaceholders+")",attemptIds);
+        const [deleted]:any=await connection.execute("DELETE FROM quiz_attempts WHERE id IN ("+attemptPlaceholders+")",attemptIds);
+        deletedAttempts=Number(deleted.affectedRows||0);
+      }
+      await connection.execute("DELETE qo FROM quiz_options qo INNER JOIN quiz_questions qq ON qq.id=qo.question_id WHERE qq.quiz_id IN ("+quizPlaceholders+")",quizIds);
+      await connection.execute("DELETE FROM quiz_questions WHERE quiz_id IN ("+quizPlaceholders+")",quizIds);
+      await connection.execute("DELETE FROM quizzes WHERE id IN ("+quizPlaceholders+")",quizIds);
+    }
+    const [deletedCategories]:any=await connection.execute("DELETE FROM quiz_categories WHERE id IN ("+placeholders+")",ids);
     await connection.commit();
-    return NextResponse.json({ok:true,message:"Category tree archived successfully. Quiz attempts and results were preserved.",archived_quizzes:Number(archived.affectedRows||0),archived_categories:ids.length,deleted_category_ids:ids});
+    return NextResponse.json({ok:true,message:"Category tree and all related quizzes, attempts and results permanently deleted.",deleted_quizzes:quizIds.length,deleted_attempts:deletedAttempts,deleted_categories:Number(deletedCategories.affectedRows||0),deleted_category_ids:ids});
   }catch(e:any){
     if(connection)await connection.rollback();
     const unauthorized=e.message==="UNAUTHORIZED";
