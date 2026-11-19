@@ -129,6 +129,16 @@ export async function PUT(req:Request){
   finally{connection?.release();}
 }
 export async function DELETE(req:Request){
-  try{await requireAdmin();const id=Number(new URL(req.url).searchParams.get("id"));if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});await getPool().execute("DELETE FROM quizzes WHERE id=?",[id]);return NextResponse.json({ok:true});}
-  catch(e:any){const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":"Could not delete quiz."},{status:unauthorized?401:500});}
+  try{
+    await requireAdmin();
+    const id=Number(new URL(req.url).searchParams.get("id"));
+    if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});
+    // quiz_attempts.quiz_id references quizzes.id; never hard-delete quiz history.
+    const [result]:any=await getPool().execute("UPDATE quizzes SET status='archived' WHERE id=? AND status<>'archived'",[id]);
+    if(!result.affectedRows){
+      const [rows]:any=await getPool().execute("SELECT id FROM quizzes WHERE id=? LIMIT 1",[id]);
+      if(!rows.length)return NextResponse.json({error:"Quiz not found."},{status:404});
+    }
+    return NextResponse.json({ok:true,archived:true,message:"Quiz archived. Student attempts and results were preserved."});
+  }catch(e:any){const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":"Could not archive quiz."},{status:unauthorized?401:500});}
 }
