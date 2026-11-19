@@ -234,13 +234,21 @@ export default async function Home() {
 </section>
 
 
-        <section aria-label="JAC Board Online Quiz" style={{ marginBottom: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
-            <a href="/quiz/jac-board/class-10" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 88, padding: "16px 18px", border: "2px solid #172554", borderRadius: 12, background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff", textAlign: "center", fontSize: "clamp(15px, 2vw, 19px)", fontWeight: 800, lineHeight: 1.4, textDecoration: "none", boxShadow: "0 4px 0 #172554" }}>
-              📝 JAC Class 10th Online Quiz<br />MCQ Practice →
+        <section className="home-quiz-promos" aria-label="JAC Board Online Quiz">
+          <div className="home-quiz-promo-grid">
+            <a href="/quiz/jac-board/class-10" className="home-quiz-promo home-quiz-promo-10">
+              <span className="home-quiz-promo-glow" aria-hidden="true" />
+              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 10</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
+              <span className="home-quiz-promo-title">Class 10th<br />Online Quiz</span>
+              <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
+              <span className="home-quiz-promo-number" aria-hidden="true">10</span>
             </a>
-            <a href="/quiz/jac-board/class-12" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 88, padding: "16px 18px", border: "2px solid #14532d", borderRadius: 12, background: "linear-gradient(135deg, #16a34a, #15803d)", color: "#fff", textAlign: "center", fontSize: "clamp(15px, 2vw, 19px)", fontWeight: 800, lineHeight: 1.4, textDecoration: "none", boxShadow: "0 4px 0 #14532d" }}>
-              📚 JAC Class 12th Online Quiz<br />MCQ Practice →
+            <a href="/quiz/jac-board/class-12" className="home-quiz-promo home-quiz-promo-12">
+              <span className="home-quiz-promo-glow" aria-hidden="true" />
+              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 12</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
+              <span className="home-quiz-promo-title">Class 12th<br />Online Quiz</span>
+              <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
+              <span className="home-quiz-promo-number" aria-hidden="true">12</span>
             </a>
           </div>
         </section>
@@ -292,6 +300,23 @@ export default async function Home() {
       </main>
 
       <style>{`
+        .home-quiz-promos{margin:0 0 22px}
+        .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+        .home-quiz-promo{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;gap:17px;min-height:166px;overflow:hidden;padding:17px 20px;border:1px solid #ffffff55;border-radius:13px;color:#fff;text-decoration:none;box-shadow:0 7px 18px #173f681c;transition:transform .2s ease,box-shadow .2s ease}
+        .home-quiz-promo:hover{transform:translateY(-3px);box-shadow:0 13px 25px #173f682b;color:#fff}
+        .home-quiz-promo-10{background:linear-gradient(115deg,#123e91 0%,#2563eb 55%,#4388f5 100%)}
+        .home-quiz-promo-12{background:linear-gradient(115deg,#075c48 0%,#0d966b 55%,#22b879 100%)}
+        .home-quiz-promo:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-48px;top:-95px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 18px #ffffff0c,0 0 0 38px #ffffff0a,0 0 0 60px #ffffff08}
+        .home-quiz-promo-glow{position:absolute;z-index:-1;width:130px;height:130px;right:48px;bottom:-105px;border-radius:50%;background:#ffffff22;filter:blur(5px)}
+        .home-quiz-promo-top,.home-quiz-promo-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .home-quiz-promo-tag{display:inline-flex;align-items:center;padding:6px 9px;border:1px solid #ffffff55;border-radius:5px;background:#ffffff18;color:#fff;font-size:10px;font-weight:900;letter-spacing:1px}
+        .home-quiz-promo-icon{display:grid;place-items:center;width:29px;height:29px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff18;font-size:15px}
+        .home-quiz-promo-title{position:relative;z-index:1;font-size:clamp(22px,2.5vw,30px);font-weight:900;line-height:1.08;letter-spacing:-.5px;text-shadow:0 2px 8px #001b4533}
+        .home-quiz-promo-bottom{flex-wrap:wrap;color:#eaf2ff;font-size:11px;font-weight:600}
+        .home-quiz-promo-bottom strong{display:inline-flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #ffffff70;border-radius:6px;background:#ffffff20;color:#fff;font-size:11px;white-space:nowrap}
+        .home-quiz-promo-bottom strong span{font-size:16px;line-height:10px;transition:transform .2s}
+        .home-quiz-promo:hover .home-quiz-promo-bottom strong span{transform:translateX(3px)}
+        .home-quiz-promo-number{position:absolute;z-index:-1;right:14px;bottom:-27px;color:#ffffff13;font-size:112px;font-weight:900;line-height:1;letter-spacing:-8px;pointer-events:none}
         @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         .update-row { display:flex; gap:8px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed #dce2e9; }
         .update-bullet { color:#e07b22; font-weight:900; }
