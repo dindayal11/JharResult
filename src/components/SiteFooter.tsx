@@ -4,7 +4,7 @@ const footerLinks = [
     links: [
       { name: "Latest Jobs", href: "/category/latest-jobs" },
       { name: "Previous Year Papers", href: "/previous-year-papers" },
-      { name: "Board Updates (10th / 12th)", href: "/category/results" },
+      { name: "Board Updates (10th / 12th)", href: "/category/boards" },
       { name: "Scholarships", href: "/category/scholarships" },
     ],
   },
