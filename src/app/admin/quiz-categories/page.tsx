@@ -48,14 +48,14 @@ export default function QuizCategoryManager(){
   finally{setSaving(false);}
  }
  async function deleteCategory(category:Category){
-  const confirmed=window.confirm(`Delete "${pathOf(category)}" and all its nested categories? All quizzes assigned anywhere inside this category tree will also be permanently deleted. This cannot be undone.`);
+  const confirmed=window.confirm(`Archive "${pathOf(category)}" and all its nested categories? Quizzes in this category tree will be archived, but student attempts and results will be preserved.`);
   if(!confirmed)return;
   setSaving(true);setError("");setNotice("");
   try{
    const r=await fetch("/api/admin/quiz-categories?id="+category.id,{method:"DELETE"});
    const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not delete category.");
    if(editing&&d.deleted_category_ids?.includes(editing.id))setEditing(null);
-   setNotice(`Category tree deleted: ${d.deleted_categories||1} categories and ${d.deleted_quizzes||0} quizzes.`);await load();
+   setNotice(`Category tree archived: ${d.archived_categories||1} categories and ${d.archived_quizzes||0} quizzes. Student attempts and results were preserved.`);await load();
   }catch(e:any){setError(e.message||"Could not delete category.");}
   finally{setSaving(false);}
  }
@@ -105,7 +105,7 @@ export default function QuizCategoryManager(){
     <div className="categoryMark" style={{background:depthOf(c)===0?"#eaf2ff":depthOf(c)===1?"#e9f8f1":"#f4efff",color:depthOf(c)===0?"#2563eb":depthOf(c)===1?"#16834a":"#7c3aed"}}>{depthOf(c)===0?"P":depthOf(c)===1?"S":"N"}</div>
     <div className="categoryInfo"><strong>{c.name}</strong><span>{pathOf(c)}</span></div>
     <span className="levelTag">{depthOf(c)===0?"Parent":depthOf(c)===1?"Subcategory":"Nested L"+(depthOf(c)+1)}</span>
-    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button><button type="button" className="btn deleteBtn" disabled={saving} onClick={()=>deleteCategory(c)}>Delete</button>
+    <button type="button" className="btn editBtn" onClick={()=>beginEdit(c)}>Edit</button><button type="button" className="btn deleteBtn" disabled={saving} onClick={()=>deleteCategory(c)}>Archive</button>
    </div>)}</div>}
   </section>
   <style>{`
