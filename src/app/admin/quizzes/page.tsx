@@ -44,7 +44,8 @@ export default function QuizManager(){
     const className=String(raw.class_path[1]);
     const scopePath=Array.isArray(raw.replace_category_path)?raw.replace_category_path:null;
     const scopeLabel=scopePath?scopePath.join(" / "):className;
-    const confirmed=window.confirm("Replace existing quizzes only inside "+scopeLabel+" with "+raw.quizzes.length+" quizzes from this file?\n\nQuizzes outside this category will remain unchanged. Previous quiz attempts and results will be preserved.");
+    const replacing=raw.replace_existing===true;
+    const confirmed=window.confirm((replacing?"Replace existing quizzes inside ":"Add new quizzes inside ")+scopeLabel+"? This file contains "+raw.quizzes.length+" quizzes.\n\n"+(replacing?"Existing quizzes in this category will be archived; previous attempts/results will be preserved.":"Existing quizzes and student attempts/results will remain unchanged."));
     if(!confirmed)return;
     const classId=await resolveCategoryPath(raw.class_path);
     const replaceCategoryId=scopePath?await resolveCategoryPath(scopePath):null;
@@ -55,9 +56,9 @@ export default function QuizManager(){
      const categoryId=await resolveCategoryPath(quiz.category_path);
      prepared.push({...quiz,category_id:categoryId});
     }
-    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,replace_category_id:replaceCategoryId,quizzes:prepared})});
+    const saved=await fetch("/api/admin/quizzes",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({replace_class_id:classId,replace_category_id:replaceCategoryId,replace_existing:replacing,quizzes:prepared})});
     const result=await saved.json();if(!saved.ok)throw new Error(result.error||"Class-wise replacement failed.");
-    setNotice(scopeLabel+" MCQs replaced successfully. "+result.imported_count+" quizzes imported; quizzes outside this category and previous attempts/results preserved.");imported=true;await load();
+    setNotice(scopeLabel+(replacing?" MCQs replaced successfully. ":" MCQs added successfully. ")+result.imported_count+" quizzes imported; "+(replacing?"previous attempts/results preserved.":"existing quizzes and attempts/results left unchanged."));imported=true;await load();
    }else{
     if(!raw.quiz||!Array.isArray(raw.quiz.category_path)||!Array.isArray(raw.quiz.questions)||!raw.quiz.questions.length)throw new Error("Invalid JharResult quiz import file.");
     const categoryId=await resolveCategoryPath(raw.quiz.category_path);
@@ -85,7 +86,7 @@ export default function QuizManager(){
  const filteredCategories=categories.filter(category=>categoryPath(category.id).toLowerCase().includes(categorySearch.trim().toLowerCase())||String(category.id)===form.category_id);
  return <main className="container" style={{padding:"28px 0 45px",maxWidth:1120}}>
  <div style={{marginBottom:18}}><Link href="/admin">← Admin Dashboard</Link><h1 style={{margin:"9px 0 3px",color:"#173f68"}}>Quiz Manager</h1><p className="muted">Create practice tests, manage question banks and publish quizzes for JAC and Jharkhand competitive exams.</p></div>
- <section className="panel" style={{padding:18,borderRadius:10,border:"1px solid #dce4ee",marginBottom:18}}><h2 style={{marginTop:0}}>Bulk Quiz Import</h2><p className="muted" style={{fontSize:13}}>Upload the existing single-quiz JSON format or a class-wise JSON package with <code>class_path</code> and <code>quizzes</code>. Class-wise imports replace all quizzes in that class in one transaction; other classes stay unchanged and previous attempts/results are preserved.</p><label style={{display:"grid",gap:8,fontSize:13,fontWeight:700,color:"#34445a"}}>Choose quiz import file<input type="file" accept=".json,application/json" onChange={importQuizFile}/></label>{busy&&<p role="status" aria-live="polite" style={{color:"#1756a9",fontWeight:600}}>Importing quiz and preparing categories… Please wait.</p>}{error&&<p role="alert" style={{color:"#b42318",fontWeight:700,whiteSpace:"pre-wrap"}}>{error}</p>}{notice&&<p role="status" style={{color:"#16834a",fontWeight:700}}>{notice}</p>}</section>
+ <section className="panel" style={{padding:18,borderRadius:10,border:"1px solid #dce4ee",marginBottom:18}}><h2 style={{marginTop:0}}>Bulk Quiz Import</h2><p className="muted" style={{fontSize:13}}>Upload the existing single-quiz JSON format or a class-wise JSON package with <code>class_path</code> and <code>quizzes</code>. Class-wise imports can add new quizzes without changing existing quizzes, or optionally replace quizzes in a selected category; previous attempts/results are preserved.</p><label style={{display:"grid",gap:8,fontSize:13,fontWeight:700,color:"#34445a"}}>Choose quiz import file<input type="file" accept=".json,application/json" onChange={importQuizFile}/></label>{busy&&<p role="status" aria-live="polite" style={{color:"#1756a9",fontWeight:600}}>Importing quiz and preparing categories… Please wait.</p>}{error&&<p role="alert" style={{color:"#b42318",fontWeight:700,whiteSpace:"pre-wrap"}}>{error}</p>}{notice&&<p role="status" style={{color:"#16834a",fontWeight:700}}>{notice}</p>}</section>
  <section className="panel" style={{padding:16,borderRadius:10,border:"1px solid #dce4ee",marginBottom:18,display:"flex",justifyContent:"space-between",alignItems:"center",gap:14,flexWrap:"wrap"}}><div><h2 style={{margin:"0 0 5px"}}>Category Structure Manager</h2><p className="muted" style={{fontSize:13,margin:0}}>Manage parent categories, subcategories and nested chapters on a separate page.</p></div><Link className="btn" href="/admin/quiz-categories">Open Category Manager →</Link></section>
  <section className="panel" style={{padding:20,borderRadius:10,border:"1px solid #dce4ee"}}>
  <h2 style={{marginTop:0}}>{form.id?"Edit Quiz":"Create New Quiz"}</h2>
