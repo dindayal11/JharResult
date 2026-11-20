@@ -302,7 +302,7 @@ export default async function Home() {
 
       <style>{`
         .home-quiz-promos{margin:0 0 15px}
-        .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+        .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
         .home-quiz-promo{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:112px;overflow:hidden;padding:11px 14px;border:1px solid #ffffff55;border-radius:13px;color:#fff;text-decoration:none;box-shadow:0 7px 18px #173f681c;transition:transform .2s ease,box-shadow .2s ease}
         .home-quiz-promo:hover{transform:translateY(-3px);box-shadow:0 13px 25px #173f682b;color:#fff}
         .home-quiz-promo-10{background:linear-gradient(115deg,#123e91 0%,#2563eb 55%,#4388f5 100%)}
@@ -327,8 +327,8 @@ export default async function Home() {
         .update-meta { color:#748093; font-size:11px; margin-top:4px; }
         .verified { color:#197348; font-size:10px; font-weight:700; }
         .ticker-track:hover { animation-play-state: paused !important; }
-        @media(max-width:900px) { .home-quiz-promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
-        @media(max-width:600px) { .home-quiz-promo-grid{grid-template-columns:1fr}.home-quiz-promo{min-height:130px}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; } }
+        @media(max-width:900px) { .home-quiz-promo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
+        @media(max-width:600px) { .home-quiz-promo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.home-quiz-promo{min-height:118px;padding:9px 7px;gap:7px;border-radius:9px}.home-quiz-promo-tag{font-size:7px;letter-spacing:.2px;padding:4px 5px}.home-quiz-promo-icon{display:none}.home-quiz-promo-top .new-badge{font-size:8px;padding:2px 4px}.home-quiz-promo-title{font-size:clamp(11px,3.1vw,15px);line-height:1.12;letter-spacing:-.2px}.home-quiz-promo-bottom{font-size:8px;gap:4px}.home-quiz-promo-bottom strong{font-size:8px;padding:5px 5px;gap:3px}.home-quiz-promo-bottom strong span{font-size:11px}.home-quiz-promo-number{font-size:48px;right:5px;bottom:-16px}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; } }
       `}</style>
     </>
   );
