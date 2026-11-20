@@ -43,6 +43,7 @@ export default function ResponsiveNav({
       </nav>
 
       <div className="mobile-nav">
+        <div className="mobile-nav-row">
         <button
           type="button"
           className="mobile-menu-button"
@@ -54,6 +55,8 @@ export default function ResponsiveNav({
             {open ? "✕" : "☰"}
           </span>
         </button>
+        <h1 className="mobile-nav-title">Jharkhand Latest Jobs, Results &amp; Education Updates</h1>
+        </div>
 
         {open && (
           <div className="mobile-menu-panel">
@@ -167,6 +170,20 @@ export default function ResponsiveNav({
             display: block;
             margin-top: 14px;
             position: relative;
+          }
+
+          .mobile-nav-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+
+          .mobile-nav-title {
+            margin: 0;
+            color: #17365d;
+            font-size: clamp(15px, 4.1vw, 20px);
+            line-height: 1.2;
+            font-weight: 700;
           }
 
           .mobile-menu-button {
