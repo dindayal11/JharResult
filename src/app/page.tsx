@@ -136,13 +136,7 @@ export default async function Home() {
 
       <main className="container" style={{ padding: "18px 0 36px" }}>
         <section className="intro panel" style={{ borderRadius: 4, marginBottom: 18, textAlign: "center" }}>
-          <h1 style={{ fontSize: "clamp(22px, 3vw, 30px)", margin: "4px 0 10px", color: "#17365d" }}>
-            Jharkhand Latest Jobs, Results &amp; Education Updates
-          </h1>
-          <p style={{ margin: "0 auto 16px", maxWidth: 760, lineHeight: 1.6 }}>
-            JAC, JSSC, JPSC, JTET, Jharkhand Police, Scholarships aur sabhi important updates ek hi jagah. Jhar Result (JharResult) par Jharkhand ke latest jobs, exam results, admit cards aur education updates paayen.
-          </p>
-          <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 650, margin: "0 auto" }}>
+          <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 760, margin: "0 auto" }}>
             <input className="search" type="search" name="q" placeholder="Search jobs, results, updates..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
           </form>
@@ -250,6 +244,13 @@ export default async function Home() {
               <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
               <span className="home-quiz-promo-number" aria-hidden="true">12</span>
             </a>
+            <a href="/quiz" className="home-quiz-promo home-quiz-promo-competitive">
+              <span className="home-quiz-promo-glow" aria-hidden="true" />
+              <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JHARKHAND • COMPETITIVE EXAMS</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
+              <span className="home-quiz-promo-title">Competitive<br />Exam Practice</span>
+              <span className="home-quiz-promo-bottom"><span>JSSC • JPSC • JTET • Police</span><strong>Explore Exams <span aria-hidden="true">→</span></strong></span>
+              <span className="home-quiz-promo-number" aria-hidden="true">EX</span>
+            </a>
           </div>
         </section>
 
@@ -301,11 +302,12 @@ export default async function Home() {
 
       <style>{`
         .home-quiz-promos{margin:0 0 15px}
-        .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+        .home-quiz-promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
         .home-quiz-promo{position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:112px;overflow:hidden;padding:11px 14px;border:1px solid #ffffff55;border-radius:13px;color:#fff;text-decoration:none;box-shadow:0 7px 18px #173f681c;transition:transform .2s ease,box-shadow .2s ease}
         .home-quiz-promo:hover{transform:translateY(-3px);box-shadow:0 13px 25px #173f682b;color:#fff}
         .home-quiz-promo-10{background:linear-gradient(115deg,#123e91 0%,#2563eb 55%,#4388f5 100%)}
         .home-quiz-promo-12{background:linear-gradient(115deg,#075c48 0%,#0d966b 55%,#22b879 100%)}
+        .home-quiz-promo-competitive{background:linear-gradient(115deg,#59308e 0%,#7546bb 55%,#9567dc 100%)}
         .home-quiz-promo:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-48px;top:-95px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 18px #ffffff0c,0 0 0 38px #ffffff0a,0 0 0 60px #ffffff08}
         .home-quiz-promo-glow{position:absolute;z-index:-1;width:130px;height:130px;right:48px;bottom:-105px;border-radius:50%;background:#ffffff22;filter:blur(5px)}
         .home-quiz-promo-top,.home-quiz-promo-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -325,8 +327,8 @@ export default async function Home() {
         .update-meta { color:#748093; font-size:11px; margin-top:4px; }
         .verified { color:#197348; font-size:10px; font-weight:700; }
         .ticker-track:hover { animation-play-state: paused !important; }
-        @media(max-width:900px) { .home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
-        @media(max-width:600px) { .home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; } }
+        @media(max-width:900px) { .home-quiz-promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; } }
+        @media(max-width:600px) { .home-quiz-promo-grid{grid-template-columns:1fr}.home-quiz-promo{min-height:130px}.home-category-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) !important; gap:10px !important; } }
       `}</style>
     </>
   );
