@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { getPool } from "@/lib/db";
+import { sendPostNotification } from "@/lib/push";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,10 +21,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   try {
-    const [result]: any = await getPool().execute(
-      "UPDATE posts SET status='published', published_at=NOW(), scheduled_at=NULL WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=NOW()"
-    );
-    return NextResponse.json({ ok: true, published: Number(result.affectedRows || 0), checked_at: new Date().toISOString() });
+    const pool = getPool();
+    const [duePosts]: any = await pool.query("SELECT id, title, slug, short_description FROM posts WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=NOW()");
+    if (duePosts.length) {
+      await pool.execute("UPDATE posts SET status='published', published_at=NOW(), scheduled_at=NULL WHERE status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=NOW()");
+      for (const post of duePosts) {
+        try { await sendPostNotification(post, "new_post"); }
+        catch (pushError) { console.error("Scheduled post notification failed:", post.id, pushError); }
+      }
+    }
+    return NextResponse.json({ ok: true, published: duePosts.length, checked_at: new Date().toISOString() });
   } catch (error) {
     console.error("Scheduled publishing error:", error);
     return NextResponse.json({ error: "Could not publish scheduled posts." }, { status: 500 });
