@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DeletePostButton from "@/components/admin/DeletePostButton";
+import SendPostNotificationButton from "@/components/admin/SendPostNotificationButton";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getPool } from "@/lib/db";
@@ -213,6 +214,7 @@ export default async function AdminPage({
                 <td style={{ padding: "10px 14px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <Link href={`/admin/posts/${p.id}`} style={{ display: "inline-block", padding: "6px 12px", borderRadius: 6, background: "#eaf2ff", color: "#1d4ed8", fontWeight: 700, textDecoration: "none" }}>Edit</Link>
+                    {p.status === "published" && <SendPostNotificationButton postId={Number(p.id)} />}
                     <DeletePostButton postId={p.id} postTitle={p.title} />
                   </div>
                 </td>
