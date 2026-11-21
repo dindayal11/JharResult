@@ -26,6 +26,7 @@ export default function PushOptIn() {
   const [supported, setSupported] = useState(false);
   const [state, setState] = useState<OptInState>("idle");
   const [message, setMessage] = useState("");
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -95,6 +96,7 @@ export default function PushOptIn() {
 
       await saveSubscription(subscription);
       setState("subscribed");
+      setMessage("You're all set! JharResult notifications are enabled on this device.");
     } catch (error) {
       console.error("JharResult notification setup failed:", error);
       setMessage(error instanceof Error ? error.message : "Notifications could not be enabled. Please try again.");
@@ -102,7 +104,7 @@ export default function PushOptIn() {
     }
   }
 
-  if (!supported || state === "subscribed") return null;
+  if (!supported || dismissed) return null;
 
   return (
     <aside
@@ -111,10 +113,13 @@ export default function PushOptIn() {
       aria-live="polite"
       style={{
         position: "fixed",
-        zIndex: 1000,
-        right: 14,
-        bottom: 14,
-        width: "min(390px, calc(100vw - 28px))",
+        zIndex: 10000,
+        top: "max(82px, env(safe-area-inset-top, 0px) + 72px)",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "min(430px, calc(100vw - 28px))",
+        maxHeight: "calc(100vh - 110px)",
+        overflowY: "auto",
         boxSizing: "border-box",
         padding: 18,
         border: "1px solid #dbe4ef",
@@ -123,15 +128,28 @@ export default function PushOptIn() {
         boxShadow: "0 12px 36px rgba(15,23,42,.2)",
       }}
     >
-      <strong style={{ display: "block", color: "#173f70", fontSize: 19 }}>
-        Get JharResult Updates
-      </strong>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <strong style={{ display: "block", color: "#173f70", fontSize: 19 }}>
+          {state === "subscribed" ? "Notifications Enabled" : "Get JharResult Updates"}
+        </strong>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Close notification prompt"
+          style={{ border: 0, background: "transparent", color: "#64748b", fontSize: 23, lineHeight: 1, cursor: "pointer", padding: "0 2px" }}
+        >
+          ×
+        </button>
+      </div>
+
       <p style={{ margin: "8px 0 14px", color: "#526174", fontSize: 14, lineHeight: 1.55 }}>
-        Allow notifications to receive new Jharkhand jobs, results, admit cards and important education updates. You can turn them off anytime.
+        {state === "subscribed"
+          ? "You're all set! You'll receive alerts for new Jharkhand jobs, results, admit cards and important education updates on this device."
+          : "Allow notifications to receive new Jharkhand jobs, results, admit cards and important education updates. You can turn them off anytime."}
       </p>
 
       {message && (
-        <p role="alert" style={{ margin: "0 0 12px", padding: 10, borderRadius: 8, background: "#fff7ed", color: "#9a3412", fontSize: 13, lineHeight: 1.5 }}>
+        <p role="alert" style={{ margin: "0 0 12px", padding: 10, borderRadius: 8, background: state === "subscribed" ? "#ecfdf5" : "#fff7ed", color: state === "subscribed" ? "#166534" : "#9a3412", fontSize: 13, lineHeight: 1.5 }}>
           {message}
         </p>
       )}
@@ -142,30 +160,40 @@ export default function PushOptIn() {
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={enable}
-        disabled={state === "working"}
-        style={{
-          border: 0,
-          borderRadius: 9,
-          padding: "12px 18px",
-          background: "#173f70",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: 15,
-          cursor: state === "working" ? "wait" : "pointer",
-          opacity: state === "working" ? 0.7 : 1,
-        }}
-      >
-        {state === "working"
-          ? "Enabling..."
-          : state === "denied"
-            ? "I've Allowed It — Try Again"
-            : state === "error"
-              ? "Try Again"
-              : "Allow Notifications"}
-      </button>
+      {state !== "subscribed" ? (
+        <button
+          type="button"
+          onClick={enable}
+          disabled={state === "working"}
+          style={{
+            border: 0,
+            borderRadius: 9,
+            padding: "12px 18px",
+            background: "#173f70",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: state === "working" ? "wait" : "pointer",
+            opacity: state === "working" ? 0.7 : 1,
+          }}
+        >
+          {state === "working"
+            ? "Enabling..."
+            : state === "denied"
+              ? "I've Allowed It — Try Again"
+              : state === "error"
+                ? "Try Again"
+                : "Allow Notifications"}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          style={{ border: 0, borderRadius: 9, padding: "11px 18px", background: "#173f70", color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer" }}
+        >
+          Done
+        </button>
+      )}
     </aside>
   );
 }
