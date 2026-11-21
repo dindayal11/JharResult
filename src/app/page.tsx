@@ -136,11 +136,27 @@ export default async function Home() {
 
       <main className="container" style={{ padding: "18px 0 36px" }}>
         <section className="intro panel" style={{ borderRadius: 4, marginBottom: 18, textAlign: "center" }}>
+          <h1 style={{ margin: "0 0 8px", color: "#17365d", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
+            Jhar Result – Jharkhand Latest Jobs, Results, Admit Cards &amp; Online Quiz
+          </h1>
+          <p style={{ maxWidth: 850, margin: "0 auto 14px", color: "#596579", lineHeight: 1.65 }}>
+            Find the latest Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions, scholarships and free online MCQ practice on JharResult.
+          </p>
           <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 760, margin: "0 auto" }}>
             <input className="search" type="search" name="q" placeholder="Search jobs, results, updates..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
           </form>
         </section>
+        <nav aria-label="Important JharResult sections" className="home-important-links" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 9, margin: "0 0 18px", padding: "12px", background: "#f4f8fc", border: "1px solid #dce7f2", borderRadius: 6 }}>
+          <strong style={{ color: "#173f68", marginRight: 4 }}>Explore:</strong>
+          {categories.slice(0, 10).map((category) => (
+            <a key={category.slug} href={`/category/${encodeURIComponent(category.slug)}`} style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+              {category.name}
+            </a>
+          ))}
+          <a href="/quiz" style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Online Quiz</a>
+          <a href="/previous-year-papers" style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Previous Year Papers</a>
+        </nav>
 
         
 <section
