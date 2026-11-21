@@ -9,7 +9,10 @@ export async function POST(request: Request) {
     const endpoint = String(value?.endpoint || "");
     const p256dh = String(value?.keys?.p256dh || "");
     const auth = String(value?.keys?.auth || "");
-    if (!endpoint.startsWith("https://") || !p256dh || !auth || endpoint.length > 2048) {
+    let endpointHost = "";
+    try { endpointHost = new URL(endpoint).hostname.toLowerCase(); } catch {}
+    const trustedPushHost = endpointHost === "fcm.googleapis.com" || endpointHost.endsWith(".push.services.mozilla.com") || endpointHost === "push.services.mozilla.com" || endpointHost === "web.push.apple.com" || endpointHost === "notify.windows.com" || endpointHost.endsWith(".notify.windows.com");
+    if (!endpoint.startsWith("https://") || !trustedPushHost || !p256dh || !auth || endpoint.length > 2048) {
       return NextResponse.json({ error: "Invalid push subscription." }, { status: 400 });
     }
     await getPool().execute(
