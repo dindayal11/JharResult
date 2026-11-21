@@ -11,7 +11,36 @@ type Quiz = { id:number; title:string; slug:string; description:string|null; que
 
 export async function generateMetadata({params}:{params:Promise<{slug:string[]}>}):Promise<Metadata>{
   const {slug}=await params;
-  return {title:`${slug[slug.length-1]?.replace(/-/g," ")} Quizzes`,robots:{index:true,follow:true}};
+  if(!slug?.length) return {title:"Online MCQ Practice Quizzes | JharResult"};
+  try {
+    const names:string[]=[];
+    for(const part of slug){
+      const [rows]:any=await getPool().execute(
+        "SELECT name FROM quiz_categories WHERE slug=? AND is_active=1 LIMIT 1",[part]
+      );
+      if(!rows.length) return {title:"Quiz Category Not Found | JharResult",robots:{index:false,follow:true}};
+      names.push(String(rows[0].name));
+    }
+    const category=names[names.length-1];
+    const hierarchy=names.join(" ");
+    const isJac=slug[0]==="jac-board";
+    const title=isJac
+      ? `${hierarchy} Online Quiz – Chapter-wise MCQ Practice | JharResult`
+      : `${hierarchy} Mock Test & Online Quiz – Free MCQ Practice | JharResult`;
+    const description=`Practice free ${category} online quizzes on JharResult. Attempt chapter-wise and subject-wise MCQs with answers, Hindi and English questions, instant results and score improvement practice.`;
+    const canonical=`/quiz/${slug.map(part=>encodeURIComponent(part)).join("/")}`;
+    return {
+      title,
+      description,
+      keywords:[`${hierarchy} quiz`,`${category} online test`,`${category} MCQ`,`${category} mock test`,"JAC Board online quiz","Jharkhand MCQ practice"],
+      alternates:{canonical},
+      openGraph:{title,description,url:`https://jharresult.in${canonical}`,siteName:"JharResult",type:"website"},
+      robots:{index:true,follow:true}
+    };
+  } catch(error) {
+    console.error("Quiz category metadata failed:",error);
+    return {title:"Online MCQ Practice Quizzes | JharResult",robots:{index:true,follow:true}};
+  }
 }
 
 export default async function QuizCategoryPage({params}:{params:Promise<{slug:string[]}>}){
