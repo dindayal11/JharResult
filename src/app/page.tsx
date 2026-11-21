@@ -147,16 +147,7 @@ export default async function Home() {
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
           </form>
         </section>
-        <nav aria-label="Important JharResult sections" className="home-important-links" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 9, margin: "0 0 18px", padding: "12px", background: "#f4f8fc", border: "1px solid #dce7f2", borderRadius: 6 }}>
-          <strong style={{ color: "#173f68", marginRight: 4 }}>Explore:</strong>
-          {categories.slice(0, 10).map((category) => (
-            <a key={category.slug} href={`/category/${encodeURIComponent(category.slug)}`} style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-              {category.name}
-            </a>
-          ))}
-          <a href="/quiz" style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Online Quiz</a>
-          <a href="/previous-year-papers" style={{ display: "inline-flex", padding: "7px 11px", borderRadius: 5, background: "#fff", border: "1px solid #d7e1ec", color: "#174b80", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Previous Year Papers</a>
-        </nav>
+
 
         
 <section
