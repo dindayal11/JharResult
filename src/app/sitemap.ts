@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/terms",
     "/disclaimer",
     "/previous-year-papers",
+    "/quiz",
   ];
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
@@ -49,6 +50,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
          AND (p.id IS NOT NULL OR p2.id IS NOT NULL)`
     );
 
+    const [quizCategoryRows] = await getPool().query(
+      `SELECT r.slug AS root_slug, c.slug AS category_slug
+       FROM quiz_categories c
+       INNER JOIN quiz_categories r ON r.id = c.parent_id
+       WHERE c.is_active = 1 AND r.is_active = 1
+         AND c.slug IS NOT NULL AND c.slug <> ''
+         AND r.slug IS NOT NULL AND r.slug <> ''`
+    );
+
+    const [quizRows] = await getPool().query(
+      `SELECT q.slug, q.updated_at, q.published_at
+       FROM quizzes q
+       INNER JOIN quiz_categories c ON c.id = q.category_id
+       INNER JOIN quiz_categories r ON r.id = c.parent_id
+       WHERE q.status = 'published'
+         AND c.is_active = 1 AND r.is_active = 1
+         AND q.slug IS NOT NULL AND q.slug <> ''`
+    );
+
     const posts: MetadataRoute.Sitemap = (postRows as any[]).map((post) => ({
       url: `${SITE_URL}/post/${encodeURIComponent(post.slug)}`,
       lastModified: validLastModified(post.updated_at) || validLastModified(post.published_at),
@@ -62,7 +82,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    return [...staticEntries, ...categories, ...posts];
+    const quizCategories: MetadataRoute.Sitemap = (quizCategoryRows as any[]).map((category) => ({
+      url: `${SITE_URL}/quiz/${encodeURIComponent(category.root_slug)}/${encodeURIComponent(category.category_slug)}`,
+      changeFrequency: "daily",
+      priority: 0.7,
+    }));
+
+    const quizzes: MetadataRoute.Sitemap = (quizRows as any[]).map((quiz) => ({
+      url: `${SITE_URL}/quiz/start/${encodeURIComponent(quiz.slug)}`,
+      lastModified: validLastModified(quiz.updated_at) || validLastModified(quiz.published_at),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
+
+    return [...staticEntries, ...categories, ...posts, ...quizCategories, ...quizzes];
   } catch (error) {
     console.error("Sitemap database query failed; serving static URLs only:", error);
     return staticEntries;
