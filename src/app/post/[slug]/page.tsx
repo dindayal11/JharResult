@@ -1019,6 +1019,13 @@ export default async function PostPage({
             >
               Scholarship
             </a>
+
+            <a
+              className="side-link"
+              href="/quiz"
+            >
+              Online Quiz
+            </a>
           </div>
 
           {latestPosts.length > 0 && (
