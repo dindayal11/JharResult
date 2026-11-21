@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SiteFooter from "@/components/SiteFooter";
+import PushOptIn from "@/components/PushOptIn";
 
 const siteUrl = "https://jharresult.in";
 const siteName = "JharResult";
@@ -161,6 +162,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <PushOptIn />
         <SiteFooter />
       </body>
     </html>
