@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 export default async function CategoryPage({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params;
- const [cats]=await getPool().execute("SELECT id,name FROM categories WHERE slug=? LIMIT 1",[slug]);
+ const [cats]=await getPool().execute("SELECT id,name FROM categories WHERE slug=? AND is_active=1 LIMIT 1",[slug]);
  const cat=(cats as any[])[0]; if(!cat) notFound();
  const [rows]=await getPool().execute(`SELECT DISTINCT p.*,c.name AS category_name,c.slug AS category_slug FROM posts p JOIN categories c ON c.id=p.category_id LEFT JOIN post_categories pc ON pc.post_id=p.id WHERE (p.category_id=? OR pc.category_id=?) AND p.status='published' ORDER BY p.published_at DESC LIMIT 100`,[cat.id,cat.id]);
  const posts=rows as PostRow[];
@@ -40,6 +40,24 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
   <>
     <SiteHeader />
     <main className="container" style={{ padding: "28px 0" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://jharresult.in/" },
+              { "@type": "ListItem", position: 2, name: cat.name, item: `https://jharresult.in/category/${encodeURIComponent(slug)}` }
+            ]
+          }).replace(/</g, "\\u003c")
+        }}
+      />
+      <nav aria-label="Breadcrumb" style={{ marginBottom: 10, fontSize: 13 }}>
+        <a href="/" style={{ color: "#1d5a91", fontWeight: 700 }}>Home</a>
+        <span aria-hidden="true" style={{ margin: "0 8px", color: "#8994a5" }}>›</span>
+        <span aria-current="page" style={{ color: "#667085" }}>{cat.name}</span>
+      </nav>
       <h1>{cat.name}</h1>
       <p className="muted">Jharkhand {cat.name.toLowerCase()} updates</p>
 
