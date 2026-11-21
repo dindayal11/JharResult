@@ -112,9 +112,9 @@ export async function sendPostNotification(post: { title: string; slug: string; 
 
 
 export async function sendQuizNotification(quiz: { title: string; slug?: string; question_count?: number; count?: number }) {
-  const isBatch = Number(quiz.count || 0) > 1;
+  const isBatch = quiz.count !== undefined;
   const title = isBatch ? "New Practice Quizzes on JharResult" : "New Quiz on JharResult";
-  const body = isBatch ? `${quiz.count} new practice quizzes have been published. Start practising now!` : `${quiz.title}${quiz.question_count ? ` — ${quiz.question_count} MCQs` : ""}. Start your practice now!`;
+  const body = isBatch ? `${quiz.count} new practice quiz${Number(quiz.count) === 1 ? "" : "zes"} have been published. Start practising now!` : `${quiz.title}${quiz.question_count ? ` — ${quiz.question_count} MCQs` : ""}. Start your practice now!`;
   const tag = isBatch ? `jharresult-quiz-batch-${Date.now()}` : `jharresult-quiz-${quiz.slug || "new"}`;
   const result = await sendPushToAll({ title, body: body.slice(0, 180), url: "/quiz", tag });
   await getPool().execute("INSERT INTO push_notification_logs (post_slug, notification_type, sent_count, failed_count) VALUES (?,?,?,?)", [isBatch ? "quiz-bulk-import" : `quiz:${quiz.slug || "new"}`, "quiz_new", result.sent, result.failed]);
