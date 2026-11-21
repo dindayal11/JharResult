@@ -159,13 +159,10 @@ function CustomTable({ table }: { table: any }) {
         minWidth: 0,
         background,
         color: text,
-        gridColumn:
-          table.layout_direction === "column"
-            ? "1 / -1"
-            : `span ${Math.min(
-                3,
-                Math.max(1, Number(table.layout_columns) || 2)
-              )}`,
+        // Keep every custom table and its related content full-width.
+        // This prevents the next section/footer text from inheriting a narrow table column.
+        gridColumn: "1 / -1",
+        width: "100%",
       }}
     >
       <h2 style={{ background: primary, color: "#fff", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
