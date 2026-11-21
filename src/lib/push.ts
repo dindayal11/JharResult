@@ -16,6 +16,48 @@ function hkdfExpand(prk: Buffer, info: Buffer, length: number) {
 }
 function encode(value: Buffer) { return value.toString("base64url"); }
 
+const HTML_ENTITIES: Record<string, string> = {
+  nbsp: " ",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  ndash: "–",
+  mdash: "—",
+  lsquo: "‘",
+  rsquo: "’",
+  ldquo: "“",
+  rdquo: "”",
+  hellip: "…",
+  bull: "•",
+};
+
+function decodeHtmlEntities(value: string) {
+  let decoded = value;
+  // Decode twice to handle commonly double-encoded content such as &amp;nbsp;.
+  for (let pass = 0; pass < 2; pass++) {
+    decoded = decoded.replace(/&(#x[\da-f]+|#\d+|[a-z][a-z\d]+);/gi, (entity, code: string) => {
+      if (code[0] === "#") {
+        const isHex = code[1]?.toLowerCase() === "x";
+        const point = Number.parseInt(code.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+        if (!Number.isInteger(point) || point < 0 || point > 0x10ffff || (point >= 0xd800 && point <= 0xdfff)) return entity;
+        return String.fromCodePoint(point);
+      }
+      return HTML_ENTITIES[code.toLowerCase()] ?? entity;
+    });
+  }
+  return decoded;
+}
+
+function cleanNotificationText(value: unknown) {
+  return decodeHtmlEntities(String(value ?? "").replace(/<[^>]*>/g, " "))
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\u00a0/g, " ")
+    .replace(/[\t\r\n ]+/g, " ")
+    .trim();
+}
+
 function vapidKeys() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
   const privateKey = process.env.VAPID_PRIVATE_KEY || "";
@@ -95,11 +137,11 @@ export async function sendPushToAll(payload: { title: string; body: string; url:
 }
 
 export async function sendPostNotification(post: { title: string; slug: string; short_description?: string | null }, kind: "new_post" | "post_update" | "manual") {
-  const bodyText = String(post.short_description || "Open JharResult to read the complete update.")
-    .replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 135);
+  const cleanTitle = cleanNotificationText(post.title);
+  const bodyText = cleanNotificationText(post.short_description || "Open JharResult to read the complete update.").slice(0, 135);
   const result = await sendPushToAll({
     title: kind === "new_post" ? "New on JharResult" : kind === "post_update" ? "Post Updated" : "JharResult Update",
-    body: `${post.title} — ${bodyText}`.slice(0, 180),
+    body: `${cleanTitle} — ${bodyText}`.slice(0, 180),
     url: `/post/${encodeURIComponent(post.slug)}`,
     tag: `jharresult-${post.slug}`,
   });
@@ -114,7 +156,8 @@ export async function sendPostNotification(post: { title: string; slug: string; 
 export async function sendQuizNotification(quiz: { title: string; slug?: string; question_count?: number; count?: number }) {
   const isBatch = quiz.count !== undefined;
   const title = isBatch ? "New Practice Quizzes on JharResult" : "New Quiz on JharResult";
-  const body = isBatch ? `${quiz.count} new practice quiz${Number(quiz.count) === 1 ? "" : "zes"} have been published. Start practising now!` : `${quiz.title}${quiz.question_count ? ` — ${quiz.question_count} MCQs` : ""}. Start your practice now!`;
+  const cleanQuizTitle = cleanNotificationText(quiz.title);
+  const body = isBatch ? `${quiz.count} new practice quiz${Number(quiz.count) === 1 ? "" : "zes"} have been published. Start practising now!` : `${cleanQuizTitle}${quiz.question_count ? ` — ${quiz.question_count} MCQs` : ""}. Start your practice now!`;
   const tag = isBatch ? `jharresult-quiz-batch-${Date.now()}` : `jharresult-quiz-${quiz.slug || "new"}`;
   const result = await sendPushToAll({ title, body: body.slice(0, 180), url: "/quiz", tag });
   await getPool().execute("INSERT INTO push_notification_logs (post_slug, notification_type, sent_count, failed_count) VALUES (?,?,?,?)", [isBatch ? "quiz-bulk-import" : `quiz:${quiz.slug || "new"}`, "quiz_new", result.sent, result.failed]);
