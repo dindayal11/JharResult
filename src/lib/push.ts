@@ -1,10 +1,19 @@
-import { createCipheriv, createECDH, hkdfSync, randomBytes } from "node:crypto";
+import { createCipheriv, createECDH, createHmac, hkdfSync, randomBytes } from "node:crypto";
 import { importJWK, SignJWT } from "jose";
 import { getPool } from "@/lib/db";
 
 type PushSubscription = { endpoint: string; keys: { p256dh: string; auth: string } };
 
 function decode(value: string) { return Buffer.from(value.replace(/-/g, "+").replace(/_/g, "/"), "base64"); }
+function hkdfExpand(prk: Buffer, info: Buffer, length: number) {
+  let previous = Buffer.alloc(0);
+  let output = Buffer.alloc(0);
+  for (let counter = 1; output.length < length; counter++) {
+    previous = createHmac("sha256", prk).update(Buffer.concat([previous, info, Buffer.from([counter])])).digest();
+    output = Buffer.concat([output, previous]);
+  }
+  return output.subarray(0, length);
+}
 function encode(value: Buffer) { return value.toString("base64url"); }
 
 function vapidKeys() {
@@ -35,7 +44,7 @@ function encryptPayload(subscription: PushSubscription, payload: string) {
   const sharedSecret = server.computeSecret(clientPublic);
   const authPrk = Buffer.from(hkdfSync("sha256", sharedSecret, authSecret, Buffer.from("Content-Encoding: auth\0"), 32));
   const keyInfo = Buffer.concat([Buffer.from("WebPush: info\0"), clientPublic, serverPublic]);
-  const ikm = Buffer.from(hkdfSync("sha256", authPrk, Buffer.alloc(0), keyInfo, 32));
+  const ikm = hkdfExpand(authPrk, keyInfo, 32);
   const salt = randomBytes(16);
   const cek = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: aes128gcm\0"), 16));
   const nonce = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: nonce\0"), 12));
