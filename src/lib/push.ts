@@ -42,14 +42,20 @@ function encryptPayload(subscription: PushSubscription, payload: string) {
   server.generateKeys();
   const serverPublic = server.getPublicKey(undefined, "uncompressed");
   const sharedSecret = server.computeSecret(clientPublic);
-  const authPrk = Buffer.from(hkdfSync("sha256", sharedSecret, authSecret, Buffer.from("Content-Encoding: auth\0"), 32));
+
+  // RFC 8291: PRK_key = HKDF-Extract(auth_secret, ECDH shared secret).
+  // HKDF-Extract(salt, IKM) is HMAC-SHA256(salt, IKM).
+  const authPrk = createHmac("sha256", authSecret).update(sharedSecret).digest();
   const keyInfo = Buffer.concat([Buffer.from("WebPush: info\0"), clientPublic, serverPublic]);
   const ikm = hkdfExpand(authPrk, keyInfo, 32);
+
   const salt = randomBytes(16);
   const cek = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: aes128gcm\0"), 16));
   const nonce = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: nonce\0"), 12));
   const cipher = createCipheriv("aes-128-gcm", cek, nonce);
-  const encrypted = Buffer.concat([cipher.update(Buffer.concat([Buffer.from(payload), Buffer.from([2])])), cipher.final(), cipher.getAuthTag()]);
+  const plaintext = Buffer.concat([Buffer.from(payload, "utf8"), Buffer.from([2])]);
+  const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final(), cipher.getAuthTag()]);
+
   const header = Buffer.alloc(21);
   salt.copy(header, 0);
   header.writeUInt32BE(4096, 16);
