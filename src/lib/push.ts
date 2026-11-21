@@ -33,12 +33,12 @@ function encryptPayload(subscription: PushSubscription, payload: string) {
   server.generateKeys();
   const serverPublic = server.getPublicKey(undefined, "uncompressed");
   const sharedSecret = server.computeSecret(clientPublic);
-  const authPrk = Buffer.from(hkdfSync("sha256", sharedSecret, authSecret, Buffer.from("Content-Encoding: auth\\0"), 32));
-  const keyInfo = Buffer.concat([Buffer.from("WebPush: info\\0"), clientPublic, serverPublic]);
+  const authPrk = Buffer.from(hkdfSync("sha256", sharedSecret, authSecret, Buffer.from("Content-Encoding: auth\0"), 32));
+  const keyInfo = Buffer.concat([Buffer.from("WebPush: info\0"), clientPublic, serverPublic]);
   const ikm = Buffer.from(hkdfSync("sha256", authPrk, Buffer.alloc(0), keyInfo, 32));
   const salt = randomBytes(16);
-  const cek = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: aes128gcm\\0"), 16));
-  const nonce = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: nonce\\0"), 12));
+  const cek = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: aes128gcm\0"), 16));
+  const nonce = Buffer.from(hkdfSync("sha256", ikm, salt, Buffer.from("Content-Encoding: nonce\0"), 12));
   const cipher = createCipheriv("aes-128-gcm", cek, nonce);
   const encrypted = Buffer.concat([cipher.update(Buffer.concat([Buffer.from(payload), Buffer.from([2])])), cipher.final(), cipher.getAuthTag()]);
   const header = Buffer.alloc(21);
@@ -81,7 +81,7 @@ export async function sendPushToAll(payload: { title: string; body: string; url:
 
 export async function sendPostNotification(post: { title: string; slug: string; short_description?: string | null }, kind: "new_post" | "post_update" | "manual") {
   const bodyText = String(post.short_description || "Open JharResult to read the complete update.")
-    .replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").trim().slice(0, 135);
+    .replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 135);
   const result = await sendPushToAll({
     title: kind === "new_post" ? "New on JharResult" : kind === "post_update" ? "Post Updated" : "JharResult Update",
     body: `${post.title} — ${bodyText}`.slice(0, 180),
