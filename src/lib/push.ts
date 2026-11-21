@@ -20,9 +20,9 @@ function vapidKeys() {
 async function authorization(endpoint: string) {
   const keys = vapidKeys();
   const origin = new URL(endpoint).origin;
-  const jwk = { kty: "EC", crv: "P-256", d: encode(decode(keys.privateKey)), x: keys.x, y: keys.y };
+  const jwk = { kty: "EC", crv: "P-256", d: encode(decode(keys.privateKey)), x: keys.x, y: keys.y } as const;
   const key = await importJWK(jwk, "ES256");
-  const token = await new SignJWT({}).setProtectedHeader({ alg: "ES256" }).setAudience(origin).setSubject(process.env.VAPID_SUBJECT || "mailto:admin@jharresult.in").setExpirationTime("12h").sign(key);
+  const token = await new SignJWT({}).setProtectedHeader({ alg: "ES256" }).setAudience(origin).setSubject(process.env.VAPID_SUBJECT || "mailto:dindayal8456@gmail.com").setExpirationTime("12h").sign(key);
   return `vapid t=${token}, k=${keys.publicKey}`;
 }
 
