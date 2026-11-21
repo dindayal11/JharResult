@@ -5,6 +5,7 @@ import { getPostBySlug, getPublishedPosts, parseJson } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
+import { getPool } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -396,6 +397,18 @@ export default async function PostPage({
   const latestPosts = tickerPosts
     .filter((post) => post.slug !== slug)
     .slice(0, 8);
+
+  // Build Quick Links from active database categories so stale or inactive
+  // category slugs are never emitted as sidebar links.
+  let quickLinkCategories: { name: string; slug: string }[] = [];
+  try {
+    const [categoryRows] = await getPool().query(
+      "SELECT name, slug FROM categories WHERE is_active = 1 ORDER BY id ASC LIMIT 8"
+    );
+    quickLinkCategories = categoryRows as { name: string; slug: string }[];
+  } catch (error) {
+    console.error("Quick Links category lookup failed:", error);
+  }
 
   // Sanitize description HTML before rendering it.
   const safeDescription = p.short_description
@@ -992,39 +1005,21 @@ export default async function PostPage({
               <h2>Quick Links</h2>
             </div>
 
-            <a
-              className="side-link"
-              href="/category/latest-jobs"
-            >
-              Latest Jobs
-            </a>
+            {quickLinkCategories.map((category) => (
+              <a
+                key={category.slug}
+                className="side-link"
+                href={`/category/${encodeURIComponent(category.slug)}`}
+              >
+                {category.name}
+              </a>
+            ))}
 
-            <a
-              className="side-link"
-              href="/category/previous-papers"
-            >
-              Previous Year Papers
-            </a>
-
-            <a
-              className="side-link"
-              href="/category/boards"
-            >
-              Board Updates
-            </a>
-
-            <a
-              className="side-link"
-              href="/category/scholarships"
-            >
-              Scholarship
-            </a>
-
-            <a
-              className="side-link"
-              href="/quiz"
-            >
+            <a className="side-link" href="/quiz">
               Online Quiz
+            </a>
+            <a className="side-link" href="/previous-year-papers">
+              Previous Year Papers
             </a>
           </div>
 
