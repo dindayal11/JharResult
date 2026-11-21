@@ -34,6 +34,15 @@ export default function PrivacyPolicyPage() {
           address</strong> and any information you wish to include in your
           message.
         </p>
+        <p>
+          If you choose to enable browser push notifications, we store your
+          browser push subscription details (including its endpoint and
+          encryption keys) and limited browser information so we can deliver
+          JharResult alerts. Enabling notifications is optional and requires
+          your permission. You can turn them off at any time in your browser
+          notification or site settings; removing the site permission stops
+          future alerts from being displayed.
+        </p>
       </InfoSection>
 
       <InfoSection title="Use of Information">
@@ -44,6 +53,7 @@ export default function PrivacyPolicyPage() {
           <li>Answer your questions and make corrections.</li>
           <li>Prevent spam, abuse and potential security issues with the website.</li>
           <li>Gain a general understanding of how our website is being used.</li>
+          <li>Deliver requested browser notifications about new posts and important updates.</li>
         </ul>
       </InfoSection>
 
