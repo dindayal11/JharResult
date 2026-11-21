@@ -55,7 +55,7 @@ export default function ResponsiveNav({
             {open ? "✕" : "☰"}
           </span>
         </button>
-        <h1 className="mobile-nav-title">Jharkhand Latest Jobs, Results &amp; Education Updates</h1>
+        <p className="mobile-nav-title">Jharkhand Latest Jobs, Results &amp; Education Updates</p>
         </div>
 
         {open && (
