@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
 import { makeSlug } from "@/lib/slug";
+import { sendQuizNotification } from "@/lib/push";
 
 function cleanQuiz(body:any){
   const title=String(body.title||"").trim();
@@ -113,10 +114,16 @@ export async function POST(req:Request){
       const imported=[];
       for(const quiz of body.quizzes)imported.push(await saveQuiz(connection,{...quiz,status:"published"}));
       await connection.commit();
+      try { await sendQuizNotification({ title: "New practice quizzes", count: imported.length }); }
+      catch (pushError) { console.error("Bulk quiz push notification failed:", pushError); }
       return NextResponse.json({ok:true,imported_count:imported.length,class_category_id:classId,replaced_category_id:scopeId});
     }
     const result=await saveQuiz(connection,body);
     await connection.commit();
+    if(body.status==="published"){
+      try { await sendQuizNotification({ title: String(body.title || "New quiz"), slug: result.slug, question_count: Array.isArray(body.questions) ? body.questions.length : 0 }); }
+      catch (pushError) { console.error("Quiz publish push notification failed:", pushError); }
+    }
     return NextResponse.json({ok:true,...result});
   }catch(e:any){
     if(connection)await connection.rollback();
@@ -126,7 +133,23 @@ export async function POST(req:Request){
 }
 export async function PUT(req:Request){
   let connection:any;
-  try{await requireAdmin();const body=await req.json();const id=Number(body.id);if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});connection=await getPool().getConnection();await connection.beginTransaction();const result=await saveQuiz(connection,body,id);await connection.commit();return NextResponse.json({ok:true,...result});}
+  try{
+    await requireAdmin();
+    const body=await req.json();
+    const id=Number(body.id);
+    if(!Number.isInteger(id)||id<1)return NextResponse.json({error:"Invalid quiz ID."},{status:400});
+    connection=await getPool().getConnection();
+    await connection.beginTransaction();
+    const [before]:any=await connection.execute("SELECT status FROM quizzes WHERE id=? LIMIT 1",[id]);
+    if(!before.length)throw new Error("Quiz not found.");
+    const result=await saveQuiz(connection,body,id);
+    await connection.commit();
+    if(body.status==="published"&&before[0].status!=="published"){
+      try { await sendQuizNotification({ title: String(body.title || "New quiz"), slug: result.slug, question_count: Array.isArray(body.questions) ? body.questions.length : 0 }); }
+      catch (pushError) { console.error("Quiz publish push notification failed:", pushError); }
+    }
+    return NextResponse.json({ok:true,...result});
+  }
   catch(e:any){if(connection)await connection.rollback();const unauthorized=e.message==="UNAUTHORIZED";return NextResponse.json({error:unauthorized?"Please sign in.":e.message||"Could not update quiz."},{status:unauthorized?401:400});}
   finally{connection?.release();}
 }
