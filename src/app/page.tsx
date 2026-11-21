@@ -246,14 +246,14 @@ export default async function Home() {
 
         <section className="home-quiz-promos" aria-label="JAC Board Online Quiz">
           <div className="home-quiz-promo-grid">
-            <a href="/quiz/jac-board/class-10" className="home-quiz-promo home-quiz-promo-10">
+            <a href="/quiz" className="home-quiz-promo home-quiz-promo-10">
               <span className="home-quiz-promo-glow" aria-hidden="true" />
               <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 10</span><span className="new-badge">NEW</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
               <span className="home-quiz-promo-title">Class 10th<br />Online Quiz</span>
               <span className="home-quiz-promo-bottom"><span>Chapter-wise MCQ Practice</span><strong>Start Practice <span aria-hidden="true">→</span></strong></span>
               <span className="home-quiz-promo-number" aria-hidden="true">10</span>
             </a>
-            <a href="/quiz/jac-board/class-12" className="home-quiz-promo home-quiz-promo-12">
+            <a href="/quiz" className="home-quiz-promo home-quiz-promo-12">
               <span className="home-quiz-promo-glow" aria-hidden="true" />
               <span className="home-quiz-promo-top"><span className="home-quiz-promo-tag">JAC BOARD • CLASS 12</span><span className="new-badge">NEW</span><span className="home-quiz-promo-icon" aria-hidden="true">✦</span></span>
               <span className="home-quiz-promo-title">Class 12th<br />Online Quiz</span>
