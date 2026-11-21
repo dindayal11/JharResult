@@ -5,9 +5,17 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Online Quiz – JAC Board & Jharkhand Competitive Exams",
-  description: "Take free online quizzes for JAC Board Classes 8–12, JSSC, JTET, JPSC and Jharkhand Police exams on JharResult.",
+  title: "JAC Board Online Quiz 2026 – Class 8 to 12 & Jharkhand Competitive Exams | JharResult",
+  description: "Practice free online MCQ quizzes for JAC Board Classes 8–12, Science, Arts, Commerce subjects and Jharkhand competitive exams including JSSC, JPSC, JTET and Jharkhand Police. Hindi and English practice on JharResult.",
+  keywords: ["JAC Board online quiz", "JAC Class 12 quiz", "Jharkhand online MCQ", "Class 10 online test", "Class 12 subject wise MCQ", "JSSC mock test", "JPSC practice quiz", "JTET mock test"],
   alternates: { canonical: "/quiz" },
+  openGraph: {
+    title: "JharResult Quiz Zone – JAC Board & Jharkhand Competitive Exams",
+    description: "Free class-wise, subject-wise and exam-wise online MCQ practice in Hindi and English.",
+    url: "https://jharresult.in/quiz",
+    siteName: "JharResult",
+    type: "website",
+  },
 };
 
 type QuizCategory = { id: number; name: string; slug: string; description: string | null };
