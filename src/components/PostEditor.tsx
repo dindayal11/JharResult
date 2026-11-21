@@ -724,7 +724,6 @@ export default function PostEditor({
         category_id: selectedCategoryIds[0],
         category_ids: selectedCategoryIds,
         custom_tables: JSON.stringify(cleanedTables),
-        notify_on_update: notifyOnUpdate,
       };
 
       setAutoSaveStatus("Saving draft…");
@@ -1165,6 +1164,7 @@ export default function PostEditor({
         category_id: selectedCategoryIds[0],
         category_ids: selectedCategoryIds,
         custom_tables: JSON.stringify(cleanedTables),
+        notify_on_update: notifyOnUpdate,
       };
 
       const existingDraftId = autoDraftIdRef.current;
