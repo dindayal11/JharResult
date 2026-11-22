@@ -115,10 +115,30 @@ function parseCustom(value: any): any[] {
   return Array.isArray(parsed) ? parsed : [];
 }
 
-function addScrollableTableHints(html: string) {
-  return html
-    .replace(/<table\b/gi, '<div class="table-scroll-wrap"><table')
-    .replace(/<\/table>/gi, '</table></div>');
+function prepareInsertedTables(html: string) {
+  return html.replace(/<table\b([^>]*)>([\s\S]*?)<\/table>/gi, (_match, attrs: string, tableBody: string) => {
+    const headerRow = tableBody.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/i)?.[0] || "";
+    const headers = Array.from(headerRow.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/gi))
+      .map((match) => decodeHtmlEntities(match[1].replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()));
+    const isWideTable = headers.length >= 5;
+    let outputBody = tableBody;
+
+    if (isWideTable) {
+      outputBody = tableBody.replace(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi, (rowHtml: string) => {
+        if (/<th\b/i.test(rowHtml)) return rowHtml;
+        let cellIndex = 0;
+        return rowHtml.replace(/<td\b([^>]*)>/gi, (_cell, cellAttrs: string) => {
+          const label = headers[cellIndex] || ("Column " + (cellIndex + 1));
+          cellIndex += 1;
+          const safeLabel = label.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+          return '<td' + cellAttrs + ' data-mobile-label="' + safeLabel + '">';
+        });
+      });
+    }
+
+    const tableClass = isWideTable ? "inserted-content-table mobile-card-table" : "inserted-content-table";
+    return '<div class="inserted-content-table-wrap"><table' + attrs + ' class="' + tableClass + '">' + outputBody + '</table></div>';
+  });
 }
 function CustomTable({ table }: { table: any }) {
   const primary = safeColor(
@@ -458,7 +478,7 @@ export default async function PostPage({
         ALLOW_DATA_ATTR: false,
       })
     : "";
-  const safeDescriptionWithTableHints = addScrollableTableHints(safeDescription);
+  const safeDescriptionWithTableHints = prepareInsertedTables(safeDescription);
 
   const safeContentHtml = (p as any).content_html
     ? DOMPurify.sanitize(String((p as any).content_html), {
@@ -467,7 +487,7 @@ export default async function PostPage({
         ALLOW_DATA_ATTR: false,
       })
     : "";
-  const safeContentHtmlWithTableHints = addScrollableTableHints(safeContentHtml);
+  const safeContentHtmlWithTableHints = prepareInsertedTables(safeContentHtml);
 
   const faqData = parseJson((p as any).faqs);
   const faqs: { question: string; answer: string }[] = Array.isArray(faqData)
