@@ -135,6 +135,21 @@ a:hover{color:#c96b0c}
    margin:0!important;
    border-collapse:collapse;
  }
+ .table-scroll-wrap .custom-detail-table{
+   display:table!important;
+   width:max-content!important;
+   min-width:max(100%, calc(var(--table-column-count, 1) * 160px))!important;
+   max-width:none!important;
+   table-layout:auto!important;
+ }
+ .table-scroll-wrap .custom-detail-table th,
+ .table-scroll-wrap .custom-detail-table td{
+   min-width:160px;
+   max-width:none!important;
+   white-space:normal!important;
+   overflow-wrap:normal!important;
+   word-break:normal!important;
+ }
  .table-scroll-wrap th,.table-scroll-wrap td{
    min-width:120px;
    max-width:320px;
