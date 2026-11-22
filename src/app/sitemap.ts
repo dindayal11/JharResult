@@ -90,6 +90,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
          AND q.slug IS NOT NULL AND q.slug <> ''`
     );
 
+    const [previousPaperRows] = await getPool().query(
+      "SELECT id, created_at FROM previous_year_papers WHERE status = 'published'"
+    );
+
     const posts: MetadataRoute.Sitemap = (postRows as any[]).map((post) => ({
       url: `${SITE_URL}/post/${encodeURIComponent(post.slug)}`,
       lastModified: validLastModified(post.updated_at) || validLastModified(post.published_at),
@@ -120,7 +124,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }];
     });
 
-    return [...staticEntries, ...categories, ...posts, ...quizCategories, ...quizzes];
+    const previousPapers: MetadataRoute.Sitemap = (previousPaperRows as any[]).map((paper) => ({
+      url: `${SITE_URL}/previous-year-papers/${encodeURIComponent(String(paper.id))}`,
+      lastModified: validLastModified(paper.created_at),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }));
+
+    return [...staticEntries, ...categories, ...posts, ...quizCategories, ...quizzes, ...previousPapers];
   } catch (error) {
     console.error("Sitemap database query failed; serving static URLs only:", error);
     return staticEntries;
