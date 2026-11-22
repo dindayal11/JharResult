@@ -115,6 +115,12 @@ function parseCustom(value: any): any[] {
   return Array.isArray(parsed) ? parsed : [];
 }
 
+function addScrollableTableHints(html: string) {
+  return html
+    .replace(/<table\\b/gi, '<div class="table-scroll-wrap"><table')
+    .replace(/<\\/table>/gi, '</table></div>');
+}
+
 function CustomTable({ table }: { table: any }) {
   const primary = safeColor(
     table.theme_primary,
@@ -449,6 +455,7 @@ export default async function PostPage({
         ALLOW_DATA_ATTR: false,
       })
     : "";
+  const safeDescriptionWithTableHints = addScrollableTableHints(safeDescription);
 
   const safeContentHtml = (p as any).content_html
     ? DOMPurify.sanitize(String((p as any).content_html), {
@@ -457,6 +464,7 @@ export default async function PostPage({
         ALLOW_DATA_ATTR: false,
       })
     : "";
+  const safeContentHtmlWithTableHints = addScrollableTableHints(safeContentHtml);
 
   const faqData = parseJson((p as any).faqs);
   const faqs: { question: string; answer: string }[] = Array.isArray(faqData)
@@ -827,14 +835,14 @@ export default async function PostPage({
             <div
               className="article-summary"
               dangerouslySetInnerHTML={{
-                __html: safeDescription,
+                __html: safeDescriptionWithTableHints,
               }}
             />
           )}
 
           {safeContentHtml && (
             <div className="article-content" style={{ margin: "20px 0", padding: "clamp(12px, 2.5vw, 24px)", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", color: text, lineHeight: 1.75, overflowWrap: "anywhere", minWidth: 0 }}
-              dangerouslySetInnerHTML={{ __html: safeContentHtml }} />
+              dangerouslySetInnerHTML={{ __html: safeContentHtmlWithTableHints }} />
           )}
 
           {(p as any).image_url && (
