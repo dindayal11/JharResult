@@ -22,7 +22,7 @@ export default async function PreviousYearPapersPage() {
               semester, description, pdf_url, solution_pdf_url, created_at
        FROM previous_year_papers
        WHERE status = 'published'
-       ORDER BY year DESC, created_at DESC`
+       ORDER BY created_at DESC, id DESC`
     );
 
     papers = rows as any[];
