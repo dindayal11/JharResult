@@ -431,12 +431,20 @@ export default async function PostPage({
           "h4",
           "a",
           "blockquote",
+          "table",
+          "thead",
+          "tbody",
+          "tr",
+          "th",
+          "td",
         ],
         ALLOWED_ATTR: [
           "style",
           "href",
           "target",
           "rel",
+          "colspan",
+          "rowspan",
         ],
         ALLOW_DATA_ATTR: false,
       })
@@ -716,6 +724,44 @@ export default async function PostPage({
           padding: 9px 14px;
           border-left: 3px solid #e87920;
           background: #fff;
+        }
+
+        .article-summary table {
+          width: 100%;
+          max-width: 100%;
+          border-collapse: collapse;
+          margin: 14px 0;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .article-summary th,
+        .article-summary td {
+          border: 1px solid #dce3ec;
+          padding: 9px 10px;
+          text-align: left;
+          vertical-align: top;
+          overflow-wrap: anywhere;
+        }
+
+        .article-summary th {
+          background: #e87920;
+          color: #fff;
+          font-weight: 700;
+        }
+
+        .article-summary tbody tr:nth-child(even) {
+          background: #f7f9fc;
+        }
+
+        @media (max-width: 640px) {
+          .article-summary table {
+            font-size: 12px;
+          }
+          .article-summary th,
+          .article-summary td {
+            padding: 7px;
+          }
         }
       `}</style>
 
