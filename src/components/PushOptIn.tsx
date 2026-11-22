@@ -30,46 +30,14 @@ export default function PushOptIn() {
   const [permissionGranted, setPermissionGranted] = useState(false);
 
   useEffect(() => {
-    let active = true;
     const available =
       "serviceWorker" in navigator &&
       "PushManager" in window &&
       "Notification" in window;
     setSupported(available);
-    if (!available) return;
-
-    // A browser-level grant is remembered by the browser. Never show the
-    // opt-in prompt again on this device once permission has been granted.
-    if (Notification.permission === "granted") setPermissionGranted(true);
-
-    navigator.serviceWorker.register("/sw.js")
-      .then(async (registration) => {
-        if (!active) return;
-        if (Notification.permission === "denied") {
-          setState("denied");
-          return;
-        }
-        if (Notification.permission === "granted") {
-          const subscription = await registration.pushManager.getSubscription();
-          if (subscription) {
-            try {
-              await saveSubscription(subscription);
-              if (active) setState("subscribed");
-            } catch (error) {
-              console.error("Could not sync existing push subscription:", error);
-            }
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Service worker registration failed:", error);
-        if (active && Notification.permission !== "granted") {
-          setMessage("Notifications could not be initialized. Please refresh the page and try again.");
-          setState("error");
-        }
-      });
-
-    return () => { active = false; };
+    if (available && Notification.permission === "granted") {
+      setPermissionGranted(true);
+    }
   }, []);
 
   async function enable() {
