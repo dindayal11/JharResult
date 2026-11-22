@@ -103,7 +103,7 @@ export default async function PreviousYearPaperDetailPage({ params }: { params: 
     url,
     provider: { "@type": "Organization", name: "JharResult", url: SITE_URL },
     about: [paper.exam_name, paper.subject, paper.course, paper.stream].filter(Boolean),
-    datePublished: paper.created_at ? new Date(paper.created_at).toISOString() : undefined,
+    datePublished: paper.created_at ? (paper.created_at instanceof Date ? paper.created_at : new Date(String(paper.created_at))).toISOString() : undefined,
     encoding: {
       "@type": "MediaObject",
       contentUrl: paper.pdf_url,
