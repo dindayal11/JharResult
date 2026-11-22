@@ -808,3 +808,13 @@ a:hover{color:#c96b0c}
     transition: none;
   }
 }
+
+
+/* Keep first-viewport elements visually stable during page load and measurement. */
+.new-badge,
+.social-channel-btn {
+  animation: none !important;
+}
+.social-channel-btn {
+  filter: none;
+}
