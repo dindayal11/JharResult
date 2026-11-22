@@ -163,3 +163,21 @@ export async function sendQuizNotification(quiz: { title: string; slug?: string;
   await getPool().execute("INSERT INTO push_notification_logs (post_slug, notification_type, sent_count, failed_count) VALUES (?,?,?,?)", [isBatch ? "quiz-bulk-import" : `quiz:${quiz.slug || "new"}`, "quiz_new", result.sent, result.failed]);
   return result;
 }
+
+export async function sendPreviousPaperNotification(paper: { id: number | string; title: string; exam_name: string; subject: string; year: number }) {
+  const title = cleanNotificationText(paper.title);
+  const exam = cleanNotificationText(paper.exam_name);
+  const subject = cleanNotificationText(paper.subject);
+  const body = `${exam} • ${subject} • ${paper.year}`.slice(0, 150);
+  const result = await sendPushToAll({
+    title: "New Previous Year Paper on JharResult",
+    body: `${title} — ${body}`.slice(0, 180),
+    url: `/previous-year-papers/${encodeURIComponent(String(paper.id))}`,
+    tag: `jharresult-previous-paper-${paper.id}`,
+  });
+  await getPool().execute(
+    "INSERT INTO push_notification_logs (post_slug, notification_type, sent_count, failed_count) VALUES (?,?,?,?)",
+    [`previous-paper:${paper.id}`, "paper_new", result.sent, result.failed]
+  );
+  return result;
+}
