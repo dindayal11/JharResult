@@ -117,10 +117,9 @@ function parseCustom(value: any): any[] {
 
 function addScrollableTableHints(html: string) {
   return html
-    .replace(/<table\\b/gi, '<div class="table-scroll-wrap"><table')
-    .replace(/<\\/table>/gi, '</table></div>');
+    .replace(/<table\b/gi, '<div class="table-scroll-wrap"><table')
+    .replace(/<\/table>/gi, '</table></div>');
 }
-
 function CustomTable({ table }: { table: any }) {
   const primary = safeColor(
     table.theme_primary,
