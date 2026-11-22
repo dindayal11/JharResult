@@ -1124,6 +1124,34 @@ export default async function PostPage({
         </aside>
       </main>
 
+      <section
+        className="post-disclaimer"
+        aria-labelledby="post-disclaimer-title"
+        style={{
+          maxWidth: 1180,
+          margin: "0 auto 24px",
+          padding: "16px 18px",
+          background: "#f8fafc",
+          border: "1px solid #dce3ec",
+          borderLeft: "4px solid #e87920",
+          borderRadius: 8,
+          color: "#46566b",
+          fontSize: 13,
+          lineHeight: 1.65,
+        }}
+      >
+        <h2 id="post-disclaimer-title" style={{ margin: "0 0 6px", color: "#173f70", fontSize: 16 }}>
+          Disclaimer
+        </h2>
+        <p style={{ margin: 0 }}>
+          JharResult is an independent website and is not affiliated with any government department, recruitment board, university or exam authority. Information on this page is for informational purposes only and should not be treated as an official notification. Please verify eligibility, fees, dates and other details through the relevant official notification or website before taking any action. We make efforts to keep information accurate and updated, but errors, omissions or changes may occur.
+          {" "}
+          <a href="/disclaimer" style={{ color: "#145da0", fontWeight: 700, textDecoration: "underline", whiteSpace: "nowrap" }}>
+            Read More
+          </a>
+        </p>
+      </section>
+
       <footer className="footer">
         <div className="container">
           JharResult • Jharkhand Education &amp; Career Portal
