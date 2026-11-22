@@ -232,8 +232,12 @@ function CustomTable({ table }: { table: any }) {
             );
           })}
         </div>
-      ) : <div style={{ overflowX: "auto" }}>
+      ) : <div
+        className="table-scroll-wrap custom-table-scroll"
+        style={{ "--table-column-count": columns.length } as React.CSSProperties}
+      >
         <table
+          className="custom-detail-table"
           style={{
             width: "100%",
             borderCollapse: "collapse",
