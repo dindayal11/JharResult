@@ -233,8 +233,7 @@ function CustomTable({ table }: { table: any }) {
           })}
         </div>
       ) : <div
-        className="table-scroll-wrap custom-table-scroll"
-        style={{ "--table-column-count": columns.length } as React.CSSProperties}
+        className="custom-table-responsive"
       >
         <table
           className="custom-detail-table"
@@ -293,6 +292,7 @@ function CustomTable({ table }: { table: any }) {
         return (
           <td
             key={colIndex}
+            data-label={column}
             style={{
               padding: "10px 9px",
               border: "1px solid #dce3ec",
