@@ -750,26 +750,31 @@ export default async function PostPage({
           <div className="article-meta">
             {p.organization || "Jharkhand Update"}
             <span>•</span>
-            {p.published_at
-              ? new Date(p.published_at).toLocaleDateString(
-                  "en-IN",
-                  {
+            <span>
+              Published: {p.published_at
+                ? new Date(p.published_at).toLocaleDateString("en-IN", {
                     day: "2-digit",
-                    month: "long",
+                    month: "short",
                     year: "numeric",
-                  }
-                )
-              : "Recently Updated"}
+                  })
+                : "Recently"}
+            </span>
+            {(p as any).updated_at && (
+              <>
+                <span>•</span>
+                <span>
+                  Last Updated: {new Date((p as any).updated_at).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </>
+            )}
             <span>•</span>
             {p.verification_status === "verified"
               ? "Verified by admin"
               : "Please verify official notice"}
-            {(p as any).updated_at && (
-              <>
-                <span>•</span>
-                Updated {new Date((p as any).updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-              </>
-            )}
           </div>
 
           {safeDescription && (
