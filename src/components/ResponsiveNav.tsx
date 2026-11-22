@@ -1,3 +1,5 @@
+"use client";
+
 type Category = { name: string; slug: string };
 
 export default function ResponsiveNav({ primary, more }: { primary: Category[]; more: Category[] }) {
