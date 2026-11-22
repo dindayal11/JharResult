@@ -233,7 +233,7 @@ function CustomTable({ table }: { table: any }) {
           })}
         </div>
       ) : <div
-        className="custom-table-responsive"
+        className={`custom-table-responsive ${columns.length >= 5 ? "mobile-card-layout" : ""}`}
       >
         <table
           className="custom-detail-table"
