@@ -6,9 +6,9 @@ The notification code is deployed from the GitHub `main` branch, but push delive
 
 In Hostinger hPanel, open phpMyAdmin for the JharResult database. Open the SQL tab and run the complete contents of:
 
-`database/migrations/004_web_push_notifications.sql` and then `database/migrations/005_quiz_push_notifications.sql`
+`database/migrations/004_web_push_notifications.sql`, then `database/migrations/005_quiz_push_notifications.sql`, and finally `database/migrations/006_previous_paper_push_notifications.sql`
 
-The first migration creates `push_subscriptions` and `push_notification_logs`. The second adds the `quiz_new` notification type to the audit log. Run them in numerical order. Do not run them against a different site's database.
+The first migration creates `push_subscriptions` and `push_notification_logs`. The second adds the `quiz_new` notification type and the third adds `paper_new` for previous-year-paper alerts. Run them in numerical order. Do not run them against a different site's database.
 
 ## 2. Generate VAPID keys (Windows PowerShell)
 
@@ -39,7 +39,8 @@ Save the settings and redeploy/restart the application so the build receives the
 - The admin dashboard has **Send Notification** for a specific published post.
 - Publishing a new quiz manually, publishing a draft quiz, or importing a class-wise quiz JSON sends an automatic notification. A bulk JSON import sends one combined notification for the imported quizzes, not one notification per quiz.
 - Saving a quiz as a draft or editing an already published quiz does not send a notification. Re-publishing an already published quiz does not send another notification.
-- Notification clicks open the relevant JharResult post.
+- Post, quiz, and previous-paper notification clicks open the relevant JharResult page.
+- Publishing a new previous-year paper sends one automatic notification. Saving a paper as a draft sends nothing; editing an already published paper does not send another alert. Moving a draft paper to published sends its first alert.
 
 ## 5. Browser and policy notes
 
