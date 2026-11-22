@@ -136,12 +136,9 @@ export default async function Home() {
 
       <main className="container" style={{ padding: "18px 0 36px" }}>
         <section className="intro panel" style={{ borderRadius: 4, marginBottom: 18, textAlign: "center" }}>
-          <h1 style={{ margin: "0 0 8px", color: "#17365d", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
+          <h1 className="sr-only">
             Jhar Result – Jharkhand Latest Jobs, Results, Admit Cards &amp; Online Quiz
           </h1>
-          <p style={{ maxWidth: 850, margin: "0 auto 14px", color: "#596579", lineHeight: 1.65 }}>
-            Find the latest Jharkhand government job notifications, JAC and JSSC results, admit cards, answer keys, admissions, scholarships and free online MCQ practice on JharResult.
-          </p>
           <form action="/search" method="GET" style={{ display: "flex", gap: 8, maxWidth: 760, margin: "0 auto" }}>
             <input className="search" type="search" name="q" placeholder="Search jobs, results, updates..." aria-label="Search updates" style={{ border: "1px solid #d8dee8", borderRadius: 4 }} />
             <button className="btn" type="submit" style={{ borderRadius: 4 }}>Search</button>
