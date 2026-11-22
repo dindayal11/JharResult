@@ -5,8 +5,8 @@ import { getPool } from "@/lib/db";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Previous Year Question Papers",
-  description: "Find and download previous year question papers and available solutions for Jharkhand exams and courses on JharResult.",
+  title: "Previous Year Question Papers PDF Download",
+  description: "Search and download previous year question papers PDF for Jharkhand exams, university courses, subjects and semesters. Get question papers and solutions on JharResult.",
   alternates: { canonical: "/previous-year-papers" },
 };
 
