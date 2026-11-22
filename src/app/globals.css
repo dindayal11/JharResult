@@ -810,11 +810,8 @@ a:hover{color:#c96b0c}
 }
 
 
-/* Keep first-viewport elements visually stable during page load and measurement. */
-.new-badge,
+/* Keep social channel buttons visually stable; NEW badges retain their attention animation. */
 .social-channel-btn {
   animation: none !important;
-}
-.social-channel-btn {
   filter: none;
 }
