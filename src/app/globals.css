@@ -142,13 +142,24 @@ a:hover{color:#c96b0c}
    overflow-wrap:anywhere;
    word-break:normal;
  }
- .article-content th,.article-content td,
- .article-summary th,.article-summary td{
-   min-width:120px;
-   max-width:320px;
+ /* Keep table columns readable; allow horizontal scrolling instead of crushing cells. */
+ .table-scroll-wrap .article-content th,
+ .table-scroll-wrap .article-content td,
+ .article-content .table-scroll-wrap th,
+ .article-content .table-scroll-wrap td,
+ .article-summary .table-scroll-wrap th,
+ .article-summary .table-scroll-wrap td,
+ .table-scroll-wrap th,
+ .table-scroll-wrap td{
+   min-width:160px;
+   max-width:none!important;
    white-space:normal!important;
-   overflow-wrap:anywhere;
-   word-break:normal;
+   overflow-wrap:normal!important;
+   word-break:normal!important;
+ }
+ .table-scroll-wrap th:first-child,
+ .table-scroll-wrap td:first-child{
+   min-width:210px;
  }
 }
 @media(max-width:760px){
