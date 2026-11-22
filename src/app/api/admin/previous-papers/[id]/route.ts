@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
+import { sendPreviousPaperNotification } from "@/lib/push";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
 
@@ -37,11 +38,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{id:st
     const title=String(b.title||"").trim(), exam=String(b.exam_name||"").trim();
     const subject=String(b.subject||"").trim(), year=Number(b.year);
     const pdf=String(b.pdf_url||"").trim(), solution=String(b.solution_pdf_url||"").trim();
+    const nextStatus=b.status==="published"?"published":"draft";
+    const [existingRows]=await getPool().execute("SELECT id,status FROM previous_year_papers WHERE id=? LIMIT 1",[id]);
+    const existing=(existingRows as any[])[0];
+    if(!existing) return NextResponse.json({error:"Paper not found."},{status:404});
     if(!title||!exam||!subject||!pdf) return NextResponse.json({error:"Title, exam, subject and question paper PDF are required."},{status:400});
     if(!Number.isInteger(year)||year<1950||year>2100) return NextResponse.json({error:"Please enter a valid year."},{status:400});
     if(!isAllowedPdfUrl(pdf)||(solution&&!isAllowedPdfUrl(solution))) return NextResponse.json({error:"Please provide a valid HTTPS PDF link or upload a PDF file."},{status:400});
     await getPool().execute(`UPDATE previous_year_papers SET title=?,exam_name=?,course=?,stream=?,subject=?,year=?,semester=?,description=?,pdf_url=?,solution_pdf_url=?,status=? WHERE id=?`,
-      [title,exam,String(b.course||"").trim()||null,String(b.stream||"").trim()||null,subject,year,String(b.semester||"").trim()||null,String(b.description||"").trim()||null,pdf,solution||null,b.status==="published"?"published":"draft",id]);
+      [title,exam,String(b.course||"").trim()||null,String(b.stream||"").trim()||null,subject,year,String(b.semester||"").trim()||null,String(b.description||"").trim()||null,pdf,solution||null,nextStatus,id]);
+    if(existing.status!=="published" && nextStatus==="published") {
+      try {
+        await sendPreviousPaperNotification({id,title,exam_name:exam,subject,year});
+      } catch(pushError) {
+        console.error("Previous paper push notification failed:",pushError);
+      }
+    }
     return NextResponse.json({ok:true});
   } catch(error:any) {
     return NextResponse.json({error:error?.message==="UNAUTHORIZED"?"Please sign in as admin.":"Could not update paper."},{status:error?.message==="UNAUTHORIZED"?401:500});
