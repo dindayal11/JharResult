@@ -2,6 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 type Paper = {
   id: number;
@@ -115,7 +116,7 @@ export default function PreviousPapersList({ papers }: { papers: Paper[] }) {
             {filteredPapers.map((paper) => (
               <article className="mobile-paper-card" key={paper.id}>
                 <div className="mobile-paper-heading">
-                  <strong>{paper.title}</strong>
+                  <strong><Link href={`/previous-year-papers/${paper.id}`} style={{ color: "inherit", textDecoration: "none" }}>{paper.title}</Link></strong>
                   <span>{paper.year}</span>
                 </div>
                 <div className="mobile-paper-meta">
@@ -166,7 +167,7 @@ export default function PreviousPapersList({ papers }: { papers: Paper[] }) {
                 {filteredPapers.map((paper) => (
                   <tr key={paper.id} style={{ borderBottom: "1px solid #e6eaf0" }}>
                     <td style={{ padding: "13px 12px" }}>
-                      <strong style={{ color: "#174b80" }}>{paper.title}</strong>
+                      <strong style={{ color: "#174b80" }}><Link href={`/previous-year-papers/${paper.id}`} style={{ color: "inherit", textDecoration: "none" }}>{paper.title}</Link></strong>
                       <div className="muted" style={{ fontSize: 12, marginTop: 5 }}>
                         {paper.exam_name}
                       </div>
