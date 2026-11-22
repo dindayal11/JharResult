@@ -1,6 +1,5 @@
 import SiteHeader from "@/components/SiteHeader";
 import PostCard from "@/components/PostCard";
-import { getPublishedPosts } from "@/lib/posts";
 import { getPool } from "@/lib/db";
 import type { Metadata, Viewport } from "next";
 
@@ -31,7 +30,22 @@ export default async function Home() {
 
   try {
     const [published, categoryRows, paperRows] = await Promise.all([
-      getPublishedPosts(100),
+      getPool().query(
+        `SELECT p.id, p.title, p.slug, p.published_at,
+                c.name AS category_name, c.slug AS category_slug,
+                COALESCE(
+                  (SELECT GROUP_CONCAT(DISTINCT mapped.slug ORDER BY mapped.name SEPARATOR ',')
+                   FROM post_categories pc
+                   JOIN categories mapped ON mapped.id = pc.category_id
+                   WHERE pc.post_id = p.id),
+                  c.slug
+                ) AS category_slugs
+         FROM posts p
+         JOIN categories c ON c.id = p.category_id
+         WHERE p.status = 'published'
+         ORDER BY p.published_at DESC
+         LIMIT 60`
+      ),
       getPool().query(
         "SELECT name, slug FROM categories WHERE is_active = 1 ORDER BY id ASC"
       ),
@@ -43,7 +57,7 @@ export default async function Home() {
          LIMIT 6`
       ),
     ]);
-    posts = published;
+    posts = (published[0] as any[]) || [];
     categories = (categoryRows[0] as CategoryLink[]) || [];
     previousPapers = paperRows[0] as any[];
     } catch (error) {
