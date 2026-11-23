@@ -84,12 +84,12 @@ export default function RootLayout({
                 alternateName: ["Jhar Result"],
                 url: "https://jharresult.in/",
                 description: siteDescription,
-                email: "dindayal8456@gmail.com",
+                email: "support@jharresult.in",
                 sameAs: ["https://t.me/+_hj11IZ9nktjOWM1", "https://whatsapp.com/channel/0029VbEFu6NJuyAHGXVzvS0n"],
                 contactPoint: [{
                   "@type": "ContactPoint",
                   contactType: "customer support",
-                  email: "dindayal8456@gmail.com",
+                  email: "support@jharresult.in",
                   availableLanguage: ["English", "Hindi"]
                 }]
               },
