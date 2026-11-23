@@ -35,12 +35,12 @@ export default function ContactPage() {
         <p>Please contact us via email:</p>
         <p>
           <strong>
-            <a href="mailto:dindayal8456@gmail.com">dindayal8456@gmail.com</a>
+            <a href="mailto:support@jharresult.in">support@jharresult.in</a>
           </strong>
         </p>
         <p>
           <strong>Website owner:</strong>{" "}
-          <a href="mailto:dindayal8456@gmail.com">dindayal8456@gmail.com</a>
+          <a href="mailto:support@jharresult.in">support@jharresult.in</a>
         </p>
       </InfoSection>
 
