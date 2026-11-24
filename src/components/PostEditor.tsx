@@ -617,7 +617,6 @@ export default function PostEditor({
   const [notice, setNotice] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [notifyOnUpdate, setNotifyOnUpdate] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [expandedTables, setExpandedTables] = useState<string[]>([]);
   const [autoSaveStatus, setAutoSaveStatus] = useState("");
@@ -2012,11 +2011,7 @@ export default function PostEditor({
               </select>
 
               {post?.status === "published" && form.status === "published" && (
-                <label style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12, padding: 12, border: "1px solid #bfdbfe", borderRadius: 8, background: "#eff6ff", color: "#1e3a8a", fontSize: 13, cursor: "pointer" }}>
-                  <input type="checkbox" checked={notifyOnUpdate} onChange={(event) => setNotifyOnUpdate(event.target.checked)} style={{ marginTop: 2 }} />
-                  <span><strong>Send push notification for this update</strong><br />Only tick this when the published post has an important update. Minor edits will not notify subscribers.</span>
-                </label>
-              )}
+  )}
 
               {form.status === "scheduled" && (
                 <>
