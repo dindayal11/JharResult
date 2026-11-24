@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
-import { sendPreviousPaperNotification } from "@/lib/push";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
 
@@ -47,13 +46,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{id:st
     if(!isAllowedPdfUrl(pdf)||(solution&&!isAllowedPdfUrl(solution))) return NextResponse.json({error:"Please provide a valid HTTPS PDF link or upload a PDF file."},{status:400});
     await getPool().execute(`UPDATE previous_year_papers SET title=?,exam_name=?,course=?,stream=?,subject=?,year=?,semester=?,description=?,pdf_url=?,solution_pdf_url=?,status=? WHERE id=?`,
       [title,exam,String(b.course||"").trim()||null,String(b.stream||"").trim()||null,subject,year,String(b.semester||"").trim()||null,String(b.description||"").trim()||null,pdf,solution||null,nextStatus,id]);
-    if(existing.status!=="published" && nextStatus==="published") {
-      try {
-        await sendPreviousPaperNotification({id,title,exam_name:exam,subject,year});
-      } catch(pushError) {
-        console.error("Previous paper push notification failed:",pushError);
-      }
-    }
     return NextResponse.json({ok:true});
   } catch(error:any) {
     return NextResponse.json({error:error?.message==="UNAUTHORIZED"?"Please sign in as admin.":"Could not update paper."},{status:error?.message==="UNAUTHORIZED"?401:500});
