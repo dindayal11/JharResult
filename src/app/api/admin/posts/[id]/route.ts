@@ -3,7 +3,6 @@ import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
 import { makeSlug } from "@/lib/slug";
 import { z } from "zod";
-import { sendPostNotification } from "@/lib/push";
 
 async function uniqueSlug(title: string, excludeId: number) {
   const base = makeSlug(title).slice(0, 260) || "jharkhand-update";
@@ -65,14 +64,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     await connection.execute("DELETE FROM post_categories WHERE post_id=?", [id]);
     await connection.query("INSERT INTO post_categories (post_id,category_id) VALUES ?", [categoryIds.map((categoryId: number) => [id,categoryId])]);
     await connection.commit();
-    const wasPublished = existing[0].status === "published";
-    if (status === "published" && !wasPublished) {
-      try { await sendPostNotification({ title, slug, short_description: b.short_description || null }, "new_post"); }
-      catch (pushError) { console.error("Publish push notification failed:", pushError); }
-    } else if (status === "published" && wasPublished && b.notify_on_update === true) {
-      try { await sendPostNotification({ title, slug, short_description: b.short_description || null }, "post_update"); }
-      catch (pushError) { console.error("Post-update push notification failed:", pushError); }
-    }
     return NextResponse.json({ ok: true, slug });
   } catch (error: any) {
     if (connection) await connection.rollback();
