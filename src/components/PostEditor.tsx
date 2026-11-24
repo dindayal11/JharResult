@@ -1163,7 +1163,6 @@ export default function PostEditor({
         category_id: selectedCategoryIds[0],
         category_ids: selectedCategoryIds,
         custom_tables: JSON.stringify(cleanedTables),
-        notify_on_update: notifyOnUpdate,
       };
 
       const existingDraftId = autoDraftIdRef.current;
@@ -2009,9 +2008,6 @@ export default function PostEditor({
                 <option value="published">Publish Now</option>
                 <option value="scheduled">Schedule for Later</option>
               </select>
-
-              {post?.status === "published" && form.status === "published" && (
-  )}
 
               {form.status === "scheduled" && (
                 <>
