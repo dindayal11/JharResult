@@ -3,7 +3,6 @@ import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
 import { makeSlug } from "@/lib/slug";
 import { z } from "zod";
-import { sendPostNotification } from "@/lib/push";
 
 async function uniqueSlug(title: string, excludeId?: number) {
   const base = makeSlug(title).slice(0, 260) || "jharkhand-update";
@@ -64,10 +63,6 @@ export async function POST(req: Request) {
     );
     await connection.query("INSERT INTO post_categories (post_id,category_id) VALUES ?", [categoryIds.map((categoryId: number) => [result.insertId,categoryId])]);
     await connection.commit();
-    if (status === "published") {
-      try { await sendPostNotification({ title, slug, short_description: b.short_description || null }, "new_post"); }
-      catch (pushError) { console.error("New-post push notification failed:", pushError); }
-    }
     return NextResponse.json({ ok: true, id: result.insertId, slug });
   } catch (error: any) {
     if (connection) await connection.rollback();
