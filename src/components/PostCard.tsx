@@ -6,7 +6,7 @@ function isRecentlyPublished(value: string | Date | null | undefined): boolean {
   const publishedAt = new Date(value).getTime();
   const age = Date.now() - publishedAt;
   // Allow a small future clock skew between the database and app server.
-  return Number.isFinite(publishedAt) && age >= -12 * 60 * 60 * 1000 && age <= 7 * 24 * 60 * 60 * 1000;
+  return Number.isFinite(publishedAt) && age >= -12 * 60 * 60 * 1000 && age <= 30 * 24 * 60 * 60 * 1000;
 }
 
 export default function PostCard({ post }: { post: PostRow }) {
