@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { getPool } from "@/lib/db";
-import { sendPreviousPaperNotification } from "@/lib/push";
 
 export const runtime = "nodejs";
 
@@ -76,14 +75,6 @@ export async function POST(request: Request) {
         status,
       ]
     );
-
-    if (status === "published") {
-      try {
-        await sendPreviousPaperNotification({ id: result.insertId, title, exam_name: examName, subject, year });
-      } catch (pushError) {
-        console.error("Previous paper push notification failed:", pushError);
-      }
-    }
 
     return NextResponse.json({
       ok: true,
