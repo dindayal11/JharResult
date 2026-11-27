@@ -43,7 +43,9 @@ export default async function Home() {
          FROM posts p
          JOIN categories c ON c.id = p.category_id
          WHERE p.status = 'published'
-         ORDER BY p.published_at DESC
+         ORDER BY COALESCE(p.updated_at, p.published_at) DESC,
+                  p.published_at DESC,
+                  p.id DESC
          LIMIT 60`
       ),
       getPool().query(
